@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Admin identity — matched by EMAIL, not UID ──────────────────
+    // Firebase Auth puts the signed-in account's email on the ID token
+    // as request.auth.token.email. This does not touch or restrict
+    // any read rule below (all reads that were public stay public) —
+    // it only governs the write/read paths that already required the
+    // admin identity.
+    function isAdmin() {
+      return request.auth != null
+             && request.auth.token.email == "3tahirmeer@gmail.com";
+    }
+
+    // ── siteConfig — all public content edited by admin ────────────
+    // Anyone worldwide can READ (index.html loads this on every visit —
+    // unauthenticated, and unaffected by the admin-identity change above)
+    // Only the admin account can WRITE
+    match /siteConfig/{document} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ── registrations — membership form submissions ─────────────────
+    // Anyone can CREATE (public form, no login)
+    // Only admin can READ + update the status field
+    match /registrations/{document} {
+      allow create: if
+        // Reject any submission whose photo (if present) is larger than
+        // ~700KB of base64 text — mirrors the client-side compression
+        // cap in app.js/firebase.js, enforced here too so a modified
+        // or malicious client can't bypass it.
+        (!('photoData' in request.resource.data)
+          || request.resource.data.photoData.size() <= 700000);
+      allow read:   if isAdmin();
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data)
+                       .affectedKeys().hasOnly(['status', 'cardId']);
+      allow delete: if false;
+    }
+
+    // ── donations — donor confirmation records ──────────────────────
+    match /donations/{document} {
+      allow create: if
+        (!('photoData' in request.resource.data)
+          || request.resource.data.photoData.size() <= 700000);
+      allow read:   if isAdmin();
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data)
+                       .affectedKeys().hasOnly(['status']);
+      allow delete: if false;
+    }
+
+    // ── admins — session/login tracking doc ────────────────────────
+    // Doc id is still the admin's own uid (admin.html writes
+    // doc(db, 'admins', user.uid)) — that part is unrelated to identity
+    // verification, so it stays a uid path match. isAdmin() is the
+    // actual authorization check.
+    match /admins/{uid} {
+      allow read, write: if isAdmin() && request.auth.uid == uid;
+    }
+  }
+}

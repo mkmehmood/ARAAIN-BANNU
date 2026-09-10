@@ -1,11 +1,100 @@
-<div align="center">
+# Arain World Council (AWC) — Bannu Regional Organisation v4
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+## Project Structure
 
-  <h1>Built with AI Studio</h2>
+```
+awc/
+├── index.html          Public website (fully dynamic, bilingual EN/UR)
+├── admin.html          Admin panel (edit everything)
+├── styles.css          Complete stylesheet
+├── README.md
+└── js/
+    ├── app.js          Main ES module — renders all content from SQLite
+    ├── db.js           SQLite CRUD layer (8 tables)
+    ├── lang.js         Bilingual dictionary (EN + UR, ~280 keys)
+    ├── icons.js        100+ inline SVG icons
+    ├── sql-wasm.js     sql.js loader
+    ├── sql-wasm.wasm   SQLite WebAssembly binary
+    └── sql.js          sql.js library
+```
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## How to Run
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+```bash
+cd awc
+python3 -m http.server 8080
+```
+Open: http://localhost:8080 — or open index.html directly in Chrome/Edge/Firefox.
 
-</div>
+## Key Features
+
+### Public Website
+- No top bar — clean sticky header with logo + nav
+- Language toggle pill in nav (EN ↔ UR) — switches entire DOM instantly via lang.js
+- Zero API calls — fully offline language switching
+- Bannu Regional Organisation branding throughout
+- All content 100% dynamic — loaded from SQLite, editable via admin
+- Radio pill buttons for membership form (no dropdowns)
+- Photo gallery with lightbox
+- Fancy Cinzel + Playfair Display typography
+- Fully responsive — mobile, tablet, desktop
+- Single language at a time — no mixed text
+
+### Admin Panel
+- Identity & Logo — upload logo image (stored as base64 in SQLite)
+- Hero, About, Programs, Leadership, Events, CTA, Footer, Contact, Bank
+- Gallery — upload/delete photos with captions, auto-resized to 800px
+- Pages — Blog, History, Documentation, Environmental, Town Gallery, Department
+- Submissions inbox — view, mark read, delete, CSV export
+- Contact messages viewer
+- Export .sqlite file, Reset to defaults
+
+### Language System (lang.js)
+- Two complete dictionaries: EN{} and UR{} with ~280 keys each
+- t(key, lang) function returns the correct string
+- All static UI text (nav, buttons, form labels, modal text) covered
+- Dynamic content (titles, descriptions) stored in SQLite in English
+- Admin adds content in English; lang.js handles all UI translation
+- No API, no internet required, zero latency
+
+### SQLite Tables
+| Table        | Purpose                                           |
+|--------------|---------------------------------------------------|
+| settings     | All editable content (titles, descriptions, etc.) |
+| programs     | Program cards                                     |
+| leaders      | Leadership team                                   |
+| events       | Upcoming events                                   |
+| pages        | Blog, History, Docs, Environmental, Gallery, Dept |
+| gallery      | Photos (base64 + captions)                        |
+| submissions  | Membership applications                           |
+| messages     | Contact form submissions                          |
+
+### Firestore (cloud sync) — project `tahir-meer`
+
+Local SQLite is the source of truth in the browser; `js/cloud.js` mirrors
+six of the tables above to Firestore so `index.html` can render without
+running the SQLite/WASM layer, and so admin edits show up live on any
+open tab.
+
+| Firestore doc         | Mirrors SQLite table | Shape                                  |
+|------------------------|----------------------|-----------------------------------------|
+| `siteConfig/settings`  | `settings`            | flat `{ key: value, ... }` object       |
+| `siteConfig/programs`  | `programs`             | `{ items: [ {…row}, ... ] }`            |
+| `siteConfig/leaders`   | `leaders`              | `{ items: [ {…row}, ... ] }`            |
+| `siteConfig/events`    | `events`               | `{ items: [ {…row}, ... ] }`            |
+| `siteConfig/pages`     | `pages`                | `{ items: [ {…row}, ... ] }`            |
+| `siteConfig/gallery`   | `gallery`              | `{ items: [ {…row}, ... ] }`            |
+
+- `registrations` and `donations` collections (separate from `siteConfig`)
+  hold public form submissions, written via `js/firebase.js` — documented
+  in that file's doc comments.
+- Reads on `siteConfig/*` are public (`allow read: if true`); writes
+  require the signed-in Firebase Auth `uid` to match the admin UID
+  hard-coded in `firestore.rules` and in admin.html's login script.
+- `index.html` / `js/app.js` → `fetchAllSiteContent()` +
+  `subscribeToSiteContent()` (read-only, no auth needed).
+- `admin.html` → `pushSettings()`, `pushPrograms()`, `pushLeaders()`,
+  `pushEvents()`, `pushPages()`, `pushGallery()` (all in `js/cloud.js`),
+  fired after every local SQLite write. These MUST run on the same
+  authenticated Firebase App instance as the admin login — see the
+  comment block at the top of `js/cloud.js`.

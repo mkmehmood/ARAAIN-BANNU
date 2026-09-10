@@ -1,0 +1,116 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Language, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem } from '../types';
+import { 
+  EN, 
+  UR, 
+  getLocalizedSetting, 
+  getLocalizedPrograms, 
+  getLocalizedLeaders, 
+  getLocalizedEvents, 
+  getLocalizedPages,
+  getLocalizedGallery
+} from '../data/translations';
+
+interface LanguageContextType {
+  lang: Language;
+  setLang: (l: Language) => void;
+  setLanguage: (l: Language) => void;
+  toggleLang: () => void;
+  t: (key: string, fallback?: string) => string;
+  isUrdu: boolean;
+  tSetting: (field: keyof SiteSettings, customSettings?: SiteSettings) => string;
+  getPrograms: (customPrograms: Program[]) => Program[];
+  getLeaders: (customLeaders: Leader[]) => Leader[];
+  getEvents: (customEvents: EventItem[]) => EventItem[];
+  getPages: (customPages: PageItem[]) => PageItem[];
+  getGallery: (customGallery: GalleryItem[]) => GalleryItem[];
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [lang, setLangState] = useState<Language>(() => {
+    return (localStorage.getItem('app_language') as Language) || 'ur';
+  });
+
+  const setLang = (newLang: Language) => {
+    setLangState(newLang);
+    localStorage.setItem('app_language', newLang);
+  };
+
+  const toggleLang = () => {
+    setLang(lang === 'en' ? 'ur' : 'en');
+  };
+
+  useEffect(() => {
+    const isUr = lang === 'ur';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = isUr ? 'rtl' : 'ltr';
+    if (isUr) {
+      document.body.classList.add('font-urdu');
+      document.body.classList.remove('font-sans');
+    } else {
+      document.body.classList.add('font-sans');
+      document.body.classList.remove('font-urdu');
+    }
+  }, [lang]);
+
+  const t = useCallback((key: string, fallback?: string): string => {
+    const dict = lang === 'ur' ? UR : EN;
+    if (dict[key]) return dict[key];
+    const fallbackDict = lang === 'ur' ? UR : EN;
+    if (fallbackDict[key]) return fallbackDict[key];
+    return fallback || key;
+  }, [lang]);
+
+  const tSetting = useCallback((field: keyof SiteSettings, customSettings?: SiteSettings): string => {
+    return getLocalizedSetting(field, lang, customSettings);
+  }, [lang]);
+
+  const getPrograms = useCallback((customPrograms: Program[]): Program[] => {
+    return getLocalizedPrograms(lang, customPrograms);
+  }, [lang]);
+
+  const getLeaders = useCallback((customLeaders: Leader[]): Leader[] => {
+    return getLocalizedLeaders(lang, customLeaders);
+  }, [lang]);
+
+  const getEvents = useCallback((customEvents: EventItem[]): EventItem[] => {
+    return getLocalizedEvents(lang, customEvents);
+  }, [lang]);
+
+  const getPages = useCallback((customPages: PageItem[]): PageItem[] => {
+    return getLocalizedPages(lang, customPages);
+  }, [lang]);
+
+  const getGallery = useCallback((customGallery: GalleryItem[]): GalleryItem[] => {
+    return getLocalizedGallery(lang, customGallery);
+  }, [lang]);
+
+  return (
+    <LanguageContext.Provider value={{ 
+      lang, 
+      setLang, 
+      setLanguage: setLang,
+      toggleLang, 
+      t, 
+      isUrdu: lang === 'ur',
+      tSetting,
+      getPrograms,
+      getLeaders,
+      getEvents,
+      getPages,
+      getGallery
+    }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+};
