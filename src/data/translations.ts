@@ -1,5 +1,19 @@
 import { SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem, Language } from '../types';
-import { translateNameToUrdu, translateOccupationToUrdu } from '../utils/urduTransliterator';
+import {
+  translateNameToUrdu,
+  translateNameToEnglish,
+  translateOccupationToUrdu,
+  translateOccupationToEnglish,
+  translateAddressToUrdu,
+  translateAddressToEnglish,
+  translateMonthToUrdu,
+  translateMonthToEnglish,
+  translateUrduToEnglish,
+  translateEnglishToUrdu,
+  isUrduText,
+  isCorruptedTransliteration,
+  cleanCorruptedUrdu,
+} from '../utils/urduTransliterator';
 
 export const EN: Record<string, string> = {
   // Brand & Identity
@@ -791,6 +805,15 @@ export const LOCALIZED_PAGES: Record<Language, PageItem[]> = {
       body: "Explore photographic archives from ARAAIN BANNU community gatherings, medical camps, Eid gift distributions, and student award ceremonies across Bannu and neighboring districts.",
       published: 1,
       sort_order: 4,
+    },
+    {
+      id: 6,
+      slug: "department",
+      label: "Department",
+      title: "Functional Departments & Wings",
+      body: "ARAAIN BANNU operates through several specialized departments, each led by experienced professionals:\n\n• Education & Scholarships Wing\n• Healthcare & Emergency Welfare Cell\n• Youth Empowerment & IT Mentorship Desk\n• Matrimonial & Family Reconciliation Committee\n• Public Relations & Overseas Diaspora Liaison",
+      published: 1,
+      sort_order: 5,
     }
   ],
   ur: [
@@ -838,6 +861,15 @@ export const LOCALIZED_PAGES: Record<Language, PageItem[]> = {
       body: "بنوں اور ملحقہ اضلاع میں آرائیں بنوں کے فلاحی اجتماعات، فری میڈیکل کیمپس، عید گفٹ تقسیم اور ہونہار طلبہ کی تقاریب اعزاز کی تصویری تاریخ ملاحظہ فرمائیں۔",
       published: 1,
       sort_order: 4,
+    },
+    {
+      id: 6,
+      slug: "department",
+      label: "شعبہ جات",
+      title: "فعال شعبہ جات اور تنظیمی ونگز",
+      body: "آرائیں بنوں متعدد خصوصی شعبہ جات کے ذریعے کام کرتی ہے جن کی قیادت باصلاحیت اور تجربہ کار افراد کے سپرد ہے:\n\n• شعبہ تعلیم اور اسکالرشپس ونگ\n• شعبہ صحت اور ہنگامی فلاحی بہبود سیل\n• نوجوانوں کی خود مختاری اور آئی ٹی رہنمائی ڈیسک\n• رشتہ ناطہ اور عائلی مصالحتی کمیٹی\n• تعلقات عامہ اور اوورسیز رابطہ ونگ",
+      published: 1,
+      sort_order: 5,
     }
   ]
 };
@@ -865,29 +897,67 @@ export function isEnglishScript(str?: string): boolean {
 
 /**
  * Resolves a settings value strictly respecting the current language:
- * In 'ur' mode: returns pure Urdu (no English words)
- * In 'en' mode: returns pure English (no Urdu words)
+ * In 'ur' mode: returns pure Urdu (translations applied if entered in English)
+ * In 'en' mode: returns pure English (translations applied if entered in Urdu)
  */
 export function getLocalizedSetting(
   field: keyof SiteSettings,
   lang: Language,
   customSettings?: SiteSettings
 ): string {
-  const customVal = customSettings ? (customSettings[field] as string) : '';
-  const fallback = LOCALIZED_SETTINGS[lang][field] as string;
+  let customVal = customSettings ? (customSettings[field] as string) : '';
+  const fallbackUr = (LOCALIZED_SETTINGS.ur[field] as string) || '';
+  const fallbackEn = (LOCALIZED_SETTINGS.en[field] as string) || '';
+  const fallback = lang === 'ur' ? fallbackUr : fallbackEn;
+
+  // Technical fields or digits formats stay in standard English format
+  const isTechnical = [
+    'contactPhone', 'contactEmail', 'socialWhatsapp', 'socialFacebook', 'socialTwitter',
+    'socialInstagram', 'bankAccount', 'bankIBAN', 'epNumber', 'jcNumber', 'intSwift',
+    'intIBAN', 'logoData', 'statMembers', 'statPrograms', 'statCities'
+  ].includes(field as string);
+
+  if (isTechnical) {
+    return customVal || fallback;
+  }
+
+  if (!customVal || !customVal.trim()) {
+    return fallback;
+  }
+
+  // If corrupted transliteration detected, clean it or use catalog fallback
+  if (isCorruptedTransliteration(customVal)) {
+    const cleaned = cleanCorruptedUrdu(customVal);
+    if (!isCorruptedTransliteration(cleaned)) {
+      customVal = cleaned;
+    } else {
+      return fallback;
+    }
+  }
+
+  // Check if customVal matches the default English setting
+  if (fallbackEn && customVal.trim().toLowerCase() === fallbackEn.trim().toLowerCase()) {
+    return fallback;
+  }
+
+  // Check if customVal matches the default Urdu setting
+  if (fallbackUr && customVal.trim() === fallbackUr.trim()) {
+    return fallback;
+  }
 
   if (lang === 'ur') {
-    // In Urdu mode, only accept custom text if it's in Urdu script without english words
-    if (customVal && isUrduScript(customVal) && !isEnglishScript(customVal)) {
+    if (isUrduText(customVal)) {
       return customVal;
     }
-    return fallback;
+    // Admin or user entered in English -> translate to Urdu
+    return translateEnglishToUrdu(customVal);
   } else {
-    // In English mode, only accept custom text if it has no Urdu script
-    if (customVal && !isUrduScript(customVal)) {
+    // English mode:
+    if (!isUrduText(customVal)) {
       return customVal;
     }
-    return fallback;
+    // Admin entered in Urdu -> translate accurately to English
+    return translateUrduToEnglish(customVal);
   }
 }
 
@@ -900,37 +970,53 @@ export function getLocalizedPrograms(lang: Language, customPrograms: Program[]):
     const catalogUr = LOCALIZED_PROGRAMS.ur.find(p => p.id === item.id);
     const catalogEn = LOCALIZED_PROGRAMS.en.find(p => p.id === item.id);
 
-    if (lang === 'ur') {
-      let title = item.title;
-      let desc = item.desc;
-      if (!isUrduScript(title)) {
-        title = catalogUr ? catalogUr.title : translateNameToUrdu(item.title);
-      }
-      if (!isUrduScript(desc) && catalogUr) {
-        desc = catalogUr.desc;
-      }
-      return {
-        ...item,
-        title,
-        desc,
-        id: item.id ?? idx + 1,
-      };
-    } else {
-      let title = item.title;
-      let desc = item.desc;
-      if (isUrduScript(title) && catalogEn) {
-        title = catalogEn.title;
-      }
-      if (isUrduScript(desc) && catalogEn) {
-        desc = catalogEn.desc;
-      }
-      return {
-        ...item,
-        title,
-        desc,
-        id: item.id ?? idx + 1,
-      };
+    let title = item.title || '';
+    let desc = item.desc || '';
+
+    // Clean any corrupted transliterations
+    if (isCorruptedTransliteration(title)) {
+      title = catalogUr ? (lang === 'ur' ? catalogUr.title : (catalogEn?.title || title)) : cleanCorruptedUrdu(title);
     }
+    if (isCorruptedTransliteration(desc)) {
+      desc = catalogUr ? (lang === 'ur' ? catalogUr.desc : (catalogEn?.desc || desc)) : cleanCorruptedUrdu(desc);
+    }
+
+    // If matches catalog defaults, resolve correctly
+    if (catalogEn && title.trim().toLowerCase() === catalogEn.title.trim().toLowerCase()) {
+      title = lang === 'ur' && catalogUr ? catalogUr.title : catalogEn.title;
+    }
+    if (catalogEn && desc.trim().toLowerCase() === catalogEn.desc.trim().toLowerCase()) {
+      desc = lang === 'ur' && catalogUr ? catalogUr.desc : catalogEn.desc;
+    }
+    if (catalogUr && title.trim() === catalogUr.title.trim()) {
+      title = lang === 'en' && catalogEn ? catalogEn.title : catalogUr.title;
+    }
+    if (catalogUr && desc.trim() === catalogUr.desc.trim()) {
+      desc = lang === 'en' && catalogEn ? catalogEn.desc : catalogUr.desc;
+    }
+
+    if (lang === 'ur') {
+      if (!isUrduText(title)) {
+        title = catalogUr ? catalogUr.title : translateEnglishToUrdu(title);
+      }
+      if (!isUrduText(desc)) {
+        desc = catalogUr ? catalogUr.desc : translateEnglishToUrdu(desc);
+      }
+    } else {
+      if (isUrduText(title)) {
+        title = catalogEn ? catalogEn.title : translateUrduToEnglish(title);
+      }
+      if (isUrduText(desc)) {
+        desc = catalogEn ? catalogEn.desc : translateUrduToEnglish(desc);
+      }
+    }
+
+    return {
+      ...item,
+      title,
+      desc,
+      id: item.id ?? idx + 1,
+    };
   });
 }
 
@@ -943,36 +1029,55 @@ export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Le
     const catalogUr = LOCALIZED_LEADERS.ur.find(l => l.id === item.id);
     const catalogEn = LOCALIZED_LEADERS.en.find(l => l.id === item.id);
 
+    let name = item.name || '';
+    let role = item.role || '';
+
+    if (isCorruptedTransliteration(name)) {
+      name = catalogUr ? (lang === 'ur' ? catalogUr.name : (catalogEn?.name || name)) : cleanCorruptedUrdu(name);
+    }
+    if (isCorruptedTransliteration(role)) {
+      role = catalogUr ? (lang === 'ur' ? catalogUr.role : (catalogEn?.role || role)) : cleanCorruptedUrdu(role);
+    }
+
+    if (catalogEn && name.trim().toLowerCase() === catalogEn.name.trim().toLowerCase()) {
+      name = lang === 'ur' && catalogUr ? catalogUr.name : catalogEn.name;
+    }
+    if (catalogEn && role.trim().toLowerCase() === catalogEn.role.trim().toLowerCase()) {
+      role = lang === 'ur' && catalogUr ? catalogUr.role : catalogEn.role;
+    }
+    if (catalogUr && name.trim() === catalogUr.name.trim()) {
+      name = lang === 'en' && catalogEn ? catalogEn.name : catalogUr.name;
+    }
+    if (catalogUr && role.trim() === catalogUr.role.trim()) {
+      role = lang === 'en' && catalogEn ? catalogEn.role : catalogUr.role;
+    }
+
     if (lang === 'ur') {
-      let name = item.name;
-      let role = item.role;
-      if (!isUrduScript(name)) {
-        name = catalogUr ? catalogUr.name : translateNameToUrdu(item.name);
+      if (!isUrduText(name)) {
+        name = catalogUr ? catalogUr.name : translateNameToUrdu(name);
       }
-      if (!isUrduScript(role)) {
-        role = catalogUr ? catalogUr.role : translateOccupationToUrdu(item.role);
+      if (!isUrduText(role)) {
+        role = catalogUr ? catalogUr.role : translateOccupationToUrdu(role);
       }
       return {
         ...item,
         name,
         role,
-        initials: catalogUr?.initials || item.initials || 'آ ب',
+        initials: catalogUr?.initials || 'آ ب',
         id: item.id ?? idx + 1,
       };
     } else {
-      let name = item.name;
-      let role = item.role;
-      if (isUrduScript(name) && catalogEn) {
-        name = catalogEn.name;
+      if (isUrduText(name)) {
+        name = catalogEn ? catalogEn.name : translateNameToEnglish(name);
       }
-      if (isUrduScript(role) && catalogEn) {
-        role = catalogEn.role;
+      if (isUrduText(role)) {
+        role = catalogEn ? catalogEn.role : translateOccupationToEnglish(role);
       }
       return {
         ...item,
         name,
         role,
-        initials: catalogEn?.initials || item.initials || 'AB',
+        initials: catalogEn?.initials || 'AB',
         id: item.id ?? idx + 1,
       };
     }
@@ -988,40 +1093,66 @@ export function getLocalizedEvents(lang: Language, customEvents: EventItem[]): E
     const catalogUr = LOCALIZED_EVENTS.ur.find(e => e.id === item.id);
     const catalogEn = LOCALIZED_EVENTS.en.find(e => e.id === item.id);
 
+    let title = item.title || '';
+    let place = item.place || '';
+    let tag = item.tag || '';
+
+    if (isCorruptedTransliteration(title)) {
+      title = catalogUr ? (lang === 'ur' ? catalogUr.title : (catalogEn?.title || title)) : cleanCorruptedUrdu(title);
+    }
+    if (isCorruptedTransliteration(place)) {
+      place = catalogUr ? (lang === 'ur' ? catalogUr.place : (catalogEn?.place || place)) : cleanCorruptedUrdu(place);
+    }
+
+    if (catalogEn && title.trim().toLowerCase() === catalogEn.title.trim().toLowerCase()) {
+      title = lang === 'ur' && catalogUr ? catalogUr.title : catalogEn.title;
+    }
+    if (catalogEn && place.trim().toLowerCase() === catalogEn.place.trim().toLowerCase()) {
+      place = lang === 'ur' && catalogUr ? catalogUr.place : catalogEn.place;
+    }
+    if (catalogUr && title.trim() === catalogUr.title.trim()) {
+      title = lang === 'en' && catalogEn ? catalogEn.title : catalogUr.title;
+    }
+    if (catalogUr && place.trim() === catalogUr.place.trim()) {
+      place = lang === 'en' && catalogEn ? catalogEn.place : catalogUr.place;
+    }
+
     if (lang === 'ur') {
-      let title = item.title;
-      let place = item.place;
-      if (!isUrduScript(title)) {
-        title = catalogUr ? catalogUr.title : translateNameToUrdu(item.title);
+      if (!isUrduText(title)) {
+        title = catalogUr ? catalogUr.title : translateEnglishToUrdu(title);
       }
-      if (!isUrduScript(place)) {
-        place = catalogUr ? catalogUr.place : translateNameToUrdu(item.place);
+      if (!isUrduText(place)) {
+        place = catalogUr ? catalogUr.place : translateAddressToUrdu(place);
+      }
+      if (tag && !isUrduText(tag)) {
+        tag = catalogUr ? catalogUr.tag : translateEnglishToUrdu(tag);
       }
       return {
         ...item,
         title,
         place,
         day: catalogUr?.day || item.day,
-        month: catalogUr?.month || item.month,
-        tag: catalogUr?.tag || item.tag,
+        month: translateMonthToUrdu(item.month),
+        tag: tag || catalogUr?.tag || item.tag,
         id: item.id ?? idx + 1,
       };
     } else {
-      let title = item.title;
-      let place = item.place;
-      if (isUrduScript(title) && catalogEn) {
-        title = catalogEn.title;
+      if (isUrduText(title)) {
+        title = catalogEn ? catalogEn.title : translateUrduToEnglish(title);
       }
-      if (isUrduScript(place) && catalogEn) {
-        place = catalogEn.place;
+      if (isUrduText(place)) {
+        place = catalogEn ? catalogEn.place : translateAddressToEnglish(place);
+      }
+      if (tag && isUrduText(tag)) {
+        tag = catalogEn ? catalogEn.tag : translateUrduToEnglish(tag);
       }
       return {
         ...item,
         title,
         place,
         day: catalogEn?.day || item.day,
-        month: catalogEn?.month || item.month,
-        tag: catalogEn?.tag || item.tag,
+        month: translateMonthToEnglish(item.month),
+        tag: tag || catalogEn?.tag || item.tag,
         id: item.id ?? idx + 1,
       };
     }
@@ -1037,18 +1168,39 @@ export function getLocalizedPages(lang: Language, customPages: PageItem[]): Page
     const catalogUr = LOCALIZED_PAGES.ur.find(p => p.slug === item.slug || p.id === item.id);
     const catalogEn = LOCALIZED_PAGES.en.find(p => p.slug === item.slug || p.id === item.id);
 
+    let title = item.title || '';
+    let body = item.body || '';
+    let label = item.label || '';
+
+    if (isCorruptedTransliteration(title)) {
+      title = catalogUr ? (lang === 'ur' ? catalogUr.title : (catalogEn?.title || title)) : cleanCorruptedUrdu(title);
+    }
+    if (isCorruptedTransliteration(body)) {
+      body = catalogUr ? (lang === 'ur' ? catalogUr.body : (catalogEn?.body || body)) : cleanCorruptedUrdu(body);
+    }
+
+    if (catalogEn && title.trim().toLowerCase() === catalogEn.title.trim().toLowerCase()) {
+      title = lang === 'ur' && catalogUr ? catalogUr.title : catalogEn.title;
+    }
+    if (catalogEn && body.trim().toLowerCase() === catalogEn.body.trim().toLowerCase()) {
+      body = lang === 'ur' && catalogUr ? catalogUr.body : catalogEn.body;
+    }
+    if (catalogUr && title.trim() === catalogUr.title.trim()) {
+      title = lang === 'en' && catalogEn ? catalogEn.title : catalogUr.title;
+    }
+    if (catalogUr && body.trim() === catalogUr.body.trim()) {
+      body = lang === 'en' && catalogEn ? catalogEn.body : catalogUr.body;
+    }
+
     if (lang === 'ur') {
-      let title = item.title;
-      let body = item.body;
-      let label = item.label;
-      if (!isUrduScript(title)) {
-        title = catalogUr ? catalogUr.title : item.title;
+      if (!isUrduText(title)) {
+        title = catalogUr ? catalogUr.title : translateEnglishToUrdu(title);
       }
-      if (!isUrduScript(body)) {
-        body = catalogUr ? catalogUr.body : item.body;
+      if (!isUrduText(body)) {
+        body = catalogUr ? catalogUr.body : translateEnglishToUrdu(body);
       }
-      if (!isUrduScript(label)) {
-        label = catalogUr ? catalogUr.label : item.label;
+      if (!isUrduText(label)) {
+        label = catalogUr ? catalogUr.label : translateEnglishToUrdu(label);
       }
       return {
         ...item,
@@ -1058,17 +1210,14 @@ export function getLocalizedPages(lang: Language, customPages: PageItem[]): Page
         id: item.id ?? idx + 1,
       };
     } else {
-      let title = item.title;
-      let body = item.body;
-      let label = item.label;
-      if (isUrduScript(title) && catalogEn) {
-        title = catalogEn.title;
+      if (isUrduText(title)) {
+        title = catalogEn ? catalogEn.title : translateUrduToEnglish(title);
       }
-      if (isUrduScript(body) && catalogEn) {
-        body = catalogEn.body;
+      if (isUrduText(body)) {
+        body = catalogEn ? catalogEn.body : translateUrduToEnglish(body);
       }
-      if (isUrduScript(label) && catalogEn) {
-        label = catalogEn.label;
+      if (isUrduText(label)) {
+        label = catalogEn ? catalogEn.label : translateUrduToEnglish(label);
       }
       return {
         ...item,
@@ -1172,10 +1321,21 @@ export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]
     const catalogUr = LOCALIZED_GALLERY.ur.find(g => g.id === item.id);
     const catalogEn = LOCALIZED_GALLERY.en.find(g => g.id === item.id);
 
+    let caption = item.caption || '';
+    if (isCorruptedTransliteration(caption)) {
+      caption = catalogUr ? (lang === 'ur' ? catalogUr.caption : (catalogEn?.caption || caption)) : cleanCorruptedUrdu(caption);
+    }
+
+    if (catalogEn && caption.trim().toLowerCase() === catalogEn.caption.trim().toLowerCase()) {
+      caption = lang === 'ur' && catalogUr ? catalogUr.caption : catalogEn.caption;
+    }
+    if (catalogUr && caption.trim() === catalogUr.caption.trim()) {
+      caption = lang === 'en' && catalogEn ? catalogEn.caption : catalogUr.caption;
+    }
+
     if (lang === 'ur') {
-      let caption = item.caption;
-      if (caption && !isUrduScript(caption)) {
-        caption = catalogUr ? catalogUr.caption : translateNameToUrdu(caption);
+      if (caption && !isUrduText(caption)) {
+        caption = catalogUr ? catalogUr.caption : translateEnglishToUrdu(caption);
       }
       return {
         ...item,
@@ -1183,9 +1343,8 @@ export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]
         id: item.id ?? idx + 1,
       };
     } else {
-      let caption = item.caption;
-      if (caption && isUrduScript(caption) && catalogEn) {
-        caption = catalogEn.caption;
+      if (caption && isUrduText(caption)) {
+        caption = catalogEn ? catalogEn.caption : translateUrduToEnglish(caption);
       }
       return {
         ...item,

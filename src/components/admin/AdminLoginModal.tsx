@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { auth } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { X, ShieldCheck, Lock, Mail, AlertCircle, Sparkles } from 'lucide-react';
+import { X, ShieldCheck, Lock, Mail, AlertCircle } from 'lucide-react';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -10,13 +10,25 @@ interface AdminLoginModalProps {
   onLoginSuccess: (userEmail: string) => void;
 }
 
+/**
+ * AdminLoginModal
+ * 
+ * SECURITY ARCHITECTURE NOTE:
+ * Client-side UI hiding and form validation are usability features that obscure
+ * the portal from public visitors, but they ARE NOT the security boundary.
+ * 
+ * The true security boundary is enforced strictly by Firebase Authentication and
+ * Firestore Security Rules (firestore.rules), which evaluate request.auth.token.email
+ * on every read and write. No local credentials, mock bypasses, or character-length
+ * heuristics are permitted here. Only a valid Firebase Auth session grants access.
+ */
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   isOpen,
   onClose,
   onLoginSuccess,
 }) => {
   const { t, isUrdu } = useLanguage();
-  const [email, setEmail] = useState('3tahirmeer@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,25 +41,26 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setLoading(true);
 
     try {
+      // Sole authorized authentication path — relies strictly on Firebase Auth
       const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      onLoginSuccess(cred.user.email || email);
+      onLoginSuccess(cred.user.email || email.trim());
       onClose();
     } catch (err: any) {
-      console.warn('Firebase auth failed:', err.message);
-      // If the admin user has configured a local emergency access
-      if (email === '3tahirmeer@gmail.com' && (password === 'admin123' || password === 'tahir123' || password.length >= 6)) {
-        onLoginSuccess(email);
-        onClose();
-      } else {
-        setError(isUrdu ? 'غلط ایڈمن کوائف۔' : 'Invalid administrator credentials.');
-      }
+      console.warn('Firebase auth failed:', err?.message || err);
+      // STRICT SECURITY FIX: No client-side bypass, no hardcoded passwords,
+      // and no length-based fallback. On failure, display error only.
+      setError(
+        isUrdu
+          ? 'غلط ایڈمن کوائف۔ براہ کرم درست ای میل اور پاس ورڈ درج کریں۔'
+          : 'Invalid administrator credentials. Please verify your email and password.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
         
         {/* Header */}
@@ -69,6 +82,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -93,8 +107,10 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <input
                 type="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@example.com"
                 className="w-full pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
               />
             </div>
@@ -109,6 +125,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -126,10 +143,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               {loading ? (isUrdu ? 'توثیق جاری ہے...' : 'Authenticating...') : t('btnLogin', 'Sign In to Admin')}
             </button>
           </div>
-
-          <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-            {isUrdu ? 'مجاز ایڈمنسٹریٹر:' : 'Authorized administrator:'} <code className="text-slate-600 font-mono">3tahirmeer@gmail.com</code>
-          </p>
 
         </form>
 

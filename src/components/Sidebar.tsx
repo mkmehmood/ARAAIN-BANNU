@@ -26,7 +26,7 @@ interface SidebarProps {
   onClose: () => void;
   onOpenMembership: () => void;
   onOpenDonation: () => void;
-  onOpenAdmin: () => void;
+  onOpenAdmin?: () => void;
   onNavigateSection: (id: string) => void;
   isAdminLoggedIn: boolean;
   isInAdminMode: boolean;
@@ -167,82 +167,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
           {/* ══════════════════════════════════════════════════════════
-              SECTION 2: ADMINISTRATOR PORTAL (MOVED HERE)
+              AUTHENTICATED ADMIN SESSION CONTROLS (ONLY VISIBLE ONCE LOGGED IN)
+              SECURITY NOTE: Real access is gated by Firebase Auth & Firestore Rules.
+              Public visitors see zero admin UI anywhere in the sidebar.
              ══════════════════════════════════════════════════════════ */}
-          <div className="bg-[#182634] rounded-2xl p-4 border border-amber-500/20 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider">
-                <Shield className="w-4 h-4 text-amber-400" />
-                <span>{isUrdu ? 'ایڈمنسٹریٹر پورٹل' : 'Administrator Portal'}</span>
+          {isAdminLoggedIn && (
+            <div className="bg-[#182634] rounded-2xl p-4 border border-amber-500/20 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>{isUrdu ? 'ایڈمن سیشن فعال' : 'Admin Session'}</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                  {isUrdu ? 'لاگ ان شدہ' : 'Active'}
+                </span>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-500/30 font-semibold">
-                {isAdminLoggedIn ? (isUrdu ? 'لاگ ان شدہ' : 'Authorized') : (isUrdu ? 'محفوظ' : 'Secured')}
-              </span>
-            </div>
 
-            {isAdminLoggedIn ? (
-              <div className="space-y-3">
-                <div className="p-2.5 rounded-xl bg-black/30 border border-emerald-500/30 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <div className="font-semibold text-emerald-300 text-[11px]">
-                        {isUrdu ? 'ایڈمن لاگ ان ہے' : 'Admin Signed In'}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-mono">
-                        {adminEmail || '3tahirmeer@gmail.com'}
-                      </div>
-                    </div>
+              <div className="p-2.5 rounded-xl bg-black/30 border border-emerald-500/30 flex items-center justify-between text-xs">
+                <div>
+                  <div className="font-semibold text-emerald-300 text-[11px]">
+                    {isUrdu ? 'ایڈمنسٹریٹر اکاؤنٹ' : 'Administrator Account'}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono">
+                    {adminEmail || 'Authorized Admin'}
                   </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      onClose();
-                      onToggleAdminMode();
-                    }}
-                    className="flex-1 py-2 px-3 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow"
-                  >
-                    <span>{isInAdminMode ? (isUrdu ? 'پبلک سائٹ دیکھیں' : 'Exit Admin') : (isUrdu ? 'ایڈمن ڈیش بورڈ کھولیں' : 'Open Admin Panel')}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-
-                  {onLogout && (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        onLogout();
-                      }}
-                      className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 transition-colors cursor-pointer"
-                      title="Sign Out"
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
               </div>
-            ) : (
-              <div>
-                <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
-                  {isUrdu 
-                    ? 'مجاز مرکزی ایڈمنسٹریٹر (3tahirmeer@gmail.com) کے لیے محفوظ پینل:' 
-                    : 'Authorized central administrator sign-in to manage content, memberships, and cards:'}
-                </p>
 
+              <div className="flex gap-2">
                 <button
                   onClick={() => {
                     onClose();
-                    onOpenAdmin();
+                    onToggleAdminMode();
                   }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#96681E] hover:from-[#96681E] hover:to-[#7D5515] text-white text-xs font-bold transition-all shadow flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow"
                 >
-                  <ShieldCheck className="w-4 h-4 text-amber-200" />
-                  <span>{isUrdu ? 'ایڈمن لاگ ان کریں' : 'Sign In as Administrator'}</span>
+                  <span>{isInAdminMode ? (isUrdu ? 'پبلک سائٹ دیکھیں' : 'Exit Admin') : (isUrdu ? 'ایڈمن ڈیش بورڈ کھولیں' : 'Open Admin Panel')}</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </button>
+
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onLogout();
+                    }}
+                    className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 transition-colors cursor-pointer"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
 
           {/* ══════════════════════════════════════════════════════════

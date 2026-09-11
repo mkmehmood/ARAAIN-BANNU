@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { PageItem } from '../types';
@@ -6,8 +6,7 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  MessageCircle, 
-  Shield 
+  MessageCircle 
 } from 'lucide-react';
 
 interface FooterProps {
@@ -15,7 +14,7 @@ interface FooterProps {
   onNavigateSection: (id: string) => void;
   onOpenMembership: () => void;
   onOpenDonation: () => void;
-  onOpenAdmin: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -27,6 +26,27 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const { t, isUrdu, tSetting, getPages } = useLanguage();
   const { settings, pages } = useData();
+
+  // Stealth multi-tap handler on copyright (3 clicks/taps within 2s)
+  // Provides an unobtrusive backup admin trigger for mobile & desktop
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<number | null>(null);
+
+  const handleCopyrightTap = () => {
+    if (!onOpenAdmin) return;
+    tapCountRef.current += 1;
+    if (tapTimerRef.current) {
+      window.clearTimeout(tapTimerRef.current);
+    }
+    if (tapCountRef.current >= 3) {
+      tapCountRef.current = 0;
+      onOpenAdmin();
+      return;
+    }
+    tapTimerRef.current = window.setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 2000);
+  };
 
   const localizedPages = getPages(pages);
 

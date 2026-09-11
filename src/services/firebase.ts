@@ -22,6 +22,7 @@ import {
   User 
 } from 'firebase/auth';
 import { Registration, Donation, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem } from '../types';
+import { processRegistrationTranslations } from '../utils/urduTransliterator';
 
 export const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDQWTvTbXX6o1QvHy5E9HeD5k0DmySlsPg",
@@ -53,12 +54,15 @@ export const SETTINGS_GROUPS: Record<string, (keyof SiteSettings)[]> = {
 
 /**
  * Submits a new membership registration to Firestore
+ * Automatically processes bi-directional Urdu <-> English translations
+ * so data is stored in both languages with consistent identifiers.
  */
 export async function submitRegistration(data: Omit<Registration, '_id' | 'submittedAt'>): Promise<string> {
+  const processed = processRegistrationTranslations(data);
   try {
     const coll = collection(db, 'registrations');
     const docRef = await addDoc(coll, {
-      ...data,
+      ...processed,
       status: 'new',
       submittedAt: serverTimestamp(),
     });
@@ -69,7 +73,7 @@ export async function submitRegistration(data: Omit<Registration, '_id' | 'submi
     const localId = 'offline_' + Date.now();
     const existing = JSON.parse(localStorage.getItem('local_registrations') || '[]');
     existing.unshift({
-      ...data,
+      ...processed,
       _id: localId,
       status: 'new',
       submittedAt: new Date().toISOString(),
@@ -115,14 +119,14 @@ export function subscribeToRegistrations(callback: (items: Registration[]) => vo
   try {
     const q = query(collection(db, 'registrations'), orderBy('submittedAt', 'desc'));
     return onSnapshot(q, (snapshot) => {
-      const items: Registration[] = snapshot.docs.map(d => ({
-        ...d.data() as Registration,
-        _id: d.id,
-      }));
+      const items: Registration[] = snapshot.docs.map(d => {
+        const raw = { ...d.data() as Registration, _id: d.id };
+        return processRegistrationTranslations(raw);
+      });
       callback(items);
     }, (error) => {
       console.warn('[Firebase] Registrations subscription error:', error.message);
-      const fallback = JSON.parse(localStorage.getItem('local_registrations') || '[]');
+      const fallback = (JSON.parse(localStorage.getItem('local_registrations') || '[]') as Registration[]).map(r => processRegistrationTranslations(r));
       callback(fallback);
     });
   } catch (e) {

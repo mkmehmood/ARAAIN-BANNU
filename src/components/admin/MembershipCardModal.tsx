@@ -5,6 +5,16 @@ import { Registration } from '../../types';
 import QRCode from 'qrcode';
 import { X, Printer, ShieldCheck, Download, Check, Eye } from 'lucide-react';
 import { 
+  translateNameToEnglish, 
+  translateAddressToEnglish, 
+  translateOccupationToEnglish, 
+  translateCityToEnglish, 
+  translateStateToEnglish, 
+  translateCountryToEnglish, 
+  translateGenderToEnglish, 
+  translateMembershipTypeToEnglish,
+  translateResidentialStatusToEnglish,
+  translateEducationToEnglish,
   translateNameToUrdu, 
   translateAddressToUrdu, 
   translateOccupationToUrdu, 
@@ -26,7 +36,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
   registration,
   onClose,
 }) => {
-  const { t, isUrdu, tSetting } = useLanguage();
+  const { t, isUrdu } = useLanguage();
   const { settings, getOrCreateMemberCardId } = useData();
 
   const [cardId, setCardId] = useState<string>('');
@@ -35,6 +45,21 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [showPayloadModal, setShowPayloadModal] = useState(false);
+
+  // Resolved English values for the card (English-only card)
+  const englishFullName = registration ? (registration.fullNameEn || translateNameToEnglish(registration.fullName)) : '';
+  const englishFatherName = registration ? (registration.fatherNameEn || translateNameToEnglish(registration.fatherName)) : '';
+  const englishWork = registration ? (registration.workEn || translateOccupationToEnglish(registration.work || '')) : '';
+  const englishStreet = registration ? (registration.streetEn || (registration.street ? translateAddressToEnglish(registration.street) : '')) : '';
+  const englishCity = registration ? (registration.cityEn || translateCityToEnglish(registration.city)) : 'Bannu';
+  const englishState = registration ? (registration.stateEn || translateStateToEnglish(registration.state || 'KPK')) : 'KPK';
+  const englishCountry = registration ? (registration.countryEn || translateCountryToEnglish(registration.country || 'Pakistan')) : 'Pakistan';
+  const englishGender = registration ? (registration.genderEn || translateGenderToEnglish(registration.gender)) : 'Male';
+  const englishType = registration ? (registration.membershipTypeEn || translateMembershipTypeToEnglish(registration.membershipType)) : 'General Member';
+  const englishEducation = registration ? (registration.educationEn || translateEducationToEnglish(registration.education || '')) : '';
+  const englishResidentialStatus = registration ? (registration.residentialStatusEn || translateResidentialStatusToEnglish(registration.residentialStatus)) : 'Resident (Pakistan)';
+
+  const fullEnglishAddress = [englishStreet, englishCity, englishState, englishCountry].filter(Boolean).join(', ');
 
   useEffect(() => {
     if (!registration) return;
@@ -47,42 +72,45 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
         if (!isMounted) return;
         setCardId(id);
 
-        // Translated Urdu Values for Card display
-        const urduFullName = translateNameToUrdu(registration.fullName);
-        const urduFatherName = translateNameToUrdu(registration.fatherName);
-        const urduAddress = translateAddressToUrdu(registration.street || '') || (registration.street || '');
-        const urduCity = translateCityToUrdu(registration.city);
-        const urduState = translateStateToUrdu(registration.state || 'KPK');
-        const urduCountry = translateCountryToUrdu(registration.country || 'Pakistan');
-        const urduWork = translateOccupationToUrdu(registration.work || '');
-        const urduGender = translateGenderToUrdu(registration.gender);
-        const urduMemberType = translateMembershipTypeToUrdu(registration.membershipType);
-        const urduResidentStatus = translateResidentialStatusToUrdu(registration.residentialStatus);
-        const urduEducation = translateEducationToUrdu(registration.education || '');
+        // Translated Urdu values for bidirectional record
+        const urduFullName = registration.fullNameUr || translateNameToUrdu(registration.fullName);
+        const urduFatherName = registration.fatherNameUr || translateNameToUrdu(registration.fatherName);
+        const urduWork = registration.workUr || translateOccupationToUrdu(registration.work || '');
+        const urduCity = registration.cityUr || translateCityToUrdu(registration.city);
+        const urduState = registration.stateUr || translateStateToUrdu(registration.state || 'KPK');
+        const urduCountry = registration.countryUr || translateCountryToUrdu(registration.country || 'Pakistan');
+        const urduGender = registration.genderUr || translateGenderToUrdu(registration.gender);
+        const urduMemberType = registration.membershipTypeUr || translateMembershipTypeToUrdu(registration.membershipType);
+        const urduResidentStatus = registration.residentialStatusUr || translateResidentialStatusToUrdu(registration.residentialStatus);
+        const urduEducation = registration.educationUr || translateEducationToUrdu(registration.education || '');
+        const urduAddress = [
+          registration.streetUr || translateAddressToUrdu(registration.street || ''),
+          urduCity,
+          urduState,
+          urduCountry
+        ].filter(Boolean).join('، ');
 
         // Construct COMPLETE QR CODE PAYLOAD containing ALL user registration data:
         const comprehensiveQrPayload = [
           `═══ ARAAIN BANNU KPK OFFICIAL MEMBER ═══`,
           `Card ID: ${id}`,
-          `Full Name (English): ${registration.fullName}`,
+          `Full Name (English): ${englishFullName}`,
           `نام (Urdu): ${urduFullName}`,
-          `Father Name (English): ${registration.fatherName}`,
+          `Father / Guardian (English): ${englishFatherName}`,
           `ولدیت (Urdu): ${urduFatherName}`,
           `CNIC: ${registration.cnic || '—'}`,
           `DOB: ${registration.dob || '—'}`,
-          `Gender: ${registration.gender} (${urduGender})`,
-          `Membership Type: ${registration.membershipType} (${urduMemberType})`,
+          `Gender: ${englishGender} (${urduGender})`,
+          `Membership Type: ${englishType} (${urduMemberType})`,
           `WhatsApp / Phone: ${registration.whatsapp}`,
           `Email: ${registration.email || '—'}`,
-          `Residential Status: ${registration.residentialStatus} (${urduResidentStatus})`,
+          `Residential Status: ${englishResidentialStatus} (${urduResidentStatus})`,
           `Affiliated Org: ${registration.affiliated || 'None'}`,
-          `Education: ${registration.education || '—'} (${urduEducation})`,
-          `Occupation / Work: ${registration.work || '—'} (${urduWork})`,
+          `Education: ${englishEducation || '—'} (${urduEducation})`,
+          `Occupation / Work: ${englishWork || '—'} (${urduWork})`,
           `Reason / Interest: ${registration.reason || 'Community Welfare'}`,
-          `Street Address: ${registration.street || '—'}`,
-          `City: ${registration.city} (${urduCity})`,
-          `State: ${registration.state || 'KPK'} (${urduState})`,
-          `Country: ${registration.country} (${urduCountry})`,
+          `Address (English): ${fullEnglishAddress}`,
+          `پتہ (Urdu): ${urduAddress}`,
           `Submitted Date: ${registration.submittedAt ? (typeof registration.submittedAt === 'string' ? registration.submittedAt : new Date(registration.submittedAt.seconds * 1000).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10)}`,
           `Verification: Official Verified Member`,
           `Authority: Executive Council Araain Bannu`,
@@ -112,7 +140,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
     initCard();
     return () => { isMounted = false; };
-  }, [registration]);
+  }, [registration, englishFullName, englishFatherName, englishWork, fullEnglishAddress, englishGender, englishType, englishEducation, englishResidentialStatus]);
 
   if (!registration) return null;
 
@@ -126,20 +154,6 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
     setCopiedPayload(true);
     setTimeout(() => setCopiedPayload(false), 2000);
   };
-
-  // Translated values for Card UI (Data in Urdu, Digits and Email in English format)
-  const urduName = translateNameToUrdu(registration.fullName);
-  const urduFather = translateNameToUrdu(registration.fatherName);
-  const urduWork = translateOccupationToUrdu(registration.work || '');
-  const urduCity = translateCityToUrdu(registration.city);
-  const urduState = translateStateToUrdu(registration.state || 'KPK');
-  const urduCountry = translateCountryToUrdu(registration.country || 'Pakistan');
-  const urduGender = translateGenderToUrdu(registration.gender);
-  const urduType = translateMembershipTypeToUrdu(registration.membershipType);
-
-  // Address formatted in Urdu:
-  const rawStreet = registration.street ? translateAddressToUrdu(registration.street) : '';
-  const fullUrduAddress = [rawStreet, urduCity, urduState, urduCountry].filter(Boolean).join('، ');
 
   const issueDate = new Date().toISOString().slice(0, 10);
 
@@ -203,10 +217,10 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
             </div>
             <div>
               <div className="font-bold text-sm sm:text-base leading-tight">
-                {isUrdu ? 'سرکاری شناختی ممبرشپ کارڈ (معیاری سائز)' : 'Official Membership ID Card (Standard CR80 Size)'}
+                Official Membership ID Card (Standard CR80 Size)
               </div>
               <div className="text-[11px] text-slate-400">
-                {registration.fullName} ({cardId || 'ID Pending'}) • {isUrdu ? 'اردو ڈیٹا و مکمل کیو آر کوڈ' : 'Urdu Content & Full QR Payload'}
+                {englishFullName} ({cardId || 'ID Pending'}) • English ID Card & Full QR Payload
               </div>
             </div>
           </div>
@@ -218,7 +232,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
               title="View Raw QR Registration Data"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>{isUrdu ? 'کیو آر ڈیٹا دیکھیں' : 'View QR Data'}</span>
+              <span>View QR Data</span>
             </button>
 
             <button
@@ -226,7 +240,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
               className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-bold shadow transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>{isUrdu ? 'کارڈ پرنٹ کریں' : 'Print Card'}</span>
+              <span>Print Card</span>
             </button>
 
             <button
@@ -244,14 +258,14 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
           <div className="no-print bg-slate-900 text-slate-200 px-6 py-4 border-b border-slate-700 text-xs animate-fadeIn">
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold text-amber-300">
-                {isUrdu ? 'کیو آر کوڈ میں محفوظ شدہ مکمل رجسٹریشن ڈیٹا:' : 'All User Registration Data Encoded in QR Code:'}
+                All User Registration Data Encoded in QR Code:
               </span>
               <button
                 onClick={copyQrData}
                 className="flex items-center gap-1 px-2.5 py-1 rounded bg-[#AD7A28] hover:bg-[#96681E] text-white text-[11px] font-semibold transition-colors cursor-pointer"
               >
                 {copiedPayload ? <Check className="w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                <span>{copiedPayload ? (isUrdu ? 'کاپی ہوگیا' : 'Copied!') : (isUrdu ? 'کاپی کریں' : 'Copy Payload')}</span>
+                <span>{copiedPayload ? 'Copied!' : 'Copy Payload'}</span>
               </button>
             </div>
             <pre className="bg-black/50 p-3 rounded-lg overflow-x-auto text-[11px] font-mono leading-relaxed text-emerald-300 whitespace-pre-wrap max-h-40 overflow-y-auto">
@@ -266,7 +280,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
           {isLoading ? (
             <div className="py-20 text-center text-slate-500 font-medium">
               <div className="w-8 h-8 border-3 border-[#AD7A28] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              {isUrdu ? 'معیاری سائز شناختی کارڈ اور مکمل کیو آر کوڈ تشکیل دیا جا رہا ہے...' : 'Generating standard ID card and complete QR dataset...'}
+              Generating standard English ID card and complete QR dataset...
             </div>
           ) : (
             <div 
@@ -276,12 +290,12 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
               
               {/* ════════════════════════════════════════════════════════════════
                   FRONT FACE: Standard ISO CR80 Landscape ID Card (85.6mm x 53.98mm)
-                  All Text In Urdu (Names, Titles, Labels translated to Urdu)
-                  Digits in Standard English/Latin format
+                  All Data and Labels in English
+                  Standard English/Latin typography & formatting
                  ════════════════════════════════════════════════════════════════ */}
               <div 
                 className="cr80-standard-card w-full max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex flex-col justify-between relative select-none"
-                style={{ direction: 'rtl' }}
+                style={{ direction: 'ltr' }}
               >
                 {/* Micro Security Pattern Watermark */}
                 <div 
@@ -293,7 +307,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 />
 
                 {/* Top Header Bar */}
-                <div className="bg-gradient-to-l from-[#16232F] via-[#1E3040] to-[#16232F] text-white px-3 py-2 border-b-2 border-[#AD7A28] flex items-center justify-between relative z-10 shrink-0">
+                <div className="bg-gradient-to-r from-[#16232F] via-[#1E3040] to-[#16232F] text-white px-3 py-2 border-b-2 border-[#AD7A28] flex items-center justify-between relative z-10 shrink-0">
                   <div className="flex items-center gap-2">
                     {/* Official Association Seal */}
                     <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#AD7A28] to-[#F5CA7B] p-0.5 shadow shrink-0 flex items-center justify-center">
@@ -304,30 +318,30 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                           className="w-full h-full rounded-full object-cover" 
                         />
                       ) : (
-                        <div className="w-full h-full rounded-full bg-[#16232F] flex items-center justify-center text-[#F5CA7B] text-[10px] font-black">
-                          آ ب
+                        <div className="w-full h-full rounded-full bg-[#16232F] flex items-center justify-center text-[#F5CA7B] text-[10px] font-black font-sans">
+                          AB
                         </div>
                       )}
                     </div>
                     <div>
-                      <div className="font-extrabold text-[12px] sm:text-[13px] tracking-tight leading-none text-[#F5CA7B]">
-                        انجمنِ ارائیں بنوں (خیبر پختونخوا)
+                      <div className="font-extrabold text-[11px] sm:text-[12px] tracking-tight leading-none text-[#F5CA7B] uppercase">
+                        ARAAIN BANNU WELFARE ASSOCIATION
                       </div>
-                      <div className="text-[8px] sm:text-[9px] text-slate-300 font-sans tracking-wide mt-0.5" style={{ direction: 'ltr' }}>
-                        ARAAIN BANNU WELFARE ASSOCIATION KPK
+                      <div className="text-[8px] sm:text-[9px] text-slate-300 tracking-wide mt-0.5">
+                        Khyber Pakhtunkhwa, Pakistan
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Type Badge */}
-                  <div className="text-left shrink-0" style={{ direction: 'ltr' }}>
-                    <span className="inline-block px-2 py-0.5 rounded bg-[#AD7A28] text-white text-[8px] sm:text-[9px] font-bold font-mono">
+                  {/* Card ID Badge */}
+                  <div className="text-right shrink-0">
+                    <span className="inline-block px-2 py-0.5 rounded bg-[#AD7A28] text-white text-[8px] sm:text-[9px] font-bold font-mono tracking-wider">
                       {cardId}
                     </span>
                   </div>
                 </div>
 
-                {/* Front Card Body: Photo & Urdu Details */}
+                {/* Front Card Body: Photo & English Details */}
                 <div className="px-3 sm:px-4 py-2 flex-1 flex items-center gap-3 relative z-10">
                   
                   {/* Member Photo */}
@@ -336,42 +350,42 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                       {registration.photoData ? (
                         <img 
                           src={registration.photoData} 
-                          alt={registration.fullName}
+                          alt={englishFullName}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-400 font-bold text-2xl">
-                          {registration.fullName?.[0]?.toUpperCase() || 'آ'}
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200 text-slate-400 font-bold text-2xl font-sans">
+                          {englishFullName?.[0]?.toUpperCase() || 'M'}
                         </div>
                       )}
                     </div>
-                    <div className="mt-1 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-[8px] font-bold">
-                      {urduType}
+                    <div className="mt-1 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-[8px] font-bold uppercase tracking-wider text-center max-w-[85px] truncate">
+                      {englishType}
                     </div>
                   </div>
 
-                  {/* Personal Particulars in Pure Urdu (Digits in English format) */}
-                  <div className="flex-1 min-w-0 text-right space-y-1">
-                    {/* Name in Urdu Calligraphy / Typography */}
+                  {/* Personal Particulars in English */}
+                  <div className="flex-1 min-w-0 text-left space-y-1">
+                    {/* Full Name */}
                     <div>
-                      <div className="text-[9px] text-slate-500 font-medium leading-none">نامِ گرامی:</div>
-                      <div className="text-[14px] sm:text-[16px] font-extrabold text-[#16232F] truncate leading-tight font-urdu">
-                        {urduName}
+                      <div className="text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Member Name:</div>
+                      <div className="text-[14px] sm:text-[15px] font-extrabold text-[#16232F] truncate leading-tight mt-0.5">
+                        {englishFullName}
                       </div>
                     </div>
 
-                    {/* Father Name in Urdu */}
+                    {/* Father / Guardian Name */}
                     <div>
-                      <div className="text-[9px] text-slate-500 font-medium leading-none">ولدیت / سرپرست:</div>
-                      <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 truncate font-urdu">
-                        {urduFather}
+                      <div className="text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Father / Guardian:</div>
+                      <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 truncate mt-0.5">
+                        {englishFatherName}
                       </div>
                     </div>
 
-                    {/* CNIC (Digits in English format) */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] text-slate-500 font-medium shrink-0">شناختی کارڈ:</span>
-                      <span className="text-[11px] sm:text-[12px] font-mono font-bold text-[#16232F] tracking-wider" style={{ direction: 'ltr' }}>
+                    {/* CNIC */}
+                    <div className="flex items-center gap-1.5 pt-0.5">
+                      <span className="text-[9px] text-slate-500 font-medium uppercase tracking-wider shrink-0">CNIC No:</span>
+                      <span className="text-[11px] sm:text-[12px] font-mono font-bold text-[#16232F] tracking-wider">
                         {registration.cnic || '—'}
                       </span>
                     </div>
@@ -379,21 +393,21 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                     {/* DOB & Gender */}
                     <div className="flex items-center justify-between text-[9px] pt-0.5">
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-500">تاریخ پیدائش:</span>
-                        <span className="font-mono font-semibold text-slate-800" style={{ direction: 'ltr' }}>
+                        <span className="text-slate-500 uppercase tracking-wider">DOB:</span>
+                        <span className="font-mono font-semibold text-slate-800">
                           {registration.dob || '—'}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-500">صنف:</span>
-                        <span className="font-bold text-slate-800">{urduGender}</span>
+                        <span className="text-slate-500 uppercase tracking-wider">Gender:</span>
+                        <span className="font-bold text-slate-800">{englishGender}</span>
                       </div>
                     </div>
 
                     {/* Issue Date */}
                     <div className="flex items-center gap-1 text-[8px] text-slate-500 pt-0.5">
-                      <span>تاریخِ اجراء:</span>
-                      <span className="font-mono font-semibold text-slate-700" style={{ direction: 'ltr' }}>
+                      <span className="uppercase tracking-wider">Issue Date:</span>
+                      <span className="font-mono font-semibold text-slate-700">
                         {issueDate}
                       </span>
                     </div>
@@ -403,12 +417,12 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
                 {/* Front Footer Bar */}
                 <div className="bg-[#F8F5EE] px-3 py-1.5 border-t border-slate-200 flex items-center justify-between relative z-10 shrink-0">
-                  <div className="text-[8px] text-[#AD7A28] font-bold flex items-center gap-1">
+                  <div className="text-[8px] text-[#AD7A28] font-bold flex items-center gap-1 uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span>مجاز رکنِ برادری • بنوں کے پی کے</span>
+                    <span>Verified Official Member • Bannu KPK</span>
                   </div>
                   <div className="text-[8px] text-slate-600 font-medium">
-                    دستخطِ مجاز / صدر انجمنِ ارائیں
+                    Authorized Signatory / President
                   </div>
                 </div>
 
@@ -417,12 +431,12 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
               {/* ════════════════════════════════════════════════════════════════
                   BACK FACE: Standard ISO CR80 Landscape ID Card (85.6mm x 53.98mm)
-                  All Registration Data Encoded into QR Code
-                  Data in Urdu, Digits/Email in English format
+                  All Data and Labels in English
+                  Complete QR Code Containing ALL Registration Information
                  ════════════════════════════════════════════════════════════════ */}
               <div 
                 className="cr80-standard-card w-full max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex flex-col justify-between relative select-none"
-                style={{ direction: 'rtl' }}
+                style={{ direction: 'ltr' }}
               >
                 {/* Micro Security Pattern Watermark */}
                 <div 
@@ -435,10 +449,10 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
                 {/* Back Top Header */}
                 <div className="bg-[#16232F] text-white px-3 py-1.5 border-b-2 border-[#AD7A28] flex items-center justify-between relative z-10 shrink-0">
-                  <div className="font-bold text-[10px] sm:text-[11px] text-[#F5CA7B]">
-                    تفصیلات و سرکاری تصدیق
+                  <div className="font-bold text-[10px] sm:text-[11px] text-[#F5CA7B] uppercase tracking-wider">
+                    Official Identification & Verification
                   </div>
-                  <div className="text-[8px] sm:text-[9px] text-amber-200 font-mono tracking-wider" style={{ direction: 'ltr' }}>
+                  <div className="text-[8px] sm:text-[9px] text-amber-200 font-mono tracking-wider">
                     VERIFIED MEMBER • {cardId}
                   </div>
                 </div>
@@ -446,29 +460,29 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 {/* Back Card Body: Address, Profession, Contact & COMPLETE REGISTRATION QR CODE */}
                 <div className="px-3 sm:px-4 py-2 flex-1 flex items-center justify-between gap-2.5 relative z-10">
                   
-                  {/* Left (RTL Right) Column: Translated Urdu Fields & English Contact Info */}
-                  <div className="flex-1 min-w-0 space-y-1 text-[9px] text-right">
+                  {/* Left Column: English Particulars */}
+                  <div className="flex-1 min-w-0 space-y-1 text-[9px] text-left">
                     
-                    {/* Address in Urdu */}
+                    {/* Address in English */}
                     <div>
-                      <span className="text-slate-500 font-medium">مستقل پتہ: </span>
+                      <span className="text-slate-500 font-medium uppercase tracking-wider">Address: </span>
                       <span className="font-semibold text-slate-800 leading-snug break-words">
-                        {fullUrduAddress}
+                        {fullEnglishAddress}
                       </span>
                     </div>
 
-                    {/* Profession / Work in Urdu */}
+                    {/* Profession / Work in English */}
                     <div>
-                      <span className="text-slate-500 font-medium">پیشہ / شعبہ: </span>
+                      <span className="text-slate-500 font-medium uppercase tracking-wider">Profession: </span>
                       <span className="font-bold text-slate-800">
-                        {urduWork}
+                        {englishWork || 'Member'}
                       </span>
                     </div>
 
-                    {/* WhatsApp / Phone in English Digits */}
+                    {/* WhatsApp / Phone in English */}
                     <div className="flex items-center gap-1">
-                      <span className="text-slate-500 font-medium shrink-0">رابطہ نمبر:</span>
-                      <span className="font-mono font-bold text-[#16232F]" style={{ direction: 'ltr' }}>
+                      <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">Contact:</span>
+                      <span className="font-mono font-bold text-[#16232F]">
                         {registration.whatsapp}
                       </span>
                     </div>
@@ -476,8 +490,8 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                     {/* Email in English Format */}
                     {registration.email && (
                       <div className="flex items-center gap-1">
-                        <span className="text-slate-500 font-medium shrink-0">ای میل:</span>
-                        <span className="font-mono text-[8px] text-slate-700 truncate" style={{ direction: 'ltr' }}>
+                        <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">Email:</span>
+                        <span className="font-mono text-[8px] text-slate-700 truncate">
                           {registration.email}
                         </span>
                       </div>
@@ -485,19 +499,19 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
                     {/* Official Website */}
                     <div className="flex items-center gap-1">
-                      <span className="text-slate-500 font-medium shrink-0">ویب سائٹ:</span>
-                      <span className="font-mono text-[8px] text-[#AD7A28] font-bold" style={{ direction: 'ltr' }}>
+                      <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">Website:</span>
+                      <span className="font-mono text-[8px] text-[#AD7A28] font-bold">
                         www.araainbannu.org
                       </span>
                     </div>
 
                     {/* Terms Notice */}
                     <div className="text-[7.5px] text-slate-500 leading-tight pt-0.5 border-t border-slate-100">
-                      یہ کارڈ انجمنِ ارائیں بنوں کی ملکیت ہے۔ گمشدگی کی صورت میں مرکزی دفتر کو مطلع کریں۔
+                      This card is the property of Araain Bannu Welfare Association. If found, please return to the central office.
                     </div>
                   </div>
 
-                  {/* Right (RTL Left) Column: COMPLETE DATA QR CODE */}
+                  {/* Right Column: COMPLETE DATA QR CODE */}
                   <div className="shrink-0 flex flex-col items-center justify-center">
                     <div className="p-1 rounded-lg bg-white border border-slate-300 shadow-sm flex items-center justify-center">
                       {qrCodeUrl ? (
@@ -508,15 +522,15 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                         />
                       ) : (
                         <div className="w-[78px] h-[78px] flex items-center justify-center text-[9px] text-slate-400">
-                          کیو آر کوڈ
+                          QR Code
                         </div>
                       )}
                     </div>
-                    <div className="text-[7.5px] text-[#AD7A28] font-bold mt-1 text-center leading-none">
-                      اسکین برائے مکمل ڈیٹا
+                    <div className="text-[7.5px] text-[#AD7A28] font-bold mt-1 text-center leading-none uppercase tracking-wider">
+                      SCAN FOR FULL DOSSIER
                     </div>
-                    <div className="text-[6.5px] text-slate-400 text-center font-mono mt-0.5" style={{ direction: 'ltr' }}>
-                      FULL ENCODED DOSSIER
+                    <div className="text-[6.5px] text-slate-400 text-center font-mono mt-0.5">
+                      ALL REGISTERED DATA
                     </div>
                   </div>
 
@@ -525,9 +539,9 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 {/* Back Footer */}
                 <div className="bg-[#F8F5EE] px-3 py-1 border-t border-slate-200 flex items-center justify-between text-[7.5px] text-slate-600 relative z-10 shrink-0">
                   <div>
-                    مرکزی دفتر: محلہ قصاباں، بنوں سٹی، کے پی کے
+                    Central Office: Mohallah Qasaban, Bannu City, Khyber Pakhtunkhwa
                   </div>
-                  <div className="font-mono" style={{ direction: 'ltr' }}>
+                  <div className="font-mono">
                     ISO 7810 ID-1 CR80
                   </div>
                 </div>
@@ -543,7 +557,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
         <div className="no-print bg-slate-50 px-4 sm:px-6 py-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
           <div className="text-xs text-slate-600 text-center sm:text-left">
             <span className="font-semibold text-slate-800">
-              {isUrdu ? 'معیاری پلاسٹک کارڈ پرنٹنگ سائز:' : 'Standard Card Printing Size:'}
+              Standard Card Printing Size:
             </span>{' '}
             <span className="font-mono text-[#AD7A28] font-bold">85.60 mm × 53.98 mm (CR80)</span>
           </div>
@@ -553,14 +567,14 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
               onClick={copyQrData}
               className="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
             >
-              {copiedPayload ? (isUrdu ? 'کاپی ہوگیا!' : 'Copied!') : (isUrdu ? 'کیو آر ڈیٹا کاپی کریں' : 'Copy All QR Data')}
+              {copiedPayload ? 'Copied!' : 'Copy All QR Data'}
             </button>
 
             <button
               onClick={handlePrint}
               className="px-4 py-1.5 rounded-lg bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-bold shadow transition-all active:scale-95 cursor-pointer"
             >
-              {isUrdu ? 'پرنٹ یا پی ڈی ایف محفوظ کریں' : 'Print / Save as PDF'}
+              Print / Save as PDF
             </button>
           </div>
         </div>

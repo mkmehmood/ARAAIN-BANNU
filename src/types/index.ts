@@ -143,6 +143,30 @@ export interface Registration {
   status?: 'new' | 'approved' | 'rejected' | string;
   cardId?: string;
   submittedAt?: any;
+
+  // Processed Bi-directional Translations
+  fullNameEn?: string;
+  fullNameUr?: string;
+  fatherNameEn?: string;
+  fatherNameUr?: string;
+  streetEn?: string;
+  streetUr?: string;
+  cityEn?: string;
+  cityUr?: string;
+  stateEn?: string;
+  stateUr?: string;
+  countryEn?: string;
+  countryUr?: string;
+  workEn?: string;
+  workUr?: string;
+  membershipTypeEn?: string;
+  membershipTypeUr?: string;
+  genderEn?: string;
+  genderUr?: string;
+  educationEn?: string;
+  educationUr?: string;
+  residentialStatusEn?: string;
+  residentialStatusUr?: string;
 }
 
 export interface Donation {

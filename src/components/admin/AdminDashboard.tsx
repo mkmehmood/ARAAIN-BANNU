@@ -106,16 +106,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Export registrations as CSV
   const exportMembersCsv = () => {
-    const headers = ['Full Name', 'Father Name', 'CNIC', 'Gender', 'Type', 'WhatsApp', 'Email', 'City', 'Status', 'Submitted At'];
+    const headers = ['Full Name (En)', 'Full Name (Ur)', 'Father Name (En)', 'Father Name (Ur)', 'CNIC', 'Gender', 'Type', 'WhatsApp', 'Email', 'City (En)', 'City (Ur)', 'Status', 'Submitted At'];
     const rows = registrations.map(r => [
-      `"${r.fullName || ''}"`,
-      `"${r.fatherName || ''}"`,
+      `"${r.fullNameEn || r.fullName || ''}"`,
+      `"${r.fullNameUr || r.fullName || ''}"`,
+      `"${r.fatherNameEn || r.fatherName || ''}"`,
+      `"${r.fatherNameUr || r.fatherName || ''}"`,
       `"${r.cnic || ''}"`,
-      `"${r.gender || ''}"`,
-      `"${r.membershipType || ''}"`,
+      `"${r.genderEn || r.gender || ''}"`,
+      `"${r.membershipTypeEn || r.membershipType || ''}"`,
       `"${r.whatsapp || ''}"`,
       `"${r.email || ''}"`,
-      `"${r.city || ''}"`,
+      `"${r.cityEn || r.city || ''}"`,
+      `"${r.cityUr || r.city || ''}"`,
       `"${r.status || ''}"`,
       `"${r.submittedAt || ''}"`,
     ]);
@@ -172,11 +175,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Filtered members
   const filteredMembers = registrations.filter(r => {
+    const q = memberSearch.toLowerCase();
     const matchesSearch = 
-      (r.fullName?.toLowerCase() || '').includes(memberSearch.toLowerCase()) ||
+      (r.fullName?.toLowerCase() || '').includes(q) ||
+      (r.fullNameEn?.toLowerCase() || '').includes(q) ||
+      (r.fullNameUr || '').includes(memberSearch) ||
+      (r.fatherName?.toLowerCase() || '').includes(q) ||
+      (r.fatherNameEn?.toLowerCase() || '').includes(q) ||
+      (r.fatherNameUr || '').includes(memberSearch) ||
       (r.cnic || '').includes(memberSearch) ||
       (r.whatsapp || '').includes(memberSearch) ||
-      (r.city?.toLowerCase() || '').includes(memberSearch.toLowerCase());
+      (r.city?.toLowerCase() || '').includes(q) ||
+      (r.cityEn?.toLowerCase() || '').includes(q) ||
+      (r.cityUr || '').includes(memberSearch);
     const matchesStatus = memberStatusFilter === 'all' || (r.status || 'new').toLowerCase() === memberStatusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
@@ -601,10 +612,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               )}
                               <div>
                                 <div className="font-bold text-[#16232F]">
-                                  {reg.fullName}
+                                  {isUrdu ? (reg.fullNameUr || reg.fullName) : (reg.fullNameEn || reg.fullName)}
                                 </div>
                                 <div className="text-[11px] text-slate-500">
-                                  S/O: {reg.fatherName}
+                                  {isUrdu ? `ولدیت: ${reg.fatherNameUr || reg.fatherName}` : `S/O: ${reg.fatherNameEn || reg.fatherName}`}
                                 </div>
                               </div>
                             </div>
@@ -615,13 +626,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               {reg.cnic || '—'}
                             </div>
                             <div className="text-[11px] text-slate-500">
-                              {reg.gender}
+                              {isUrdu ? (reg.genderUr || reg.gender) : (reg.genderEn || reg.gender)}
                             </div>
                           </td>
 
                           <td className="px-4 py-3.5">
                             <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
-                              {reg.membershipType}
+                              {isUrdu ? (reg.membershipTypeUr || reg.membershipType) : (reg.membershipTypeEn || reg.membershipType)}
                             </span>
                           </td>
 
@@ -630,7 +641,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               {reg.whatsapp}
                             </div>
                             <div className="text-[11px] text-slate-500">
-                              {reg.city}, {reg.country}
+                              {isUrdu 
+                                ? `${reg.cityUr || reg.city || 'بنوں'}، ${reg.countryUr || reg.country || 'پاکستان'}`
+                                : `${reg.cityEn || reg.city || 'Bannu'}, ${reg.countryEn || reg.country || 'Pakistan'}`
+                              }
                             </div>
                           </td>
 
@@ -1739,23 +1753,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               )}
               <div>
-                <h4 className="font-bold text-base text-[#16232F]">{viewingRegDetails.fullName}</h4>
-                <p className="text-xs text-slate-500">Father: {viewingRegDetails.fatherName}</p>
-                <p className="text-xs text-slate-500">CNIC: {viewingRegDetails.cnic || '—'}</p>
-                <p className="text-xs text-[#AD7A28] font-semibold">{viewingRegDetails.membershipType}</p>
+                <h4 className="font-bold text-base text-[#16232F]">
+                  {isUrdu ? (viewingRegDetails.fullNameUr || viewingRegDetails.fullName) : (viewingRegDetails.fullNameEn || viewingRegDetails.fullName)}
+                </h4>
+                <p className="text-xs text-slate-500">
+                  {isUrdu ? 'نام انگریزی میں:' : 'Urdu Name:'} <span className="font-medium text-slate-700">{isUrdu ? (viewingRegDetails.fullNameEn || viewingRegDetails.fullName) : (viewingRegDetails.fullNameUr || viewingRegDetails.fullName)}</span>
+                </p>
+                <p className="text-xs text-slate-500">
+                  {isUrdu ? 'ولدیت:' : 'Father:'} <span className="font-medium text-slate-700">{isUrdu ? (viewingRegDetails.fatherNameUr || viewingRegDetails.fatherName) : (viewingRegDetails.fatherNameEn || viewingRegDetails.fatherName)}</span>
+                </p>
+                <p className="text-xs text-slate-500">CNIC: <span className="font-mono">{viewingRegDetails.cnic || '—'}</span></p>
+                <p className="text-xs text-[#AD7A28] font-semibold">
+                  {isUrdu ? (viewingRegDetails.membershipTypeUr || viewingRegDetails.membershipType) : (viewingRegDetails.membershipTypeEn || viewingRegDetails.membershipType)}
+                </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl">
-              <div><strong>WhatsApp:</strong> {viewingRegDetails.whatsapp}</div>
+              <div><strong>WhatsApp:</strong> <span className="font-mono">{viewingRegDetails.whatsapp}</span></div>
               <div><strong>Email:</strong> {viewingRegDetails.email || '—'}</div>
-              <div><strong>Education:</strong> {viewingRegDetails.education || '—'}</div>
-              <div><strong>Work:</strong> {viewingRegDetails.work || '—'}</div>
-              <div><strong>Residential:</strong> {viewingRegDetails.residentialStatus || '—'}</div>
-              <div><strong>City:</strong> {viewingRegDetails.city}, {viewingRegDetails.country}</div>
-              <div className="col-span-2"><strong>Address:</strong> {viewingRegDetails.street || '—'}</div>
-              <div className="col-span-2"><strong>Affiliated Org:</strong> {viewingRegDetails.affiliated || 'None'}</div>
-              <div className="col-span-2"><strong>Reason for joining:</strong> {viewingRegDetails.reason || 'None specified'}</div>
+              <div><strong>{isUrdu ? 'جنس:' : 'Gender:'}</strong> {isUrdu ? (viewingRegDetails.genderUr || viewingRegDetails.gender) : (viewingRegDetails.genderEn || viewingRegDetails.gender)}</div>
+              <div><strong>{isUrdu ? 'تعلیم:' : 'Education:'}</strong> {isUrdu ? (viewingRegDetails.educationUr || viewingRegDetails.education) : (viewingRegDetails.educationEn || viewingRegDetails.education)}</div>
+              <div><strong>{isUrdu ? 'پیشہ / کام:' : 'Work:'}</strong> {isUrdu ? (viewingRegDetails.workUr || viewingRegDetails.work) : (viewingRegDetails.workEn || viewingRegDetails.work)}</div>
+              <div><strong>{isUrdu ? 'رہائش:' : 'Residential:'}</strong> {isUrdu ? (viewingRegDetails.residentialStatusUr || viewingRegDetails.residentialStatus) : (viewingRegDetails.residentialStatusEn || viewingRegDetails.residentialStatus)}</div>
+              <div><strong>{isUrdu ? 'شہر / ملک:' : 'City / Country:'}</strong> {isUrdu ? `${viewingRegDetails.cityUr || viewingRegDetails.city}، ${viewingRegDetails.countryUr || viewingRegDetails.country}` : `${viewingRegDetails.cityEn || viewingRegDetails.city}, ${viewingRegDetails.countryEn || viewingRegDetails.country}`}</div>
+              <div className="col-span-2"><strong>{isUrdu ? 'پتہ:' : 'Address:'}</strong> {isUrdu ? (viewingRegDetails.streetUr || viewingRegDetails.street || '—') : (viewingRegDetails.streetEn || viewingRegDetails.street || '—')}</div>
+              <div className="col-span-2"><strong>{isUrdu ? 'منسلک تنظیم:' : 'Affiliated Org:'}</strong> {viewingRegDetails.affiliated || (isUrdu ? 'کوئی نہیں' : 'None')}</div>
+              <div className="col-span-2"><strong>{isUrdu ? 'شمولیت کا مقصد:' : 'Reason for joining:'}</strong> {viewingRegDetails.reason || (isUrdu ? 'کمیونٹی فلاح و بہبود' : 'Community Welfare')}</div>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
@@ -1822,6 +1846,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Official Membership ID Card Modal */}
+      {selectedRegForCard && (
+        <MembershipCardModal
+          registration={selectedRegForCard}
+          onClose={() => setSelectedRegForCard(null)}
+        />
       )}
 
     </div>

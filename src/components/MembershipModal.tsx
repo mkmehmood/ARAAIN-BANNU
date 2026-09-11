@@ -2,13 +2,17 @@ import React, { useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { compressImage } from '../services/firebase';
+import { Registration } from '../types';
+import { MembershipCardModal } from './admin/MembershipCardModal';
+import { processRegistrationTranslations } from '../utils/urduTransliterator';
 import confetti from 'canvas-confetti';
 import { 
   X, 
   User, 
   Upload, 
   CheckCircle, 
-  AlertCircle
+  AlertCircle,
+  CreditCard
 } from 'lucide-react';
 
 interface MembershipModalProps {
@@ -45,6 +49,8 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
+  const [submittedRegistration, setSubmittedRegistration] = useState<Registration | null>(null);
+  const [showCardModal, setShowCardModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -92,12 +98,18 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
 
     try {
       setIsSubmitting(true);
-      const docId = await registerMember({
+      const rawSubmission = {
         ...formData,
         photoData,
-      });
+      };
+      const processedSubmission = processRegistrationTranslations(rawSubmission);
+      const docId = await registerMember(processedSubmission);
 
       setSubmittedRefId(docId);
+      setSubmittedRegistration({
+        ...processedSubmission,
+        _id: docId,
+      });
       confetti({
         particleCount: 80,
         spread: 70,
@@ -113,6 +125,8 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
 
   const resetAndClose = () => {
     setSubmittedRefId(null);
+    setSubmittedRegistration(null);
+    setShowCardModal(false);
     setErrorMessage(null);
     onClose();
   };
@@ -170,12 +184,23 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
                 </div>
               </div>
 
-              <button
-                onClick={resetAndClose}
-                className="px-8 py-3 rounded-xl bg-[#16232F] hover:bg-[#203244] text-white font-semibold text-sm transition-colors cursor-pointer"
-              >
-                {t('closeModal', 'Close Window')}
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCardModal(true)}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#AD7A28] hover:bg-[#8F6420] text-white font-semibold text-sm transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>{isUrdu ? 'شناختی کارڈ دیکھیں / پرنٹ کریں' : 'View & Print ID Card'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={resetAndClose}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#16232F] hover:bg-[#203244] text-white font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  {t('closeModal', 'Close Window')}
+                </button>
+              </div>
             </div>
           ) : (
             /* Registration Form */
@@ -559,6 +584,14 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
 
         </div>
       </div>
+
+      {/* Official Membership ID Card Modal */}
+      {showCardModal && submittedRegistration && (
+        <MembershipCardModal
+          registration={submittedRegistration}
+          onClose={() => setShowCardModal(false)}
+        />
+      )}
     </div>
   );
 };
