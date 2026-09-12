@@ -5,6 +5,7 @@ import { compressImage } from '../services/firebase';
 import { Registration } from '../types';
 import { MembershipCardModal } from './admin/MembershipCardModal';
 import { processRegistrationTranslations } from '../utils/urduTransliterator';
+import { checkRateLimit, sanitizeText } from '../utils/security';
 import confetti from 'canvas-confetti';
 import { 
   X, 
@@ -47,6 +48,7 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
   const [photoData, setPhotoData] = useState<string>('');
   const [isCompressingPhoto, setIsCompressingPhoto] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
   const [submittedRegistration, setSubmittedRegistration] = useState<Registration | null>(null);
@@ -82,6 +84,24 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    // 1. Anti-Bot Honeypot Defense: Silently block automated spam bots
+    if (honeypot.trim()) {
+      console.warn('Bot submission intercepted');
+      setSubmittedRefId('REG-' + Date.now().toString().slice(-6));
+      return;
+    }
+
+    // 2. Submission Rate Limiter: Guard against DOS / flood attacks (max 3 per minute)
+    const rateCheck = checkRateLimit('reg_submit', 3, 60000);
+    if (!rateCheck.allowed) {
+      setErrorMessage(
+        isUrdu
+          ? `بہت زیادہ درخواستیں بھیجی گئی ہیں۔ براہ کرم ${rateCheck.retryAfterSec} سیکنڈ بعد دوبارہ کوشش کریں۔`
+          : `Too many submissions. Please wait ${rateCheck.retryAfterSec} seconds before retrying.`
+      );
+      return;
+    }
 
     if (!formData.fullName.trim()) {
       setErrorMessage(t('errDonorName', 'Please enter full name.'));
@@ -205,6 +225,18 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
           ) : (
             /* Registration Form */
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Anti-Bot Honeypot */}
+              <input
+                type="text"
+                name="user_confirm_hp"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                aria-hidden="true"
+                style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }}
+              />
               
               {errorMessage && (
                 <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2">

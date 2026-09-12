@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { auth } from '../../services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { X, ShieldCheck, Lock, Mail, AlertCircle } from 'lucide-react';
+import { X, ShieldCheck, Lock, Mail, AlertCircle, Clock } from 'lucide-react';
+import { 
+  sanitizeEmail, 
+  getLoginSecurityStatus, 
+  recordFailedLoginAttempt, 
+  resetLoginSecurity 
+} from '../../utils/security';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -13,14 +19,11 @@ interface AdminLoginModalProps {
 /**
  * AdminLoginModal
  * 
- * SECURITY ARCHITECTURE NOTE:
- * Client-side UI hiding and form validation are usability features that obscure
- * the portal from public visitors, but they ARE NOT the security boundary.
- * 
- * The true security boundary is enforced strictly by Firebase Authentication and
- * Firestore Security Rules (firestore.rules), which evaluate request.auth.token.email
- * on every read and write. No local credentials, mock bypasses, or character-length
- * heuristics are permitted here. Only a valid Firebase Auth session grants access.
+ * SECURITY ENHANCEMENTS:
+ * 1. Rate-limiting & Brute Force Lockout: Automatically locks out repeated failed login attempts
+ * 2. Strict Firebase Authentication Boundary: No hardcoded accounts or client-side bypasses
+ * 3. Sanitized credential inputs
+ * 4. Memory wiping of password fields upon authentication
  */
 export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   isOpen,
@@ -32,28 +35,79 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lockoutSec, setLockoutSec] = useState<number>(0);
+
+  // Check login security status on mount/open
+  useEffect(() => {
+    if (isOpen) {
+      const status = getLoginSecurityStatus();
+      if (status.isLocked) {
+        setLockoutSec(status.remainingSec);
+      }
+    }
+  }, [isOpen]);
+
+  // Countdown timer for lockout
+  useEffect(() => {
+    if (lockoutSec <= 0) return;
+    const timer = setInterval(() => {
+      setLockoutSec((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockoutSec]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Enforce brute-force lockout
+    const secStatus = getLoginSecurityStatus();
+    if (secStatus.isLocked) {
+      setLockoutSec(secStatus.remainingSec);
+      setError(
+        isUrdu
+          ? `مسلسل ناکام کوششوں کی وجہ سے پورٹل عارضی طور پر مقفل ہے۔ براہ کرم ${secStatus.remainingSec} سیکنڈ بعد کوشش کریں۔`
+          : `Portal temporarily locked due to excessive failed attempts. Please wait ${secStatus.remainingSec} seconds.`
+      );
+      return;
+    }
+
+    const cleanEmail = sanitizeEmail(email);
+    if (!cleanEmail) {
+      setError(
+        isUrdu ? 'براہ کرم درست ای میل ایڈریس درج کریں۔' : 'Please provide a valid administrator email.'
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
       // Sole authorized authentication path — relies strictly on Firebase Auth
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      onLoginSuccess(cred.user.email || email.trim());
+      const cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      resetLoginSecurity();
+      setPassword('');
+      onLoginSuccess(cred.user.email || cleanEmail);
       onClose();
     } catch (err: any) {
-      console.warn('Firebase auth failed:', err?.message || err);
-      // STRICT SECURITY FIX: No client-side bypass, no hardcoded passwords,
-      // and no length-based fallback. On failure, display error only.
-      setError(
-        isUrdu
-          ? 'غلط ایڈمن کوائف۔ براہ کرم درست ای میل اور پاس ورڈ درج کریں۔'
-          : 'Invalid administrator credentials. Please verify your email and password.'
-      );
+      setPassword('');
+      const failStatus = recordFailedLoginAttempt();
+      if (failStatus.isLocked) {
+        setLockoutSec(failStatus.remainingSec);
+        setError(
+          isUrdu
+            ? `حد سے زیادہ ناکام لاگ ان کوششیں! سسٹم کو ${failStatus.remainingSec} سیکنڈ کے لیے محفوظ لاک کر دیا گیا ہے۔`
+            : `Too many failed attempts. Login locked for ${failStatus.remainingSec} seconds.`
+        );
+      } else {
+        setError(
+          isUrdu
+            ? 'غلط ایڈمن کوائف۔ براہ کرم درست ای میل اور پاس ورڈ درج کریں۔'
+            : 'Invalid administrator credentials. Please verify your email and password.'
+        );
+      }
     } finally {
       setLoading(false);
     }

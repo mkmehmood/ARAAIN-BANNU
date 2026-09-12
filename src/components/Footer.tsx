@@ -8,6 +8,7 @@ import {
   MapPin, 
   MessageCircle 
 } from 'lucide-react';
+import { sanitizeUrl } from '../utils/security';
 
 interface FooterProps {
   onOpenPage: (page: PageItem) => void;
@@ -88,9 +89,9 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center gap-2 pt-2">
               {settings.socialFacebook && (
                 <a
-                  href={settings.socialFacebook}
+                  href={sanitizeUrl(settings.socialFacebook)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#AD7A28] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
                   aria-label="Facebook"
                 >
@@ -101,9 +102,9 @@ export const Footer: React.FC<FooterProps> = ({
               )}
               {settings.socialTwitter && (
                 <a
-                  href={settings.socialTwitter}
+                  href={sanitizeUrl(settings.socialTwitter)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#AD7A28] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
                   aria-label="Twitter"
                 >
@@ -114,9 +115,9 @@ export const Footer: React.FC<FooterProps> = ({
               )}
               {settings.socialWhatsapp && (
                 <a
-                  href={settings.socialWhatsapp}
+                  href={sanitizeUrl(settings.socialWhatsapp)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#AD7A28] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
                   aria-label="WhatsApp"
                 >
@@ -125,9 +126,9 @@ export const Footer: React.FC<FooterProps> = ({
               )}
               {settings.socialInstagram && (
                 <a
-                  href={settings.socialInstagram}
+                  href={sanitizeUrl(settings.socialInstagram)}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#AD7A28] text-slate-300 hover:text-white flex items-center justify-center transition-colors"
                   aria-label="Instagram"
                 >

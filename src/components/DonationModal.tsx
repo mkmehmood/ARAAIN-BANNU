@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { compressImage } from '../services/firebase';
+import { checkRateLimit } from '../utils/security';
 import confetti from 'canvas-confetti';
 import { 
   X, 
@@ -42,6 +43,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
   const [txId, setTxId] = useState('');
   const [note, setNote] = useState('');
   const [photoData, setPhotoData] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
@@ -75,6 +77,24 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
   const handleSubmitConfirmation = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    // 1. Anti-Bot Honeypot
+    if (honeypot.trim()) {
+      console.warn('Bot donation submission intercepted');
+      setSubmittedRefId('DON-' + Date.now().toString().slice(-6));
+      return;
+    }
+
+    // 2. Submission Rate Limiter (max 3 per minute)
+    const rateCheck = checkRateLimit('don_submit', 3, 60000);
+    if (!rateCheck.allowed) {
+      setErrorMessage(
+        isUrdu
+          ? `بہت زیادہ کوششیں کی گئی ہیں۔ براہ کرم ${rateCheck.retryAfterSec} سیکنڈ بعد کوشش کریں۔`
+          : `Too many submissions. Please wait ${rateCheck.retryAfterSec} seconds.`
+      );
+      return;
+    }
 
     const finalAmount = customAmount.trim() ? customAmount : selectedAmount;
     if (!donorName.trim()) {
@@ -395,6 +415,18 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
           ) : (
             /* Tab 2: Confirm donation transaction proof */
             <form onSubmit={handleSubmitConfirmation} className="space-y-4">
+              {/* Anti-Bot Honeypot */}
+              <input
+                type="text"
+                name="user_confirm_hp"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                aria-hidden="true"
+                style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }}
+              />
               
               {errorMessage && (
                 <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2">

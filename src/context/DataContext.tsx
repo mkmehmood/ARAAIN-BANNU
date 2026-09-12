@@ -111,10 +111,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem(k);
         sessionStorage.removeItem(k);
       });
-      if (typeof window !== 'undefined' && 'caches' in window) {
-        window.caches.keys().then(names => {
-          names.forEach(name => window.caches.delete(name));
-        }).catch(() => {});
+      if (typeof window !== 'undefined' && 'caches' in window && typeof window.caches?.keys === 'function') {
+        try {
+          window.caches.keys().then(names => {
+            names.forEach(name => {
+              try { window.caches.delete(name); } catch {}
+            });
+          }).catch(() => {});
+        } catch {
+          // ignore
+        }
       }
     } catch {
       // ignore

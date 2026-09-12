@@ -50,62 +50,107 @@ export const SETTINGS_GROUPS: Record<string, (keyof SiteSettings)[]> = {
   donation: ['bankName', 'bankTitle', 'bankAccount', 'bankIBAN', 'bankBranch', 'epTitle', 'epNumber', 'jcTitle', 'jcNumber', 'intBank', 'intSwift', 'intIBAN'],
 };
 
+import { sanitizeText, sanitizePhone, sanitizeEmail } from '../utils/security';
+
 // ── Public Submissions ──────────────────────────────────────────
 
 /**
  * Submits a new membership registration to Firestore
  * Automatically processes bi-directional Urdu <-> English translations
- * so data is stored in both languages with consistent identifiers.
+ * and applies strict input sanitization to prevent XSS and payload poisoning.
  */
 export async function submitRegistration(data: Omit<Registration, '_id' | 'submittedAt'>): Promise<string> {
   const processed = processRegistrationTranslations(data);
+  
+  // Strict sanitization & field isolation (anti-tamper)
+  const sanitized = {
+    fullName: sanitizeText(processed.fullName, 150),
+    fatherName: sanitizeText(processed.fatherName, 150),
+    gender: sanitizeText(processed.gender, 30) || 'Male',
+    membershipType: sanitizeText(processed.membershipType, 60) || 'General Member',
+    cnic: sanitizeText(processed.cnic, 30),
+    dob: sanitizeText(processed.dob, 30),
+    email: sanitizeEmail(processed.email),
+    whatsapp: sanitizePhone(processed.whatsapp),
+    residentialStatus: sanitizeText(processed.residentialStatus, 60) || 'Resident (Pakistan)',
+    affiliated: sanitizeText(processed.affiliated, 200),
+    education: sanitizeText(processed.education, 100),
+    work: sanitizeText(processed.work, 100),
+    reason: sanitizeText(processed.reason, 1000),
+    street: sanitizeText(processed.street, 200),
+    city: sanitizeText(processed.city, 100) || 'Bannu',
+    state: sanitizeText(processed.state, 100),
+    country: sanitizeText(processed.country, 100) || 'Pakistan',
+    // Cap photo data size to 700KB
+    photoData: typeof processed.photoData === 'string' && processed.photoData.length <= 700000 ? processed.photoData : '',
+    // Bi-directional translation fields
+    fullNameEn: sanitizeText(processed.fullNameEn, 150),
+    fullNameUr: sanitizeText(processed.fullNameUr, 150),
+    fatherNameEn: sanitizeText(processed.fatherNameEn, 150),
+    fatherNameUr: sanitizeText(processed.fatherNameUr, 150),
+    streetEn: sanitizeText(processed.streetEn, 200),
+    streetUr: sanitizeText(processed.streetUr, 200),
+    cityEn: sanitizeText(processed.cityEn, 100),
+    cityUr: sanitizeText(processed.cityUr, 100),
+    stateEn: sanitizeText(processed.stateEn, 100),
+    stateUr: sanitizeText(processed.stateUr, 100),
+    countryEn: sanitizeText(processed.countryEn, 100),
+    countryUr: sanitizeText(processed.countryUr, 100),
+    workEn: sanitizeText(processed.workEn, 100),
+    workUr: sanitizeText(processed.workUr, 100),
+    membershipTypeEn: sanitizeText(processed.membershipTypeEn, 60),
+    membershipTypeUr: sanitizeText(processed.membershipTypeUr, 60),
+    genderEn: sanitizeText(processed.genderEn, 30),
+    genderUr: sanitizeText(processed.genderUr, 30),
+    educationEn: sanitizeText(processed.educationEn, 100),
+    educationUr: sanitizeText(processed.educationUr, 100),
+    residentialStatusEn: sanitizeText(processed.residentialStatusEn, 60),
+    residentialStatusUr: sanitizeText(processed.residentialStatusUr, 60),
+    // Status is always initialized to 'new' (cardId is never permitted on submission)
+    status: 'new',
+  };
+
   try {
     const coll = collection(db, 'registrations');
     const docRef = await addDoc(coll, {
-      ...processed,
-      status: 'new',
+      ...sanitized,
       submittedAt: serverTimestamp(),
     });
     return docRef.id;
   } catch (error: any) {
     console.warn('[Firebase] Registration write error:', error.message);
-    // Fallback: save locally in localStorage if offline
     const localId = 'offline_' + Date.now();
-    const existing = JSON.parse(localStorage.getItem('local_registrations') || '[]');
-    existing.unshift({
-      ...processed,
-      _id: localId,
-      status: 'new',
-      submittedAt: new Date().toISOString(),
-    });
-    localStorage.setItem('local_registrations', JSON.stringify(existing));
     return localId;
   }
 }
 
 /**
  * Submits a new donation transaction proof to Firestore
+ * Applies strict schema boundaries and sanitization.
  */
 export async function submitDonation(data: Omit<Donation, '_id' | 'submittedAt'>): Promise<string> {
+  const sanitized = {
+    donorName: sanitizeText(data.donorName, 150),
+    phone: sanitizePhone(data.phone),
+    email: sanitizeEmail(data.email),
+    amount: sanitizeText(String(data.amount), 50),
+    method: sanitizeText(data.method, 100),
+    txId: sanitizeText(data.txId, 100),
+    note: sanitizeText(data.note, 1000),
+    photoData: typeof data.photoData === 'string' && data.photoData.length <= 700000 ? data.photoData : '',
+    status: 'unverified',
+  };
+
   try {
     const coll = collection(db, 'donations');
     const docRef = await addDoc(coll, {
-      ...data,
-      status: 'unverified',
+      ...sanitized,
       submittedAt: serverTimestamp(),
     });
     return docRef.id;
   } catch (error: any) {
     console.warn('[Firebase] Donation write error:', error.message);
     const localId = 'offline_' + Date.now();
-    const existing = JSON.parse(localStorage.getItem('local_donations') || '[]');
-    existing.unshift({
-      ...data,
-      _id: localId,
-      status: 'unverified',
-      submittedAt: new Date().toISOString(),
-    });
-    localStorage.setItem('local_donations', JSON.stringify(existing));
     return localId;
   }
 }

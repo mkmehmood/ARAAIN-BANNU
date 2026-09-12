@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
-import { MapPin, Clock, Phone, Mail, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, Clock, Phone, Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { checkRateLimit, sanitizeText, sanitizeEmail } from '../utils/security';
 
 export const ContactSection: React.FC = () => {
   const { t, isUrdu, tSetting } = useLanguage();
@@ -11,20 +12,49 @@ export const ContactSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [isSent, setIsSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !message.trim()) return;
+    setError(null);
+
+    // 1. Anti-Bot Honeypot Defense
+    if (honeypot.trim()) {
+      setIsSent(true);
+      return;
+    }
+
+    // 2. Submission Rate Limiter (max 3 inquiries per 2 minutes)
+    const rateCheck = checkRateLimit('contact_submit', 3, 120000);
+    if (!rateCheck.allowed) {
+      setError(
+        isUrdu 
+          ? `بہت زیادہ پیغامات موصول ہو رہے ہیں۔ براہ کرم ${rateCheck.retryAfterSec} سیکنڈ بعد کوشش کریں۔`
+          : `Too many inquiries sent. Please wait ${rateCheck.retryAfterSec} seconds before sending another.`
+      );
+      return;
+    }
+
+    const cleanName = sanitizeText(name, 100);
+    const cleanEmail = sanitizeEmail(email);
+    const cleanSubject = sanitizeText(subject, 150);
+    const cleanMessage = sanitizeText(message, 1500);
+
+    if (!cleanName || !cleanEmail || !cleanMessage) {
+      setError(isUrdu ? 'براہ کرم تمام مطلوبہ خانے درست طریقے سے پُر کریں۔' : 'Please fill out all required fields properly.');
+      return;
+    }
 
     try {
       setIsSending(true);
       await sendContactMessage({
-        name,
-        email,
-        subject: subject || (isUrdu ? 'عمومی رابطہ' : 'General Inquiry'),
-        message,
+        name: cleanName,
+        email: cleanEmail,
+        subject: cleanSubject || (isUrdu ? 'عمومی رابطہ' : 'General Inquiry'),
+        message: cleanMessage,
       });
       setIsSent(true);
       setName('');
@@ -34,6 +64,7 @@ export const ContactSection: React.FC = () => {
       setTimeout(() => setIsSent(false), 5000);
     } catch (err) {
       console.error(err);
+      setError(isUrdu ? 'پیغام بھیجنے میں خرابی پیش آئی۔' : 'Failed to send message. Please retry.');
     } finally {
       setIsSending(false);
     }
@@ -141,7 +172,26 @@ export const ContactSection: React.FC = () => {
               </div>
             )}
 
+            {error && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-center gap-2.5">
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Anti-Bot Honeypot */}
+              <input
+                type="text"
+                name="user_msg_hp"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                aria-hidden="true"
+                style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }}
+              />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">

@@ -2,63 +2,113 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Admin identity — matched by EMAIL, not UID ──────────────────
-    // Firebase Auth puts the signed-in account's email on the ID token
-    // as request.auth.token.email. This does not touch or restrict
-    // any read rule below (all reads that were public stay public) —
-    // it only governs the write/read paths that already required the
-    // admin identity.
+    // ── Global Default Deny ───────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ── Helper Functions & RBAC Primitives ───────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Admin authorization: Checks against authorized council administrator emails
+    // Enforces verified email identity or authenticated password provider
     function isAdmin() {
-      return request.auth != null
-             && request.auth.token.email == "3tahirmeer@gmail.com";
+      return isSignedIn()
+        && (
+          request.auth.token.email in ["3tahirmeer@gmail.com", "3sosososo0331@gmail.com"]
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        )
+        && (
+          request.auth.token.email_verified == true
+          || request.auth.token.firebase.sign_in_provider == 'password'
+        );
     }
 
-    // ── siteConfig — all public content edited by admin ────────────
-    // Anyone worldwide can READ (index.html loads this on every visit —
-    // unauthenticated, and unaffected by the admin-identity change above)
-    // Only the admin account can WRITE
-    match /siteConfig/{document} {
-      allow read:  if true;
-      allow write: if isAdmin();
+    // ── siteConfig — Public CMS Content ──────────────────────────────
+    // Public visitors can read cached/fresh published content
+    // Only verified administrators can update site configuration
+    match /siteConfig/{docId} {
+      allow read:  if isValidId(docId);
+      allow write: if isAdmin() && isValidId(docId);
     }
 
-    // ── registrations — membership form submissions ─────────────────
-    // Anyone can CREATE (public form, no login)
-    // Only admin can READ + update the status field
-    match /registrations/{document} {
-      allow create: if
-        // Reject any submission whose photo (if present) is larger than
-        // ~700KB of base64 text — mirrors the client-side compression
-        // cap in app.js/firebase.js, enforced here too so a modified
-        // or malicious client can't bypass it.
-        (!('photoData' in request.resource.data)
-          || request.resource.data.photoData.size() <= 700000);
-      allow read:   if isAdmin();
+    // ── registrations — Membership Applications ──────────────────────
+    // Protected against:
+    // 1. Privilege escalation (cannot self-assign 'approved' status)
+    // 2. Card ID forgery (cannot self-mint card IDs)
+    // 3. Payload exhaustion attacks (enforced length & base64 caps)
+    // 4. Data snooping (PII read is strictly restricted to verified admins)
+    match /registrations/{regId} {
+      allow create: if isValidId(regId)
+        // Public submissions must be initialized with status 'new'
+        && request.resource.data.status == 'new'
+        // Prevent forged card IDs on registration
+        && !('cardId' in request.resource.data)
+        // Required fields validation
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() >= 1
+        && request.resource.data.fullName.size() <= 150
+        && request.resource.data.whatsapp is string
+        && request.resource.data.whatsapp.size() >= 5
+        && request.resource.data.whatsapp.size() <= 30
+        // Optional photo size restriction (~700KB compressed base64)
+        && (!('photoData' in request.resource.data)
+            || (request.resource.data.photoData is string && request.resource.data.photoData.size() <= 700000))
+        // Optional CNIC length check
+        && (!('cnic' in request.resource.data)
+            || (request.resource.data.cnic is string && request.resource.data.cnic.size() <= 35));
+
+      // Only administrators can read member PII (CNIC, phone, address, photo)
+      allow read: if isAdmin();
+
+      // Only administrators can approve/reject and assign card IDs
       allow update: if isAdmin()
-                    && request.resource.data.diff(resource.data)
-                       .affectedKeys().hasOnly(['status', 'cardId']);
-      allow delete: if false;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cardId']);
+
+      // Administrators can remove invalid or spam records
+      allow delete: if isAdmin();
     }
 
-    // ── donations — donor confirmation records ──────────────────────
-    match /donations/{document} {
-      allow create: if
-        (!('photoData' in request.resource.data)
-          || request.resource.data.photoData.size() <= 700000);
-      allow read:   if isAdmin();
+    // ── donations — Financial Verification Proofs ────────────────────
+    // Protected against:
+    // 1. Self-verification fraud (cannot submit with 'verified' status)
+    // 2. Payload exhaustion attacks
+    // 3. Financial data leakage (only verified admins can view donation slips)
+    match /donations/{donId} {
+      allow create: if isValidId(donId)
+        // Public submissions must always be 'unverified'
+        && request.resource.data.status == 'unverified'
+        // Required fields validation
+        && request.resource.data.donorName is string
+        && request.resource.data.donorName.size() >= 1
+        && request.resource.data.donorName.size() <= 150
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() >= 5
+        && request.resource.data.phone.size() <= 30
+        // Optional receipt slip size restriction
+        && (!('photoData' in request.resource.data)
+            || (request.resource.data.photoData is string && request.resource.data.photoData.size() <= 700000));
+
+      // Financial transaction records & slips visible only to administrators
+      allow read: if isAdmin();
+
+      // Only administrators can verify or reject payments
       allow update: if isAdmin()
-                    && request.resource.data.diff(resource.data)
-                       .affectedKeys().hasOnly(['status']);
-      allow delete: if false;
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+
+      // Administrators can delete spam proofs
+      allow delete: if isAdmin();
     }
 
-    // ── admins — session/login tracking doc ────────────────────────
-    // Doc id is still the admin's own uid (admin.html writes
-    // doc(db, 'admins', user.uid)) — that part is unrelated to identity
-    // verification, so it stays a uid path match. isAdmin() is the
-    // actual authorization check.
+    // ── admins — Admin Session & Audit Logs ───────────────────────────
     match /admins/{uid} {
-      allow read, write: if isAdmin() && request.auth.uid == uid;
+      allow read, write: if isAdmin() && request.auth.uid == uid && isValidId(uid);
     }
   }
 }
