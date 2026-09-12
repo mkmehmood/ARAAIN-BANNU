@@ -12,6 +12,14 @@
  * - The official ID Card is generated strictly in English format.
  */
 
+import {
+  translateUrduToEnglishWithLibrary,
+  translateEnglishToUrduWithLibrary,
+  searchBilingualDictionary,
+  lookupDictionaryTerm,
+  ALL_DICTIONARY_ENTRIES,
+} from '../lib/dictionary';
+
 // ── English to Urdu Names Dictionary ────────────────────────────────
 export const NAMES_DICT: Record<string, string> = {
   // Islamic & Companions
@@ -2798,7 +2806,13 @@ export function translateUrduToEnglish(text?: string): string {
   const compoundMatch = translateCompoundTitleToEnglish(trimmed);
   if (compoundMatch) return compoundMatch;
 
-  let translated = trimmed;
+  // Leverage the comprehensive bilingual dictionary library
+  const libResult = translateUrduToEnglishWithLibrary(trimmed);
+  if (libResult && !isUrduText(libResult)) {
+    return libResult;
+  }
+
+  let translated = libResult || trimmed;
 
   // 1. Replace multi-word common phrases
   for (const [regex, eng] of COMMON_PHRASES_URDU_TO_ENG) {
@@ -2861,7 +2875,13 @@ export function translateEnglishToUrdu(text?: string): string {
   const compoundMatch = translateCompoundTitleToUrdu(trimmed);
   if (compoundMatch) return compoundMatch;
 
-  let translated = trimmed;
+  // Leverage the comprehensive bilingual dictionary library
+  const libResult = translateEnglishToUrduWithLibrary(trimmed);
+  if (libResult && isUrduText(libResult)) {
+    return libResult;
+  }
+
+  let translated = libResult || trimmed;
 
   // 1. Replace multi-word phrases
   for (const [regex, urd] of COMMON_PHRASES_ENG_TO_URDU) {
@@ -2968,3 +2988,13 @@ export function processRegistrationTranslations(reg: any): any {
     residentialStatusUr,
   };
 }
+
+// Re-export master dictionary libraries and lookup utilities
+export {
+  translateUrduToEnglishWithLibrary,
+  translateEnglishToUrduWithLibrary,
+  searchBilingualDictionary,
+  lookupDictionaryTerm,
+  ALL_DICTIONARY_ENTRIES,
+};
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { 
@@ -6,8 +6,7 @@ import {
   UserPlus, 
   Menu, 
   SlidersHorizontal,
-  Globe,
-  Shield
+  Globe 
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -15,7 +14,7 @@ interface NavbarProps {
   onOpenDonation: () => void;
   onNavigateSection: (id: string) => void;
   onOpenSidebar: () => void;
-  isAdminLoggedIn?: boolean;
+  onOpenAdmin?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,11 +22,36 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenDonation,
   onNavigateSection,
   onOpenSidebar,
-  isAdminLoggedIn,
+  onOpenAdmin,
 }) => {
   const { lang, t, isUrdu, tSetting } = useLanguage();
-  const { settings, isCloudConnected } = useData();
+  const { settings } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Hidden multi-tap trigger on Brand Logo:
+  // 5 rapid taps/clicks within 2.5s unlocks the admin sign-in modal.
+  // Works identically on Android touch and Desktop mouse clicks.
+  const logoTapCountRef = useRef(0);
+  const logoTapTimerRef = useRef<number | null>(null);
+
+  const handleBrandClick = () => {
+    handleLinkClick('hero');
+
+    if (onOpenAdmin) {
+      logoTapCountRef.current += 1;
+      if (logoTapTimerRef.current) {
+        window.clearTimeout(logoTapTimerRef.current);
+      }
+      if (logoTapCountRef.current >= 5) {
+        logoTapCountRef.current = 0;
+        onOpenAdmin();
+        return;
+      }
+      logoTapTimerRef.current = window.setTimeout(() => {
+        logoTapCountRef.current = 0;
+      }, 2500);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,29 +87,30 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           
-          {/* Brand Logo & Name */}
+          {/* Brand Logo & Name (5 rapid taps/clicks triggers admin modal) */}
           <button 
             id="nav-brand-logo"
-            onClick={() => handleLinkClick('hero')}
+            onClick={handleBrandClick}
             className="flex items-center gap-3 group text-left rtl:text-right cursor-pointer transition-transform duration-200 hover:scale-[1.01]"
+            aria-label="Araain Bannu Home"
           >
             {settings.logoData ? (
               <img 
                 src={settings.logoData} 
                 alt="Logo" 
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-[#AD7A28] shadow-sm"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-[#AD7A28] shadow-sm" 
               />
             ) : (
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#AD7A28] to-[#7D5515] flex items-center justify-center text-white font-black text-sm tracking-wider shadow-sm border border-[#AD7A28]/40">
                 {isUrdu ? 'آ ب' : 'AB'}
               </div>
             )}
-            <div>
-              <div className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight flex items-center gap-1.5">
-                <span>{tSetting('siteName', settings)}</span>
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#AD7A28]"></span>
+            <div className="flex flex-col justify-center min-w-0 text-start">
+              <div className="text-base sm:text-lg font-bold ltr:tracking-tight rtl:tracking-normal text-white ltr:leading-tight rtl:leading-normal flex items-center gap-1.5 rtl:gap-2">
+                <span className="truncate">{tSetting('siteName', settings)}</span>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#AD7A28] shrink-0"></span>
               </div>
-              <div className="text-[11px] sm:text-xs text-amber-200/80 font-medium tracking-wide">
+              <div className="text-[11px] sm:text-xs text-amber-200/90 font-medium ltr:tracking-wide rtl:tracking-normal mt-0.5 sm:mt-1 ltr:leading-tight rtl:leading-relaxed truncate">
                 {tSetting('siteSubName', settings)}
               </div>
             </div>
@@ -105,19 +130,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </nav>
 
-          {/* Action Controls & Sidebar Trigger (Admin & Translations moved into Sidebar) */}
+          {/* Action Controls & Sidebar Trigger */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Live Firestore indicator */}
-            <div 
-              id="cloud-status-indicator"
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] font-medium"
-              title={isCloudConnected ? "Connected to Firebase Firestore" : "Connecting to Cloud..."}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${isCloudConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-              <span>{isCloudConnected ? t('cloudOnline') : t('cloudConnecting')}</span>
-            </div>
-
             {/* Quick Donate CTA */}
             <button
               id="btn-nav-donate"
@@ -139,25 +154,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* ═══════════════════════════════════════════════════════════════════
-                SIDEBAR BUTTON (HOUSES ADMIN & TRANSLATIONS AS REQUESTED)
+                SIDEBAR BUTTON (CLEAN MENU & LANGUAGE SWITCHER)
                ═══════════════════════════════════════════════════════════════════ */}
             <button
               id="btn-open-sidebar"
               onClick={onOpenSidebar}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 hover:border-[#AD7A28] text-amber-200 hover:text-white transition-all duration-200 shadow-sm cursor-pointer group"
-              title={isUrdu ? 'سائیڈ بار کھولیں (ایڈمن و ترجمہ)' : 'Open Sidebar (Admin & Translations)'}
+              title={isUrdu ? 'مینو اور زبان کی ترتیبات' : 'Menu & Language Settings'}
             >
-              <div className="flex items-center -space-x-1 rtl:space-x-reverse">
-                <Globe className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
-                <Shield className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-              </div>
+              <Globe className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
               <span className="text-xs font-semibold tracking-wide hidden sm:inline">
-                {isUrdu ? 'سائیڈ بار' : 'Sidebar'}
+                {isUrdu ? 'سائیڈ بار' : 'Menu'}
               </span>
               <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300/80" />
-              {isAdminLoggedIn && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Admin Active" />
-              )}
             </button>
 
             {/* Mobile Sidebar / Hamburger Trigger */}

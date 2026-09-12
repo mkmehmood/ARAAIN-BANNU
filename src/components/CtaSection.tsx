@@ -27,10 +27,10 @@ export const CtaSection: React.FC<CtaSectionProps> = ({
               <div className="w-12 h-12 rounded-2xl bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 flex items-center justify-center mb-6">
                 <UserCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-3 tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 ltr:tracking-tight rtl:tracking-normal ltr:leading-tight rtl:leading-[1.45]">
                 {tSetting('membershipTitle', settings)}
               </h3>
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">
+              <p className="text-slate-300 text-sm sm:text-base ltr:leading-relaxed rtl:leading-[1.85] mb-8 rtl:tracking-normal">
                 {tSetting('membershipDesc', settings)}
               </p>
             </div>
@@ -52,10 +52,10 @@ export const CtaSection: React.FC<CtaSectionProps> = ({
               <div className="w-12 h-12 rounded-2xl bg-[#AD7A28]/30 border border-[#AD7A28]/50 text-amber-300 flex items-center justify-center mb-6">
                 <Heart className="w-6 h-6 fill-current" />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-bold mb-3 tracking-tight">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 ltr:tracking-tight rtl:tracking-normal ltr:leading-tight rtl:leading-[1.45]">
                 {tSetting('donateTitle', settings)}
               </h3>
-              <p className="text-amber-100/80 text-sm sm:text-base leading-relaxed mb-8">
+              <p className="text-amber-100/80 text-sm sm:text-base ltr:leading-relaxed rtl:leading-[1.85] mb-8 rtl:tracking-normal">
                 {tSetting('donateDesc', settings)}
               </p>
             </div>

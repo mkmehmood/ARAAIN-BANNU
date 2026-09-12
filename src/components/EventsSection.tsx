@@ -18,10 +18,10 @@ export const EventsSection: React.FC = () => {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#AD7A28]/15 text-[#8A5F19] text-xs font-bold uppercase tracking-wider mb-3">
             {t('navEvents', 'Events Calendar')}
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#16232F] tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#16232F] ltr:tracking-tight rtl:tracking-normal ltr:leading-tight rtl:leading-[1.45]">
             {tSetting('eventsTitle', settings)}
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-slate-600 font-medium">
+          <p className="mt-4 sm:mt-5 text-base sm:text-lg text-slate-600 font-medium ltr:leading-relaxed rtl:leading-[1.85] rtl:tracking-normal">
             {t('eventsDesc', 'Stay connected with upcoming gatherings, business workshops, and annual assemblies.')}
           </p>
         </div>

@@ -4,9 +4,6 @@ import { useData } from '../context/DataContext';
 import { 
   X, 
   Globe, 
-  Shield, 
-  ShieldCheck, 
-  LogOut, 
   Heart, 
   UserPlus, 
   Home, 
@@ -16,7 +13,8 @@ import {
   Calendar, 
   Image as ImageIcon, 
   Mail, 
-  ExternalLink,
+  Phone, 
+  MapPin,
   ChevronRight,
   ChevronLeft
 } from 'lucide-react';
@@ -26,13 +24,7 @@ interface SidebarProps {
   onClose: () => void;
   onOpenMembership: () => void;
   onOpenDonation: () => void;
-  onOpenAdmin?: () => void;
   onNavigateSection: (id: string) => void;
-  isAdminLoggedIn: boolean;
-  isInAdminMode: boolean;
-  onToggleAdminMode: () => void;
-  onLogout?: () => void;
-  adminEmail?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -40,16 +32,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   onOpenMembership,
   onOpenDonation,
-  onOpenAdmin,
   onNavigateSection,
-  isAdminLoggedIn,
-  isInAdminMode,
-  onToggleAdminMode,
-  onLogout,
-  adminEmail,
 }) => {
   const { lang, setLanguage, t, isUrdu, tSetting } = useLanguage();
-  const { settings, isCloudConnected } = useData();
+  const { settings } = useData();
 
   if (!isOpen) return null;
 
@@ -96,11 +82,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isUrdu ? 'آ ب' : 'AB'}
               </div>
             )}
-            <div>
-              <div className="font-bold text-sm sm:text-base leading-tight">
+            <div className="flex flex-col justify-center min-w-0 text-start">
+              <div className="font-bold text-sm sm:text-base text-white ltr:leading-tight rtl:leading-normal ltr:tracking-tight rtl:tracking-normal truncate">
                 {tSetting('siteName', settings)}
               </div>
-              <div className="text-[11px] text-amber-200/80">
+              <div className="text-[11px] text-amber-200/90 font-medium ltr:tracking-wide rtl:tracking-normal mt-0.5 sm:mt-1 ltr:leading-tight rtl:leading-relaxed truncate">
                 {tSetting('siteSubName', settings)}
               </div>
             </div>
@@ -167,64 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
           {/* ══════════════════════════════════════════════════════════
-              AUTHENTICATED ADMIN SESSION CONTROLS (ONLY VISIBLE ONCE LOGGED IN)
-              SECURITY NOTE: Real access is gated by Firebase Auth & Firestore Rules.
-              Public visitors see zero admin UI anywhere in the sidebar.
-             ══════════════════════════════════════════════════════════ */}
-          {isAdminLoggedIn && (
-            <div className="bg-[#182634] rounded-2xl p-4 border border-amber-500/20 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-wider">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>{isUrdu ? 'ایڈمن سیشن فعال' : 'Admin Session'}</span>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
-                  {isUrdu ? 'لاگ ان شدہ' : 'Active'}
-                </span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-black/30 border border-emerald-500/30 flex items-center justify-between text-xs">
-                <div>
-                  <div className="font-semibold text-emerald-300 text-[11px]">
-                    {isUrdu ? 'ایڈمنسٹریٹر اکاؤنٹ' : 'Administrator Account'}
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-mono">
-                    {adminEmail || 'Authorized Admin'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    onClose();
-                    onToggleAdminMode();
-                  }}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow"
-                >
-                  <span>{isInAdminMode ? (isUrdu ? 'پبلک سائٹ دیکھیں' : 'Exit Admin') : (isUrdu ? 'ایڈمن ڈیش بورڈ کھولیں' : 'Open Admin Panel')}</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-
-                {onLogout && (
-                  <button
-                    onClick={() => {
-                      onClose();
-                      onLogout();
-                    }}
-                    className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 transition-colors cursor-pointer"
-                    title="Sign Out"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-
-          {/* ══════════════════════════════════════════════════════════
-              SECTION 3: QUICK ACTIONS (DONATE & MEMBERSHIP)
+              SECTION 2: QUICK ACTIONS (DONATE & MEMBERSHIP)
              ══════════════════════════════════════════════════════════ */}
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -252,7 +181,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
           {/* ══════════════════════════════════════════════════════════
-              SECTION 4: NAVIGATION LINKS
+              SECTION 3: NAVIGATION LINKS
              ══════════════════════════════════════════════════════════ */}
           <div>
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
@@ -280,26 +209,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
 
           {/* ══════════════════════════════════════════════════════════
-              SECTION 5: LIVE CLOUD CONNECTION STATUS & CONTACT
+              SECTION 4: CONTACT & OFFICIAL INFORMATION
              ══════════════════════════════════════════════════════════ */}
           <div className="p-3.5 rounded-xl bg-black/25 border border-white/5 text-[11px] space-y-2 text-slate-400">
-            <div className="flex items-center justify-between">
-              <span>{isUrdu ? 'ڈیٹا بیس کنکشن:' : 'Firestore Database:'}</span>
-              <div className="flex items-center gap-1 text-emerald-400 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{isCloudConnected ? (isUrdu ? 'کلاؤڈ آن لائن' : 'Cloud Online') : 'Connecting...'}</span>
-              </div>
+            <div className="font-semibold text-slate-300 text-xs mb-1">
+              {isUrdu ? 'رابطہ کی تفصیلات' : 'Contact Information'}
             </div>
 
-            <div className="pt-2 border-t border-white/5 space-y-1 text-[10px]">
-              <div>
-                <span className="text-slate-500">{isUrdu ? 'ای میل:' : 'Email:'} </span>
-                <span className="font-mono text-slate-300">{settings.contactEmail || '3tahirmeer@gmail.com'}</span>
-              </div>
-              <div>
-                <span className="text-slate-500">{isUrdu ? 'فون:' : 'Phone:'} </span>
-                <span className="font-mono text-slate-300">{settings.contactPhone || '+92 300 0000000'}</span>
-              </div>
+            <div className="space-y-1.5 text-[10px]">
+              {settings.contactEmail && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="font-mono text-slate-300">{settings.contactEmail}</span>
+                </div>
+              )}
+              {settings.contactPhone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="font-mono text-slate-300">{settings.contactPhone}</span>
+                </div>
+              )}
+              {settings.contactAddress && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="text-slate-300">{settings.contactAddress}</span>
+                </div>
+              )}
             </div>
           </div>
 

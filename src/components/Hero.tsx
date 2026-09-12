@@ -52,20 +52,20 @@ export const Hero: React.FC<HeroProps> = ({
           <span>{tSetting('heroBadge', settings)}</span>
         </div>
 
-        {/* Main Title */}
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-4 leading-[1.15]">
-          <span className="bg-gradient-to-r from-white via-slate-100 to-amber-100 bg-clip-text text-transparent">
+        {/* Main Title (Header) */}
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-5 sm:mb-7 ltr:tracking-tight rtl:tracking-normal ltr:leading-[1.15] rtl:leading-[1.45] sm:rtl:leading-[1.55]">
+          <span className="bg-gradient-to-r from-white via-slate-100 to-amber-100 bg-clip-text text-transparent inline-block pb-2">
             {tSetting('heroTitle', settings)}
           </span>
         </h1>
 
-        {/* Subtitle */}
-        <p className="text-lg sm:text-2xl font-semibold text-amber-200/90 mb-5 max-w-3xl mx-auto tracking-wide leading-snug">
+        {/* Subtitle (Sub-header) */}
+        <p className="text-lg sm:text-2xl font-semibold text-amber-200/90 mb-5 sm:mb-6 max-w-3xl mx-auto ltr:tracking-wide rtl:tracking-normal ltr:leading-snug rtl:leading-[1.85]">
           {tSetting('heroSub', settings)}
         </p>
 
         {/* Detailed Tagline */}
-        <p className="text-sm sm:text-base lg:text-lg text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed font-normal">
+        <p className="text-sm sm:text-base lg:text-lg text-slate-300 mb-10 max-w-2xl mx-auto ltr:leading-relaxed rtl:leading-[2.0] font-normal ltr:tracking-normal rtl:tracking-normal">
           {tSetting('heroTagline', settings)}
         </p>
 

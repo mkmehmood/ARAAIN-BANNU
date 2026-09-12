@@ -70,11 +70,11 @@ export const Footer: React.FC<FooterProps> = ({
                   {isUrdu ? 'آ ب' : 'AB'}
                 </div>
               )}
-              <div>
-                <div className="font-bold text-base tracking-tight text-white leading-tight">
+              <div className="flex flex-col justify-center min-w-0 text-start">
+                <div className="font-bold text-base text-white ltr:tracking-tight rtl:tracking-normal ltr:leading-tight rtl:leading-normal">
                   {tSetting('siteName', settings)}
                 </div>
-                <div className="text-xs text-amber-300 font-medium">
+                <div className="text-xs text-amber-300 font-medium ltr:tracking-wide rtl:tracking-normal mt-0.5 sm:mt-1 ltr:leading-tight rtl:leading-relaxed">
                   {tSetting('siteSubName', settings)}
                 </div>
               </div>
@@ -254,20 +254,18 @@ export const Footer: React.FC<FooterProps> = ({
 
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar — No visible admin link for ordinary visitors */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div>
+          <div 
+            onClick={handleCopyrightTap}
+            className="cursor-default select-none"
+            title=""
+          >
             {tSetting('footerCopy', settings)}
           </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onOpenAdmin}
-              className="inline-flex items-center gap-1.5 text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>{t('navAdmin', 'Admin Portal')}</span>
-            </button>
+          <div className="flex items-center gap-4 text-slate-500 text-[11px]">
+            <span>{isUrdu ? 'تمام حقوق محفوظ ہیں' : 'All rights reserved'}</span>
           </div>
         </div>
 
