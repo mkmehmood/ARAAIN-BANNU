@@ -1,4 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { LanguageProvider } from './context/LanguageContext';
 import { DataProvider } from './context/DataContext';
 import { PageItem } from './types';
@@ -266,6 +267,7 @@ export const App: React.FC = () => {
     <LanguageProvider>
       <DataProvider>
         <MainApp />
+        <Analytics />
       </DataProvider>
     </LanguageProvider>
   );
