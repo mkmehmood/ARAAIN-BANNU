@@ -29,13 +29,20 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLangState] = useState<Language>(() => {
-    return (localStorage.getItem('app_language') as Language) || 'ur';
-  });
+  // Always load fresh in Urdu by default; no cache persistence
+  const [lang, setLangState] = useState<Language>('ur');
+
+  // Purge any stale cached language on startup
+  useEffect(() => {
+    try {
+      localStorage.removeItem('app_language');
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem('app_language', newLang);
   };
 
   const toggleLang = () => {

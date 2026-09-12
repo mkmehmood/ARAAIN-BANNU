@@ -98,6 +98,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [tempGallery, setTempGallery] = useState<GalleryItem[]>(gallery);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
+  // Sync temp CMS data when external/cloud data arrives
+  React.useEffect(() => {
+    setTempSettings(settings);
+  }, [settings]);
+  React.useEffect(() => {
+    setTempPrograms(programs);
+  }, [programs]);
+  React.useEffect(() => {
+    setTempLeaders(leaders);
+  }, [leaders]);
+  React.useEffect(() => {
+    setTempEvents(events);
+  }, [events]);
+  React.useEffect(() => {
+    setTempPages(pages);
+  }, [pages]);
+  React.useEffect(() => {
+    setTempGallery(gallery);
+  }, [gallery]);
+
   // Stats
   const totalDonationAmount = donations.reduce((sum, d) => {
     const num = parseInt(String(d.amount || '').replace(/[^0-9]/g, '')) || 0;
@@ -203,7 +223,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col">
+    <div 
+      dir={isUrdu ? 'rtl' : 'ltr'} 
+      className={`min-h-screen bg-slate-50 text-slate-800 ${isUrdu ? 'font-urdu' : 'font-sans'} flex flex-col`}
+    >
       
       {/* Admin Top Header */}
       <header className="bg-[#16232F] text-white border-b border-[#AD7A28]/30 sticky top-0 z-30 shadow-md">
@@ -211,17 +234,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#AD7A28] flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              AB
+              {isUrdu ? 'آ ب' : 'AB'}
             </div>
             <div>
               <div className="font-bold text-sm sm:text-base leading-tight flex items-center gap-2">
                 <span>{tSetting('siteName', settings)}</span>
                 <span className="px-2 py-0.5 rounded-full bg-[#AD7A28]/20 border border-[#AD7A28]/40 text-[#F5CA7B] text-[10px] font-semibold uppercase">
-                  {isUrdu ? 'سینٹرل ایڈمن' : 'Central Admin'}
+                  {isUrdu ? 'مرکزی ایڈمن پینل' : 'Central Admin'}
                 </span>
               </div>
               <div className="text-[11px] text-slate-400">
-                {isUrdu ? 'لاگ ان بطور: ' : 'Logged in as: '}<span className="text-amber-200">{adminEmail}</span>
+                {isUrdu ? 'لاگ ان بطور: ' : 'Logged in as: '}<span className="text-amber-200 font-mono">{adminEmail}</span>
               </div>
             </div>
           </div>
@@ -270,7 +293,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>{t('tabOverview', 'Dashboard Overview')}</span>
+            <span>{t('tabOverview', 'Overview')}</span>
           </button>
 
           <button
@@ -328,13 +351,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Total Registrations
+                    {isUrdu ? 'کل اندراج / رجسٹریشنز' : 'Total Registrations'}
                   </div>
                   <div className="text-3xl font-extrabold text-[#16232F] mt-1">
                     {registrations.length}
                   </div>
                   <div className="text-xs text-emerald-600 font-semibold mt-1">
-                    {registrations.filter(r => (r.status || 'new') === 'approved').length} approved members
+                    {registrations.filter(r => (r.status || 'new') === 'approved').length} {isUrdu ? 'منظور شدہ اراکین' : 'approved members'}
                   </div>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -345,13 +368,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Donations Received
+                    {isUrdu ? 'موصول شدہ عطیات' : 'Donations Received'}
                   </div>
                   <div className="text-2xl font-extrabold text-[#AD7A28] mt-1 truncate max-w-[180px]">
-                    PKR {totalDonationAmount.toLocaleString()}
+                    {isUrdu ? `${totalDonationAmount.toLocaleString()} روپے` : `PKR ${totalDonationAmount.toLocaleString()}`}
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-1">
-                    {donations.length} total transaction records
+                    {donations.length} {isUrdu ? 'کل ٹرانزیکشن ریکارڈز' : 'total transaction records'}
                   </div>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-amber-50 text-[#AD7A28] flex items-center justify-center">
@@ -362,13 +385,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Flagship Programs
+                    {isUrdu ? 'فلاحی پروگرامز' : 'Flagship Programs'}
                   </div>
                   <div className="text-3xl font-extrabold text-[#16232F] mt-1">
                     {programs.length}
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-1">
-                    Active welfare wings
+                    {isUrdu ? 'فعال فلاحی شعبہ جات' : 'Active welfare wings'}
                   </div>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -379,13 +402,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                    Upcoming Events
+                    {isUrdu ? 'آئندہ تقریبات' : 'Upcoming Events'}
                   </div>
                   <div className="text-3xl font-extrabold text-[#16232F] mt-1">
                     {events.length}
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-1">
-                    Public calendar gatherings
+                    {isUrdu ? 'عوامی کلینڈر اجتماعات' : 'Public calendar gatherings'}
                   </div>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -402,19 +425,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-[#16232F]">
-                    Recent Membership Applications
+                    {isUrdu ? 'حالیہ رکنیت کی درخواستیں' : 'Recent Membership Applications'}
                   </h3>
                   <button
                     onClick={() => setActiveTab('members')}
                     className="text-xs font-semibold text-[#AD7A28] hover:underline"
                   >
-                    View All ({registrations.length})
+                    {isUrdu ? `سب دیکھیں (${registrations.length})` : `View All (${registrations.length})`}
                   </button>
                 </div>
 
                 {registrations.length === 0 ? (
                   <div className="py-12 text-center text-slate-400 text-sm">
-                    No applications submitted yet.
+                    {isUrdu ? 'ابھی تک کوئی درخواست موصول نہیں ہوئی۔' : 'No applications submitted yet.'}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -437,10 +460,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           )}
                           <div>
                             <div className="font-bold text-sm text-[#16232F]">
-                              {reg.fullName}
+                              {isUrdu ? (reg.fullNameUr || reg.fullName) : (reg.fullNameEn || reg.fullName)}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {reg.membershipType} · {reg.city || 'Bannu'}
+                              {isUrdu ? (reg.membershipTypeUr || reg.membershipType) : (reg.membershipTypeEn || reg.membershipType)} · {isUrdu ? (reg.cityUr || reg.city || 'بنوں') : (reg.cityEn || reg.city || 'Bannu')}
                             </div>
                           </div>
                         </div>
@@ -451,13 +474,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             reg.status === 'rejected' ? 'bg-red-100 text-red-800' :
                             'bg-amber-100 text-amber-800'
                           }`}>
-                            {reg.status || 'New'}
+                            {reg.status === 'approved' ? (isUrdu ? 'منظور شدہ' : 'Approved') :
+                             reg.status === 'rejected' ? (isUrdu ? 'مسترد' : 'Rejected') :
+                             (isUrdu ? 'نئی' : 'New')}
                           </span>
 
                           <button
                             onClick={() => setSelectedRegForCard(reg)}
                             className="p-1.5 rounded-lg text-slate-600 hover:text-[#AD7A28] hover:bg-white transition-colors"
-                            title="Print Card"
+                            title={isUrdu ? 'شناختی کارڈ پرنٹ کریں' : 'Print Card'}
                           >
                             <CreditCard className="w-4 h-4" />
                           </button>
@@ -472,7 +497,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="lg:col-span-5 space-y-4">
                 <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                   <h3 className="text-base font-bold text-[#16232F] mb-4">
-                    Quick Operations
+                    {isUrdu ? 'فوری انتظامی اقدامات' : 'Quick Operations'}
                   </h3>
                   <div className="space-y-2.5">
                     <button
@@ -481,7 +506,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <Download className="w-4 h-4 text-[#AD7A28]" />
-                        <span>Export All Members (CSV)</span>
+                        <span>{isUrdu ? 'تمام اراکین کا ریکارڈ ڈاؤن لوڈ کریں (CSV)' : 'Export All Members (CSV)'}</span>
                       </span>
                       <span className="text-slate-400">Excel / Sheets</span>
                     </button>
@@ -492,7 +517,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <Download className="w-4 h-4 text-[#AD7A28]" />
-                        <span>Export Donations Ledger (CSV)</span>
+                        <span>{isUrdu ? 'عطیات کا لیجر ڈاؤن لوڈ کریں (CSV)' : 'Export Donations Ledger (CSV)'}</span>
                       </span>
                       <span className="text-slate-400">Excel / Sheets</span>
                     </button>
@@ -503,9 +528,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     >
                       <span className="flex items-center gap-2">
                         <Settings className="w-4 h-4 text-[#AD7A28]" />
-                        <span>Edit Site Title & Logo</span>
+                        <span>{isUrdu ? 'ویب سائٹ عنوان اور لوگو تبدیل کریں' : 'Edit Site Title & Logo'}</span>
                       </span>
-                      <span className="text-slate-400">Branding</span>
+                      <span className="text-slate-400">{isUrdu ? 'برانڈنگ' : 'Branding'}</span>
                     </button>
                   </div>
                 </div>
@@ -514,10 +539,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="bg-gradient-to-br from-[#16232F] to-[#25394C] text-white rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-2 text-[#F5CA7B] text-xs font-bold uppercase">
                     <Sparkles className="w-4 h-4" />
-                    <span>Firebase Backend Status</span>
+                    <span>{isUrdu ? 'فائر بیس ڈیٹا بیس کی لائیو کیفیت' : 'Firebase Backend Status'}</span>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                    Connected directly to production Firestore database. All public registrations, donation confirmations, and CMS adjustments synchronize in real-time.
+                    {isUrdu 
+                      ? 'پروڈکشن فائر اسٹور ڈیٹا بیس کے ساتھ براہ راست منسلک ہے۔ تمام عوامی اندراجات، عطیات اور سی ایم ایس ترامیم فوری طور پر بغیر کسی تاخیر کے اپ ڈیٹ ہوتی ہیں۔'
+                      : 'Connected directly to production Firestore database. All public registrations, donation confirmations, and CMS adjustments synchronize in real-time.'
+                    }
                   </p>
                   <div className="text-[11px] font-mono text-slate-400 bg-black/30 p-2.5 rounded-lg truncate">
                     Collection: siteConfig, registrations, donations
@@ -539,13 +567,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               
               <div className="flex flex-1 items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className={`w-4 h-4 text-slate-400 absolute ${isUrdu ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                   <input
                     type="text"
-                    placeholder="Search by name, CNIC, phone, city..."
+                    placeholder={isUrdu ? 'نام، شناختی کارڈ، فون، شہر سے تلاش کریں...' : 'Search by name, CNIC, phone, city...'}
                     value={memberSearch}
                     onChange={(e) => setMemberSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#AD7A28]"
+                    className={`w-full ${isUrdu ? 'pr-9 pl-4' : 'pl-9 pr-4'} py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#AD7A28]`}
                   />
                 </div>
 
@@ -554,10 +582,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   onChange={(e) => setMemberStatusFilter(e.target.value)}
                   className="px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#AD7A28]"
                 >
-                  <option value="all">All Statuses</option>
-                  <option value="new">New</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="all">{isUrdu ? 'تمام حالتیں' : 'All Statuses'}</option>
+                  <option value="new">{isUrdu ? 'نئی درخواستیں' : 'New'}</option>
+                  <option value="approved">{isUrdu ? 'منظور شدہ' : 'Approved'}</option>
+                  <option value="rejected">{isUrdu ? 'مسترد' : 'Rejected'}</option>
                 </select>
               </div>
 
@@ -567,7 +595,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Export CSV</span>
+                  <span>{isUrdu ? 'سی ایس وی ڈاؤن لوڈ' : 'Export CSV'}</span>
                 </button>
               </div>
 
@@ -576,22 +604,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* Applications Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs sm:text-sm">
+                <table className={`w-full ${isUrdu ? 'text-right' : 'text-left'} text-xs sm:text-sm`}>
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                     <tr>
-                      <th className="px-4 py-3.5">Applicant</th>
-                      <th className="px-4 py-3.5">CNIC / Gender</th>
-                      <th className="px-4 py-3.5">Category</th>
-                      <th className="px-4 py-3.5">WhatsApp / City</th>
-                      <th className="px-4 py-3.5">Status</th>
-                      <th className="px-4 py-3.5 text-right">Actions</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'امیدوار' : 'Applicant'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'شناختی کارڈ / جنس' : 'CNIC / Gender'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'زمرہ رکنیت' : 'Category'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'واٹس ایپ / شہر' : 'WhatsApp / City'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'حیثیت' : 'Status'}</th>
+                      <th className={`px-4 py-3.5 ${isUrdu ? 'text-left' : 'text-right'}`}>{isUrdu ? 'کارروائی' : 'Actions'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredMembers.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                          No matching member applications found.
+                          {isUrdu ? 'کوئی درخواست نہیں ملی۔' : 'No matching member applications found.'}
                         </td>
                       </tr>
                     ) : (
@@ -710,13 +738,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div className="flex flex-1 items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className={`w-4 h-4 text-slate-400 absolute ${isUrdu ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                   <input
                     type="text"
-                    placeholder="Search by donor name, phone, TX ID..."
+                    placeholder={isUrdu ? 'ڈونر کا نام، فون، رسید نمبر سے تلاش کریں...' : 'Search by donor name, phone, TX ID...'}
                     value={donationSearch}
                     onChange={(e) => setDonationSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#AD7A28]"
+                    className={`w-full ${isUrdu ? 'pr-9 pl-4' : 'pl-9 pr-4'} py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#AD7A28]`}
                   />
                 </div>
 
@@ -725,10 +753,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   onChange={(e) => setDonationStatusFilter(e.target.value)}
                   className="px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#AD7A28]"
                 >
-                  <option value="all">All Verification</option>
-                  <option value="unverified">Unverified</option>
-                  <option value="verified">Verified</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="all">{isUrdu ? 'تمام کیفیات' : 'All Verification'}</option>
+                  <option value="unverified">{isUrdu ? 'غیر تصدیق شدہ' : 'Unverified'}</option>
+                  <option value="verified">{isUrdu ? 'تصدیق شدہ' : 'Verified'}</option>
+                  <option value="rejected">{isUrdu ? 'مسترد شدہ' : 'Rejected'}</option>
                 </select>
               </div>
 
@@ -738,7 +766,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Export CSV</span>
+                  <span>{isUrdu ? 'سی ایس وی ڈاؤن لوڈ' : 'Export CSV'}</span>
                 </button>
               </div>
             </div>
@@ -746,22 +774,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* Donations Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs sm:text-sm">
+                <table className={`w-full ${isUrdu ? 'text-right' : 'text-left'} text-xs sm:text-sm`}>
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                     <tr>
-                      <th className="px-4 py-3.5">Donor Details</th>
-                      <th className="px-4 py-3.5">Amount (PKR)</th>
-                      <th className="px-4 py-3.5">Method & Reference</th>
-                      <th className="px-4 py-3.5">Screenshot / Slip</th>
-                      <th className="px-4 py-3.5">Verification</th>
-                      <th className="px-4 py-3.5 text-right">Action</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'عطیہ دہندہ' : 'Donor Details'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'رقم' : 'Amount (PKR)'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'طریقہ و رسید کوڈ' : 'Method & Reference'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'رسید کا اسکرین شاٹ' : 'Screenshot / Slip'}</th>
+                      <th className="px-4 py-3.5">{isUrdu ? 'تصدیقی کیفیت' : 'Verification'}</th>
+                      <th className={`px-4 py-3.5 ${isUrdu ? 'text-left' : 'text-right'}`}>{isUrdu ? 'کارروائی' : 'Action'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {filteredDonations.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-4 py-12 text-center text-slate-400">
-                          No donation transactions recorded yet.
+                          {isUrdu ? 'کوئی عطیہ ریکارڈ نہیں ملا۔' : 'No donation transactions recorded yet.'}
                         </td>
                       </tr>
                     ) : (
@@ -901,10 +929,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-[#16232F]">
-                  Website Content Management
+                  {isUrdu ? 'ویب سائٹ مواد اور ترتیبات کا انتظام (CMS)' : 'Website Content Management'}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Edit texts, banners, programs, leadership, and accounts. Pushes directly to Firebase.
+                  {isUrdu 
+                    ? 'تمام متون، بینرز، فلاحی پروگرامز، قیادت، گیلری اور بینک اکاؤنٹس کو اپ ڈیٹ کریں۔ تبدیلیاں براہ راست کلاؤڈ پر محفوظ ہوتی ہیں۔'
+                    : 'Edit texts, banners, programs, leadership, and accounts. Pushes directly to Firebase.'}
                 </p>
               </div>
 
@@ -919,7 +949,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save & Push to Cloud</span>
+                  <span>{isUrdu ? 'محفوظ کریں اور کلاؤڈ پر بھیجیں' : 'Save & Push to Cloud'}</span>
                 </button>
               </div>
             </div>
@@ -927,16 +957,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* CMS Section Pills */}
             <div className="flex overflow-x-auto gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
               {[
-                { id: 'identity', label: 'Identity & Brand' },
-                { id: 'hero', label: 'Hero & Stats' },
-                { id: 'about', label: 'About & Quote' },
-                { id: 'programs', label: 'Programs' },
-                { id: 'leaders', label: 'Leadership' },
-                { id: 'events', label: 'Events' },
-                { id: 'pages', label: 'Dynamic Pages' },
-                { id: 'gallery', label: 'Gallery' },
-                { id: 'bank', label: 'Donation Accounts' },
-                { id: 'contact', label: 'Contact Details' },
+                { id: 'identity', label: isUrdu ? 'شناخت و مونوگرام' : 'Identity & Brand' },
+                { id: 'hero', label: isUrdu ? 'ہیرو بینر و اعداد و شمار' : 'Hero & Stats' },
+                { id: 'about', label: isUrdu ? 'ہمارے متعلق و مشن' : 'About & Quote' },
+                { id: 'programs', label: isUrdu ? 'فلاحی پروگرامز' : 'Programs' },
+                { id: 'leaders', label: isUrdu ? 'تنظیمی قیادت' : 'Leadership' },
+                { id: 'events', label: isUrdu ? 'تقریبات و اعلانات' : 'Events' },
+                { id: 'pages', label: isUrdu ? 'صفحات و آئین' : 'Dynamic Pages' },
+                { id: 'gallery', label: isUrdu ? 'تصویری گیلری' : 'Gallery' },
+                { id: 'bank', label: isUrdu ? 'بینک اکاؤنٹس' : 'Donation Accounts' },
+                { id: 'contact', label: isUrdu ? 'رابطہ کی تفصیلات' : 'Contact Details' },
               ].map((sub) => (
                 <button
                   key={sub.id}

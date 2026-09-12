@@ -71,92 +71,85 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<SiteSettings>(() => {
-    const cached = localStorage.getItem('site_settings');
-    return cached ? { ...defaultSettings, ...JSON.parse(cached) } : defaultSettings;
-  });
-
-  const [programs, setPrograms] = useState<Program[]>(() => {
-    const cached = localStorage.getItem('site_programs');
-    return cached ? JSON.parse(cached) : defaultPrograms;
-  });
-
-  const [leaders, setLeaders] = useState<Leader[]>(() => {
-    const cached = localStorage.getItem('site_leaders');
-    return cached ? JSON.parse(cached) : defaultLeaders;
-  });
-
-  const [events, setEvents] = useState<EventItem[]>(() => {
-    const cached = localStorage.getItem('site_events');
-    return cached ? JSON.parse(cached) : defaultEvents;
-  });
-
-  const [pages, setPages] = useState<PageItem[]>(() => {
-    const cached = localStorage.getItem('site_pages');
-    return cached ? JSON.parse(cached) : defaultPages;
-  });
-
-  const [gallery, setGallery] = useState<GalleryItem[]>(() => {
-    const cached = localStorage.getItem('site_gallery');
-    return cached ? JSON.parse(cached) : defaultGallery;
-  });
+  // Always initialize fresh from defaults; no localStorage caching
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [programs, setPrograms] = useState<Program[]>(defaultPrograms);
+  const [leaders, setLeaders] = useState<Leader[]>(defaultLeaders);
+  const [events, setEvents] = useState<EventItem[]>(defaultEvents);
+  const [pages, setPages] = useState<PageItem[]>(defaultPages);
+  const [gallery, setGallery] = useState<GalleryItem[]>(defaultGallery);
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    const cached = localStorage.getItem('site_messages');
-    return cached ? JSON.parse(cached) : [
-      {
-        id: 1,
-        name: "Usman Tariq",
-        email: "usman@example.com",
-        subject: "Volunteering for Education Drive",
-        message: "Assalam-o-Alaikum, I would like to volunteer my weekends for teaching IT skills to youth in Bannu. Please let me know how to coordinate.",
-        status: "unread",
-        createdAt: new Date().toISOString()
-      }
-    ];
-  });
+  const [messages, setMessages] = useState<ContactMessage[]>([
+    {
+      id: 1,
+      name: "عثمان طارق",
+      email: "usman@example.com",
+      subject: "تعلیمی مہم میں رضاکارانہ شمولیت",
+      message: "السلام علیکم، میں بنوں کے نوجوانوں کو آئی ٹی کی بنیادی تعلیم دینے کے لیے رضاکارانہ وقت دینا چاہتا ہوں۔ رابطہ فرمائیں۔",
+      status: "unread",
+      createdAt: new Date().toISOString()
+    }
+  ]);
   const [isCloudConnected, setIsCloudConnected] = useState<boolean>(true);
+
+  // Proactively purge any leftover cache keys on mount so app is guaranteed 100% fresh
+  useEffect(() => {
+    try {
+      const keysToPurge = [
+        'site_settings',
+        'site_programs',
+        'site_leaders',
+        'site_events',
+        'site_pages',
+        'site_gallery',
+        'site_messages',
+        'arain_bannu_cache'
+      ];
+      keysToPurge.forEach(k => {
+        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
+      });
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        window.caches.keys().then(names => {
+          names.forEach(name => window.caches.delete(name));
+        }).catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Subscribe to Cloud Config & Collections
   useEffect(() => {
     const unsubConfig = subscribeToSiteConfig(
       (patch) => {
-        setSettings(prev => {
-          const updated = { ...prev, ...patch };
-          localStorage.setItem('site_settings', JSON.stringify(updated));
-          return updated;
-        });
+        setSettings(prev => ({ ...prev, ...patch }));
       },
       (progItems) => {
         if (Array.isArray(progItems)) {
           setPrograms(progItems);
-          localStorage.setItem('site_programs', JSON.stringify(progItems));
         }
       },
       (leaderItems) => {
         if (Array.isArray(leaderItems)) {
           setLeaders(leaderItems);
-          localStorage.setItem('site_leaders', JSON.stringify(leaderItems));
         }
       },
       (eventItems) => {
         if (Array.isArray(eventItems)) {
           setEvents(eventItems);
-          localStorage.setItem('site_events', JSON.stringify(eventItems));
         }
       },
       (pageItems) => {
         if (Array.isArray(pageItems)) {
           setPages(pageItems);
-          localStorage.setItem('site_pages', JSON.stringify(pageItems));
         }
       },
       (galleryItems) => {
         if (Array.isArray(galleryItems)) {
           setGallery(galleryItems);
-          localStorage.setItem('site_gallery', JSON.stringify(galleryItems));
         }
       }
     );
@@ -196,46 +189,38 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       status: 'unread',
       createdAt: new Date().toISOString()
     };
-    const updated = [newMsg, ...messages];
-    setMessages(updated);
-    localStorage.setItem('site_messages', JSON.stringify(updated));
+    setMessages(prev => [newMsg, ...prev]);
   };
 
   // Admin CMS & Data Operations
   const saveSettings = async (newSettings: Partial<SiteSettings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
-    localStorage.setItem('site_settings', JSON.stringify(updated));
     await pushSettingsToCloud(newSettings);
   };
 
   const savePrograms = async (items: Program[]) => {
     setPrograms(items);
-    localStorage.setItem('site_programs', JSON.stringify(items));
     await pushProgramsToCloud(items);
   };
 
   const saveLeaders = async (items: Leader[]) => {
     setLeaders(items);
-    localStorage.setItem('site_leaders', JSON.stringify(items));
     await pushLeadersToCloud(items);
   };
 
   const saveEvents = async (items: EventItem[]) => {
     setEvents(items);
-    localStorage.setItem('site_events', JSON.stringify(items));
     await pushEventsToCloud(items);
   };
 
   const savePages = async (items: PageItem[]) => {
     setPages(items);
-    localStorage.setItem('site_pages', JSON.stringify(items));
     await pushPagesToCloud(items);
   };
 
   const saveGallery = async (items: GalleryItem[]) => {
     setGallery(items);
-    localStorage.setItem('site_gallery', JSON.stringify(items));
     await pushGalleryToCloud(items);
   };
 
