@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { lookupVerifiedCard, PublicVerifiedCard } from '../services/firebase';
 import { sanitizeCardId } from '../utils/security';
@@ -61,6 +61,48 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
   const hiddenCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const stopCamera = useCallback(() => {
+    if (animFrameIdRef.current) {
+      cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  }, []);
+
+  const performLookup = useCallback(async (idToSearch: string) => {
+    const clean = sanitizeCardId(idToSearch);
+    if (!clean) {
+      setErrorText(
+        isUrdu
+          ? 'براہ کرم درست کارڈ نمبر درج کریں (مثال: AB-26-123456)'
+          : 'Please enter a valid Card ID format (e.g. AB-26-123456)'
+      );
+      return;
+    }
+
+    setLoading(true);
+    setErrorText(null);
+    setSearched(true);
+
+    try {
+      const record = await lookupVerifiedCard(clean);
+      setVerifiedRecord(record);
+    } catch (err: any) {
+      setErrorText(
+        isUrdu 
+          ? 'تصدیقی ریکارڈ لوڈ کرنے میں خرابی۔' 
+          : 'Error querying verification registry.'
+      );
+      setVerifiedRecord(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [isUrdu]);
+
   useEffect(() => {
     if (isOpen) {
       const cleanInitial = sanitizeCardId(initialCardId);
@@ -77,34 +119,20 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     } else {
       stopCamera();
     }
-  }, [isOpen, initialCardId]);
+  }, [isOpen, initialCardId, performLookup, stopCamera]);
 
   // Clean up camera stream when unmounting or switching tabs
   useEffect(() => {
     if (activeTab !== 'scan') {
       stopCamera();
     }
-  }, [activeTab]);
+  }, [activeTab, stopCamera]);
 
   useEffect(() => {
     return () => {
       stopCamera();
     };
-  }, []);
-
-  if (!isOpen) return null;
-
-  const stopCamera = () => {
-    if (animFrameIdRef.current) {
-      cancelAnimationFrame(animFrameIdRef.current);
-      animFrameIdRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    setCameraActive(false);
-  };
+  }, [stopCamera]);
 
   const startCamera = async () => {
     setCameraError(null);
@@ -233,36 +261,6 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     }
   };
 
-  const performLookup = async (idToSearch: string) => {
-    const clean = sanitizeCardId(idToSearch);
-    if (!clean) {
-      setErrorText(
-        isUrdu
-          ? 'براہ کرم درست کارڈ نمبر درج کریں (مثال: AB-26-123456)'
-          : 'Please enter a valid Card ID format (e.g. AB-26-123456)'
-      );
-      return;
-    }
-
-    setLoading(true);
-    setErrorText(null);
-    setSearched(true);
-
-    try {
-      const record = await lookupVerifiedCard(clean);
-      setVerifiedRecord(record);
-    } catch (err: any) {
-      setErrorText(
-        isUrdu 
-          ? 'تصدیقی ریکارڈ لوڈ کرنے میں خرابی۔' 
-          : 'Error querying verification registry.'
-      );
-      setVerifiedRecord(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     performLookup(searchId);
@@ -273,6 +271,8 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">

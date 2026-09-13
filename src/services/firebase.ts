@@ -25,7 +25,7 @@ import { Registration, Donation, SiteSettings, Program, Leader, EventItem, PageI
 import { processRegistrationTranslations } from '../utils/urduTransliterator';
 
 export const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDQWTvTbXX6o1QvHy5E9HeD5k0DmySlsPg",
+  apiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || (typeof process !== 'undefined' && process.env?.FIREBASE_API_KEY) || "AIzaSyDQWTvTbXX6o1QvHy5E9HeD5k0DmySlsPg",
   authDomain: "tahir-meer.firebaseapp.com",
   projectId: "tahir-meer",
   storageBucket: "tahir-meer.firebasestorage.app",
