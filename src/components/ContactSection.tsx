@@ -1,8 +1,24 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
-import { MapPin, Clock, Phone, Mail, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { 
+  MapPin, 
+  Clock, 
+  Phone, 
+  Mail, 
+  Send, 
+  CheckCircle2, 
+  AlertCircle, 
+  ExternalLink,
+  ShieldCheck
+} from 'lucide-react';
 import { checkRateLimit, sanitizeText, sanitizeEmail } from '../utils/security';
+import { 
+  resolveContactType, 
+  ContactIconComponent, 
+  getContactActionHref, 
+  getContactTypeTheme 
+} from '../utils/contactIcons';
 
 export const ContactSection: React.FC = () => {
   const { t, isUrdu, tSetting } = useLanguage();
@@ -70,6 +86,10 @@ export const ContactSection: React.FC = () => {
     }
   };
 
+  const contactsList = settings.multipleContacts && settings.multipleContacts.length > 0
+    ? settings.multipleContacts
+    : null;
+
   return (
     <section id="contact" className="py-20 sm:py-24 bg-[#F8F4E8]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,69 +110,135 @@ export const ContactSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start max-w-5xl mx-auto">
           
           {/* Information Column */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-4">
             
-            <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#16232F] mb-1">
-                  {t('contactAddressTitle', 'Our Office')}
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  {tSetting('contactAddress', settings)}
-                </p>
-              </div>
-            </div>
+            {contactsList ? (
+              // Multiple dynamic contacts with automated icons
+              contactsList.map((contact, idx) => {
+                const resolvedType = resolveContactType(contact);
+                const theme = getContactTypeTheme(resolvedType);
+                const actionHref = getContactActionHref(resolvedType, contact.value);
+                const displayTitle = isUrdu && contact.titleUr ? contact.titleUr : contact.title;
+                const displayNote = isUrdu && contact.noteUr ? contact.noteUr : contact.note;
 
-            <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#16232F] mb-1">
-                  {t('contactHoursTitle', 'Office Hours')}
-                </h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  {tSetting('contactHours', settings)}
-                </p>
-              </div>
-            </div>
+                return (
+                  <div 
+                    key={contact.id || idx}
+                    className={`p-5 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm transition-all duration-200 hover:shadow-md ${
+                      contact.isPrimary ? 'ring-1 ring-[#AD7A28]/30 border-[#AD7A28]/40' : ''
+                    }`}
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${theme.iconBg}`}>
+                        <ContactIconComponent type={resolvedType} className="w-5 h-5" />
+                      </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
-                <Phone className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#16232F] mb-1">
-                  {t('contactPhoneTitle', 'Helpline & WhatsApp')}
-                </h4>
-                <a 
-                  href={`tel:${settings.contactPhone}`}
-                  className="text-xs sm:text-sm text-[#AD7A28] font-semibold hover:underline block"
-                >
-                  {tSetting('contactPhone', settings)}
-                </a>
-              </div>
-            </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-[#16232F] truncate">
+                            {displayTitle}
+                          </h4>
+                          {Boolean(contact.isPrimary) && (
+                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-[#AD7A28]/15 text-[#8A5F19] text-[10px] font-bold">
+                              {isUrdu ? 'مرکزی رابطہ' : 'Primary'}
+                            </span>
+                          )}
+                        </div>
 
-            <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
-                <Mail className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-[#16232F] mb-1">
-                  {t('contactEmailTitle', 'Official Email')}
-                </h4>
-                <a 
-                  href={`mailto:${settings.contactEmail}`}
-                  className="text-xs sm:text-sm text-[#AD7A28] font-semibold hover:underline block"
-                >
-                  {tSetting('contactEmail', settings)}
-                </a>
-              </div>
-            </div>
+                        {actionHref ? (
+                          <a
+                            href={actionHref}
+                            target={resolvedType === 'link' || resolvedType === 'address' ? '_blank' : undefined}
+                            rel={resolvedType === 'link' || resolvedType === 'address' ? 'noopener noreferrer' : undefined}
+                            className="text-xs sm:text-sm font-semibold text-[#AD7A28] hover:underline inline-flex items-center gap-1 break-words"
+                          >
+                            <span>{contact.value}</span>
+                            {(resolvedType === 'link' || resolvedType === 'address') && (
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                            )}
+                          </a>
+                        ) : (
+                          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed break-words">
+                            {contact.value}
+                          </p>
+                        )}
+
+                        {displayNote && (
+                          <p className="text-[11px] text-slate-400 mt-1">
+                            {displayNote}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              // Fallback standard contact cards
+              <>
+                <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#16232F] mb-1">
+                      {t('contactAddressTitle', 'Our Office')}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      {tSetting('contactAddress', settings)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#16232F] mb-1">
+                      {t('contactHoursTitle', 'Office Hours')}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      {tSetting('contactHours', settings)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#16232F] mb-1">
+                      {t('contactPhoneTitle', 'Helpline & WhatsApp')}
+                    </h4>
+                    <a 
+                      href={`tel:${settings.contactPhone}`}
+                      className="text-xs sm:text-sm text-[#AD7A28] font-semibold hover:underline block"
+                    >
+                      {tSetting('contactPhone', settings)}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white border border-[#16232F]/10 shadow-sm flex items-start gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 text-[#AD7A28] flex items-center justify-center shrink-0">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#16232F] mb-1">
+                      {t('contactEmailTitle', 'Official Email')}
+                    </h4>
+                    <a 
+                      href={`mailto:${settings.contactEmail}`}
+                      className="text-xs sm:text-sm text-[#AD7A28] font-semibold hover:underline block"
+                    >
+                      {tSetting('contactEmail', settings)}
+                    </a>
+                  </div>
+                </div>
+              </>
+            )}
 
           </div>
 

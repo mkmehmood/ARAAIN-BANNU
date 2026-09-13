@@ -40,6 +40,7 @@ export interface Leader {
   responsibilitiesUr?: string[];
   featured?: boolean | number;
   photo_data?: string;
+  image?: string;
   sort_order?: number;
 }
 
@@ -230,6 +231,6 @@ export interface ContactMessage {
   email: string;
   subject: string;
   message: string;
-  status?: 'unread' | 'read';
+  status?: 'unread' | 'read' | 'replied' | string;
   createdAt?: any;
 }

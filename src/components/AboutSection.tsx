@@ -89,8 +89,8 @@ export const AboutSection: React.FC = () => {
                         className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-md ring-2 ring-[#AD7A28]/30"
                       />
                     ) : (
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#AD7A28] to-amber-300 flex items-center justify-center text-[#16232F] font-black text-lg shadow-sm border-2 border-amber-400">
-                        {isUrdu ? 'چ چی' : 'AC'}
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#AD7A28] to-amber-300 flex items-center justify-center text-[#16232F] font-black text-base shadow-sm border-2 border-amber-400">
+                        {tSetting('chairmanName', settings).trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('') || 'AB'}
                       </div>
                     )}
                     <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#16232F] flex items-center justify-center">

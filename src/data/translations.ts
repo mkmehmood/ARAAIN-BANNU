@@ -735,18 +735,210 @@ export const LOCALIZED_PROGRAMS: Record<Language, Program[]> = {
 
 export const LOCALIZED_LEADERS: Record<Language, Leader[]> = {
   en: [
-    { id: 1, initials: "SM", name: "Saba Mumtaz Bano", role: "Chairperson (Global)", email: "saba@arainworldcouncil.org", featured: 0, sort_order: 0 },
-    { id: 2, initials: "AC", name: "Dr. Aitzaz Chaudhary", role: "Global Chairman", email: "chairman@arainworldcouncil.org", featured: 1, sort_order: 1 },
-    { id: 3, initials: "AS", name: "Asim Chaudhary", role: "President (Global)", email: "asim@arainworldcouncil.org", featured: 0, sort_order: 2 },
-    { id: 4, initials: "TM", name: "Tahir Meer Arain", role: "Regional President (Bannu)", email: "tahir@arainbannu.org", featured: 1, sort_order: 3 },
-    { id: 5, initials: "MK", name: "Muhammad Khalid Arain", role: "General Secretary (Bannu)", email: "khalid@arainbannu.org", featured: 0, sort_order: 4 },
+    { 
+      id: 1, 
+      initials: "SM", 
+      name: "Saba Mumtaz Bano", 
+      nameUr: "صبا ممتاز بانو",
+      role: "Chairperson (Global)", 
+      roleUr: "چیئرپرسن (عالمی)",
+      email: "saba@arainworldcouncil.org", 
+      phone: "+92 300 9876543",
+      location: "Lahore / Global Council",
+      locationUr: "لاہور / عالمی کونسل",
+      message: "Empowering women and educating our youth are the twin engines of sustainable social transformation. Every family in Bannu deserves dignity, skills, and opportunity.",
+      messageUr: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
+      bio: "Prominent social worker and education advocate leading global women empowerment desks and vocational centers.",
+      bioUr: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
+      responsibilities: ["Global Council Outreach", "Women's Empowerment Desk", "Family Welfare Programs"],
+      responsibilitiesUr: ["عالمی کونسل روابط", "خواتین ڈیسک", "خاندانی فلاحی منصوبے"],
+      featured: 0, 
+      sort_order: 0 
+    },
+    { 
+      id: 2, 
+      initials: "AC", 
+      name: "Dr. Aitzaz Chaudhary", 
+      nameUr: "ڈاکٹر اعزاز چوہدری",
+      role: "Global Chairman", 
+      roleUr: "گلوبل چیئرمین",
+      email: "chairman@arainworldcouncil.org", 
+      phone: "+92 300 1122334",
+      location: "Islamabad / Bannu",
+      locationUr: "اسلام آباد / بنوں",
+      photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", 
+      message: "Our unity is our greatest strength. When we support our students with scholarships and build modern institutions, we establish an enduring legacy for generations.",
+      messageUr: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
+      bio: "Eminent scholar, visionary leader, and philanthropist committed to socio-economic uplift, educational excellence, and healthcare across Pakistan.",
+      bioUr: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
+      responsibilities: ["Supreme Council Strategic Policy", "Educational Trust & Scholarships", "Institutional Expansion"],
+      responsibilitiesUr: ["اعلیٰ کونسل اسٹریٹجک پالیسی", "ایجوکیشنل ٹرسٹ و اسکالرشپس", "تنظیمی توسیع"],
+      featured: 1, 
+      sort_order: 1 
+    },
+    { 
+      id: 3, 
+      initials: "AS", 
+      name: "Asim Chaudhary", 
+      nameUr: "عاصم چوہدری",
+      role: "President (Global)", 
+      roleUr: "صدر (عالمی)",
+      email: "asim@arainworldcouncil.org", 
+      phone: "+92 321 4455667",
+      location: "Islamabad / International",
+      locationUr: "اسلام آباد / بین الاقوامی",
+      message: "Connecting our vibrant youth with contemporary digital careers and global mentorship unlocks limitless potential for our future.",
+      messageUr: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
+      bio: "Senior corporate strategist and youth mentor dedicated to tech education, digital skills training, and entrepreneurship incubation.",
+      bioUr: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
+      responsibilities: ["Global Youth Network", "Digital Transformation", "Entrepreneurship Grants"],
+      responsibilitiesUr: ["گلوبل یوتھ نیٹ ورک", "ڈیجیٹل منصوبہ جات", "کاروباری گرانٹس"],
+      featured: 0, 
+      sort_order: 2 
+    },
+    { 
+      id: 4, 
+      initials: "TM", 
+      name: "Tahir Meer Arain", 
+      nameUr: "طاہر میر آرائیں",
+      role: "Regional President (Bannu)", 
+      roleUr: "علاقائی صدر (بنوں)",
+      email: "tahir@arainbannu.org", 
+      phone: "+92 300 1234567",
+      location: "Bannu, Khyber Pakhtunkhwa",
+      locationUr: "بنوں، خیبر پختونخوا",
+      message: "We are on the ground every day in Bannu to ensure that genuine welfare, emergency relief, and respectable community identity reach every household.",
+      messageUr: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
+      bio: "Dedicated grassroots leader driving regional operations, member enrollment, flood relief operations, and public coordination across Bannu division.",
+      bioUr: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
+      responsibilities: ["Regional Executive Governance", "Grassroots Emergency Relief", "Bannu Secretariat Supervision"],
+      responsibilitiesUr: ["علاقائی انتظامی نگرانی", "زمینی امدادی سرگرمیاں", "بنوں سیکرٹریٹ کی سربراہی"],
+      featured: 1, 
+      sort_order: 3 
+    },
+    { 
+      id: 5, 
+      initials: "MK", 
+      name: "Muhammad Khalid Arain", 
+      nameUr: "محمد خالد آرائیں",
+      role: "General Secretary (Bannu)", 
+      roleUr: "جنرل سیکرٹری (بنوں)",
+      email: "khalid@arainbannu.org", 
+      phone: "+92 313 5566778",
+      location: "Bannu, Khyber Pakhtunkhwa",
+      locationUr: "بنوں، خیبر پختونخوا",
+      message: "Our doors are always open to all members of our community for support, transparent documentation, and cooperative progress.",
+      messageUr: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
+      bio: "Community organizer maintaining executive council records, verification workflows, official correspondence, and member affairs.",
+      bioUr: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
+      responsibilities: ["Council Secretariat Records", "Membership ID Card Verifications", "Public Inquiries & Events"],
+      responsibilitiesUr: ["سیکرٹریٹ ریکارڈ و مراسلت", "شناختی کارڈ تصدیق و اجراء", "عوامی رابطہ و تقریبات"],
+      featured: 0, 
+      sort_order: 4 
+    },
   ],
   ur: [
-    { id: 1, initials: "ص م", name: "صبا ممتاز بانو", role: "چیئرپرسن (عالمی)", email: "saba@arainworldcouncil.org", featured: 0, sort_order: 0 },
-    { id: 2, initials: "ا چ", name: "ڈاکٹر اعزاز چوہدری", role: "گلوبل چیئرمین", email: "chairman@arainworldcouncil.org", featured: 1, sort_order: 1 },
-    { id: 3, initials: "ع چ", name: "عاصم چوہدری", role: "صدر (عالمی)", email: "asim@arainworldcouncil.org", featured: 0, sort_order: 2 },
-    { id: 4, initials: "ط م", name: "طاہر میر آرائیں", role: "علاقائی صدر (بنوں)", email: "tahir@arainbannu.org", featured: 1, sort_order: 3 },
-    { id: 5, initials: "خ آ", name: "محمد خالد آرائیں", role: "جنرل سیکرٹری (بنوں)", email: "khalid@arainbannu.org", featured: 0, sort_order: 4 },
+    { 
+      id: 1, 
+      initials: "ص م", 
+      name: "صبا ممتاز بانو", 
+      nameUr: "صبا ممتاز بانو",
+      role: "چیئرپرسن (عالمی)", 
+      roleUr: "چیئرپرسن (عالمی)",
+      email: "saba@arainworldcouncil.org", 
+      phone: "+92 300 9876543",
+      location: "Lahore / Global Council",
+      locationUr: "لاہور / عالمی کونسل",
+      message: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
+      messageUr: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
+      bio: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
+      bioUr: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
+      responsibilities: ["Global Council Outreach", "Women's Empowerment Desk", "Family Welfare Programs"],
+      responsibilitiesUr: ["عالمی کونسل روابط", "خواتین ڈیسک", "خاندانی فلاحی منصوبے"],
+      featured: 0, 
+      sort_order: 0 
+    },
+    { 
+      id: 2, 
+      initials: "ا چ", 
+      name: "ڈاکٹر اعزاز چوہدری", 
+      nameUr: "ڈاکٹر اعزاز چوہدری",
+      role: "گلوبل چیئرمین", 
+      roleUr: "گلوبل چیئرمین",
+      email: "chairman@arainworldcouncil.org", 
+      phone: "+92 300 1122334",
+      location: "Islamabad / Bannu",
+      locationUr: "اسلام آباد / بنوں",
+      photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", 
+      message: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
+      messageUr: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
+      bio: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
+      bioUr: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
+      responsibilities: ["Supreme Council Strategic Policy", "Educational Trust & Scholarships", "Institutional Expansion"],
+      responsibilitiesUr: ["اعلیٰ کونسل اسٹریٹجک پالیسی", "ایجوکیشنل ٹرسٹ و اسکالرشپس", "تنظیمی توسیع"],
+      featured: 1, 
+      sort_order: 1 
+    },
+    { 
+      id: 3, 
+      initials: "ع چ", 
+      name: "عاصم چوہدری", 
+      nameUr: "عاصم چوہدری",
+      role: "صدر (عالمی)", 
+      roleUr: "صدر (عالمی)",
+      email: "asim@arainworldcouncil.org", 
+      phone: "+92 321 4455667",
+      location: "Islamabad / International",
+      locationUr: "اسلام آباد / بین الاقوامی",
+      message: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
+      messageUr: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
+      bio: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
+      bioUr: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
+      responsibilities: ["Global Youth Network", "Digital Transformation", "Entrepreneurship Grants"],
+      responsibilitiesUr: ["گلوبل یوتھ نیٹ ورک", "ڈیجیٹل منصوبہ جات", "کاروباری گرانٹس"],
+      featured: 0, 
+      sort_order: 2 
+    },
+    { 
+      id: 4, 
+      initials: "ط م", 
+      name: "طاہر میر آرائیں", 
+      nameUr: "طاہر میر آرائیں",
+      role: "علاقائی صدر (بنوں)", 
+      roleUr: "علاقائی صدر (بنوں)",
+      email: "tahir@arainbannu.org", 
+      phone: "+92 300 1234567",
+      location: "Bannu, Khyber Pakhtunkhwa",
+      locationUr: "بنوں، خیبر پختونخوا",
+      message: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
+      messageUr: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
+      bio: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
+      bioUr: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
+      responsibilities: ["Regional Executive Governance", "Grassroots Emergency Relief", "Bannu Secretariat Supervision"],
+      responsibilitiesUr: ["علاقائی انتظامی نگرانی", "زمینی امدادی سرگرمیاں", "بنوں سیکرٹریٹ کی سربراہی"],
+      featured: 1, 
+      sort_order: 3 
+    },
+    { 
+      id: 5, 
+      initials: "خ آ", 
+      name: "محمد خالد آرائیں", 
+      nameUr: "محمد خالد آرائیں",
+      role: "جنرل سیکرٹری (بنوں)", 
+      roleUr: "جنرل سیکرٹری (بنوں)",
+      email: "khalid@arainbannu.org", 
+      phone: "+92 313 5566778",
+      location: "Bannu, Khyber Pakhtunkhwa",
+      locationUr: "بنوں، خیبر پختونخوا",
+      message: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
+      messageUr: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
+      bio: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
+      bioUr: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
+      responsibilities: ["Council Secretariat Records", "Membership ID Card Verifications", "Public Inquiries & Events"],
+      responsibilitiesUr: ["سیکرٹریٹ ریکارڈ و مراسلت", "شناختی کارڈ تصدیق و اجراء", "عوامی رابطہ و تقریبات"],
+      featured: 0, 
+      sort_order: 4 
+    },
   ]
 };
 
@@ -1032,7 +1224,7 @@ export function getLocalizedPrograms(lang: Language, customPrograms: Program[]):
  * Resolves leaders array respecting the active language and reflecting Firestore data
  */
 export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Leader[] {
-  const sourceList = customLeaders && customLeaders.length > 0 ? customLeaders : LOCALIZED_LEADERS[lang];
+  const sourceList = Array.isArray(customLeaders) ? customLeaders : [];
   return sourceList.map((item, idx) => {
     const catalogUr = LOCALIZED_LEADERS.ur.find(l => l.id === item.id);
     const catalogEn = LOCALIZED_LEADERS.en.find(l => l.id === item.id);
@@ -1062,30 +1254,46 @@ export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Le
 
     if (lang === 'ur') {
       if (!isUrduText(name)) {
-        name = catalogUr ? catalogUr.name : translateNameToUrdu(name);
+        name = item.nameUr || (catalogUr ? catalogUr.name : translateNameToUrdu(name));
+      } else if (item.nameUr) {
+        name = item.nameUr;
       }
       if (!isUrduText(role)) {
-        role = catalogUr ? catalogUr.role : translateOccupationToUrdu(role);
+        role = item.roleUr || (catalogUr ? catalogUr.role : translateOccupationToUrdu(role));
+      } else if (item.roleUr) {
+        role = item.roleUr;
       }
       return {
         ...item,
         name,
         role,
-        initials: catalogUr?.initials || 'آ ب',
+        message: item.messageUr || item.message || catalogUr?.message,
+        bio: item.bioUr || item.bio || catalogUr?.bio,
+        location: item.locationUr || item.location || catalogUr?.location,
+        responsibilities: (item.responsibilitiesUr && item.responsibilitiesUr.length > 0)
+          ? item.responsibilitiesUr 
+          : (catalogUr?.responsibilitiesUr || item.responsibilities),
+        initials: catalogUr?.initials || item.initials || 'آ ب',
         id: item.id ?? idx + 1,
       };
     } else {
       if (isUrduText(name)) {
-        name = catalogEn ? catalogEn.name : translateNameToEnglish(name);
+        name = item.name && !isUrduText(item.name) ? item.name : (catalogEn ? catalogEn.name : translateNameToEnglish(name));
       }
       if (isUrduText(role)) {
-        role = catalogEn ? catalogEn.role : translateOccupationToEnglish(role);
+        role = item.role && !isUrduText(item.role) ? item.role : (catalogEn ? catalogEn.role : translateOccupationToEnglish(role));
       }
       return {
         ...item,
         name,
         role,
-        initials: catalogEn?.initials || 'AB',
+        message: item.message || item.messageUr || catalogEn?.message,
+        bio: item.bio || item.bioUr || catalogEn?.bio,
+        location: item.location || item.locationUr || catalogEn?.location,
+        responsibilities: (item.responsibilities && item.responsibilities.length > 0)
+          ? item.responsibilities 
+          : (catalogEn?.responsibilities || item.responsibilitiesUr),
+        initials: catalogEn?.initials || item.initials || 'AB',
         id: item.id ?? idx + 1,
       };
     }
@@ -1324,7 +1532,7 @@ export const LOCALIZED_GALLERY: Record<Language, GalleryItem[]> = {
  * Resolves gallery array respecting the active language and reflecting Firestore data
  */
 export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]): GalleryItem[] {
-  const sourceList = customGallery && customGallery.length > 0 ? customGallery : LOCALIZED_GALLERY[lang];
+  const sourceList = Array.isArray(customGallery) ? customGallery : [];
   return sourceList.map((item, idx) => {
     const catalogUr = LOCALIZED_GALLERY.ur.find(g => g.id === item.id);
     const catalogEn = LOCALIZED_GALLERY.en.find(g => g.id === item.id);

@@ -27,12 +27,12 @@ export const defaultSettings: SiteSettings = {
   aboutP1: "آرائیں بنوں پاکستان اور بیرون ملک بسنے والے ہزاروں خاندانوں کی نمائندگی کرتی ہے، جو تعلیم، فلاح اور پائیدار ترقی کے مشترکہ عزم سے جڑے ہوئے ہیں۔",
   aboutP2: "اسٹریٹجک منصوبوں، تعلیمی وظائف، کمیونٹی سینٹرز اور نوجوانوں کی رہنمائی کے ذریعے ہم روایات اور جدید مواقع کے درمیان مضبوط پل تعمیر کر رہے ہیں۔",
   aboutP3: "بنوں میں ہماری علاقائی شاخ نچلی سطح پر فعال ہے، جو جنوبی خیبر پختونخوا کے خاندانوں کے لیے امداد، کیریئر رہنمائی اور باہمی اتحاد فراہم کرتی ہے۔",
-  statMembers: "500+",
+  statMembers: "50",
   statPrograms: "8",
   statCities: "30+",
-  chairmanName: "ڈاکٹر اعزاز چوہدری",
-  chairmanQuote: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
-  chairmanPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+  chairmanName: "MAULANA MUHAMMAD TAHIR KHAN ",
+  chairmanQuote: "Our unity is our greatest strength. When we empower our youth and support our families, we build a foundation that endures for generations.",
+  chairmanPhoto: "",
 
   // Sections
   programsTitle: "اہم منصوبے اور فلاحی پروگرامز",
@@ -47,15 +47,16 @@ export const defaultSettings: SiteSettings = {
   galleryDesc: "ہمارے سیمینارز، فلاحی سرگرمیوں، یوتھ سمٹس اور علاقائی اجتماعات کی تصویری جھلکیاں۔",
 
   // Contact
-  contactAddress: "دفتر آرائیں بنوں، مین سٹی، بنوں، خیبر پختونخوا، پاکستان",
-  contactHours: "پیر تا ہفتہ: صبح 09:00 تا شام 05:00",
-  contactPhone: "+92 300 1234567",
-  contactEmail: "info@arainbannu.org",
+  contactAddress: "ARAAIN BANNU Office, Main City, Bannu, Khyber Pakhtunkhwa, Pakistan",
+  contactHours: "Monday – Saturday: 09:00 AM – 05:00 PM (PKT)",
+  contactPhone: "03369948409",
+  contactEmail: "3tahirmeer@gmail.com",
+  multipleContacts: [],
 
   // Social
   socialFacebook: "https://facebook.com",
   socialTwitter: "https://x.com",
-  socialWhatsapp: "https://wa.me/923001234567",
+  socialWhatsapp: "https://wa.me/923369948409",
   socialInstagram: "https://instagram.com",
 
   // Footer
@@ -63,24 +64,24 @@ export const defaultSettings: SiteSettings = {
   footerCopy: "© 2025 آرائیں بنوں۔ تمام حقوق محفوظ ہیں۔",
 
   // Donation Accounts
-  bankName: "میزان بینک لمیٹڈ",
-  bankTitle: "آرائیں بنوں ویلفیئر فنڈ",
+  bankName: "Meezan Bank Limited",
+  bankTitle: "ARAAIN BANNU Welfare Fund",
   bankAccount: "01020304050607",
   bankIBAN: "PK36MEZN0001020304050607",
-  bankBranch: "بنوں برانچ (کوڈ 0123)",
-  epTitle: "طاہر میر (فنانس سیکرٹری)",
+  bankBranch: "Bannu Branch (Code 0123)",
+  epTitle: "Tahir Meer (Finance Secretary)",
   epNumber: "0300-1234567",
-  jcTitle: "آرائیں بنوں ویلفیئر",
+  jcTitle: "ARAAIN BANNU Welfare",
   jcNumber: "0321-7654321",
   intBank: "Meezan Bank Limited, Bannu",
   intSwift: "MEZNPKKAXXX",
   intIBAN: "PK36MEZN0001020304050607",
 
   // Custom Website Update & Announcement
-  announcementEnabled: true,
+  announcementEnabled: false,
   announcementBadge: "اہم اطلاع",
-  announcementText: "آرائیں بنوں کی ممبرشپ مہم 2025 شروع ہے۔ اپنا باضابطہ ڈیجیٹل رکنیت کارڈ حاصل کریں۔",
-  announcementTextEn: "Official Membership Drive 2025 is now active. Register online to receive your verified digital ID card.",
+  announcementText: "آرائیں بنوں کی ممبرشپ مہم شروع ہے۔ اپنا باضابطہ ڈیجیٹل رکنیت کارڈ حاصل کریں۔",
+  announcementTextEn: "Official Membership Drive is active. Register online to receive your verified digital ID card.",
   announcementLinkText: "رکنیت حاصل کریں",
   announcementAction: "membership",
   websiteThemeAccent: "#AD7A28",
@@ -100,17 +101,52 @@ export const defaultPrograms: Program[] = [
 ];
 
 export const defaultLeaders: Leader[] = [
-  { id: 1, initials: "ص م", name: "صبا ممتاز بانو", role: "چیئرپرسن (عالمی)", email: "saba@arainworldcouncil.org", featured: 0, sort_order: 0 },
-  { id: 2, initials: "ا چ", name: "ڈاکٹر اعزاز چوہدری", role: "گلوبل چیئرمین", email: "chairman@arainworldcouncil.org", photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", featured: 1, sort_order: 1 },
-  { id: 3, initials: "ع چ", name: "عاصم چوہدری", role: "صدر (عالمی)", email: "asim@arainworldcouncil.org", featured: 0, sort_order: 2 },
-  { id: 4, initials: "ط م", name: "طاہر میر آرائیں", role: "علاقائی صدر (بنوں)", email: "tahir@arainbannu.org", featured: 1, sort_order: 3 },
-  { id: 5, initials: "خ آ", name: "محمد خالد آرائیں", role: "جنرل سیکرٹری (بنوں)", email: "khalid@arainbannu.org", featured: 0, sort_order: 4 },
+  { 
+    id: 1789091503538, 
+    initials: "م خ", 
+    name: "Mahmood khan ", 
+    nameUr: "محمود خان",
+    role: "چیف اگزکٹیو ", 
+    roleUr: "چیف اگزکٹیو ",
+    email: "3mahmoodkhan@gmail.com", 
+    phone: "03369948409",
+    location: "بنوں، خیبر پختونخوا",
+    locationUr: "بنوں، خیبر پختونخوا",
+    message: "برادری کی سماجی و معاشی خود مختاری اور تعلیم کے فروغ کے لیے پرعزم۔",
+    messageUr: "برادری کی سماجی و معاشی خود مختاری اور تعلیم کے فروغ کے لیے پرعزم۔",
+    bio: "چیف ایگزیکٹو، آرائیں بنوں",
+    bioUr: "چیف ایگزیکٹو، آرائیں بنوں",
+    responsibilities: ["Executive Leadership", "Strategic Direction", "Community Uplift"],
+    responsibilitiesUr: ["انتظامی قیادت", "تزویراتی منصوبہ بندی", "برادری کی فلاح"],
+    featured: 1, 
+    sort_order: 0 
+  },
+  { 
+    id: 1789216878812, 
+    initials: "ط خ", 
+    name: "مولانا محمد طاہر خان ", 
+    nameUr: "مولانا محمد طاہر خان ",
+    role: "Chief secretary ", 
+    roleUr: "چیف سیکرٹری",
+    email: "3tahirmeer@gmail.com", 
+    phone: "03369948409",
+    location: "بنوں، خیبر پختونخوا",
+    locationUr: "بنوں، خیبر پختونخوا",
+    message: "کونسل کے دفتری امور، عوامی رابطے اور فلاحی سرگرمیوں کی باقاعدہ نگرانی۔",
+    messageUr: "کونسل کے دفتری امور، عوامی رابطے اور فلاحی سرگرمیوں کی باقاعدہ نگرانی۔",
+    bio: "چیف سیکرٹری، آرائیں بنوں",
+    bioUr: "چیف سیکرٹری، آرائیں بنوں",
+    responsibilities: ["Secretariat Governance", "Public Coordination", "Member Affairs"],
+    responsibilitiesUr: ["سیکرٹریٹ نگرانی", "عوامی رابطہ", "رکنیت امور"],
+    featured: 1, 
+    sort_order: 1 
+  }
 ];
 
 export const defaultEvents: EventItem[] = [
   { id: 1, day: "02", month: "جنوری", tag: "کاروبار", title: "اپنے کاروبار کو مضبوط بنیادوں پر استوار کریں", time_str: "دوپہر 15:00 تا شام 19:00", place: "بنوں، خیبر پختونخوا، پاکستان", sort_order: 0 },
-  { id: 2, day: "19", month: "اپریل", tag: "کمیونٹی", title: "آرائیں بنوں سالانہ اجتماع 2025", time_str: "صبح 09:30 تا دوپہر 13:00", place: "بنوں اسپورٹس کمپلیکس", sort_order: 1 },
-  { id: 3, day: "10", month: "دسمبر", tag: "نوجوان", title: "یوتھ لیڈرشپ سمٹ 2025", time_str: "صبح 10:00 تا شام 16:00", place: "بنوں پریس کلب", sort_order: 2 },
+  { id: 2, day: "19", month: "اپریل", tag: "کمیونٹی", title: "آرائیں بنوں سالانہ اجتماع", time_str: "صبح 09:30 تا دوپہر 13:00", place: "بنوں اسپورٹس کمپلیکس", sort_order: 1 },
+  { id: 3, day: "10", month: "دسمبر", tag: "نوجوان", title: "یوتھ لیڈرشپ سمٹ", time_str: "صبح 10:00 تا شام 16:00", place: "بنوں پریس کلب", sort_order: 2 },
 ];
 
 export const defaultPages: PageItem[] = [
@@ -170,41 +206,4 @@ export const defaultPages: PageItem[] = [
   },
 ];
 
-export const defaultGallery: GalleryItem[] = [
-  {
-    id: 1,
-    data_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?auto=format&fit=crop&w=800&q=80",
-    caption: "آرائیں بنوں سالانہ جنرل اسمبلی",
-    sort_order: 0,
-  },
-  {
-    id: 2,
-    data_url: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&q=80",
-    caption: "یوتھ لیڈرشپ سمٹ اور آئی ٹی رہنمائی",
-    sort_order: 1,
-  },
-  {
-    id: 3,
-    data_url: "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&w=800&q=80",
-    caption: "بنوں دیہی علاقے میں فری میڈیکل اور آئی کیمپ",
-    sort_order: 2,
-  },
-  {
-    id: 4,
-    data_url: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80",
-    caption: "رمضان راشن پیکجز کی تقسیم مہم",
-    sort_order: 3,
-  },
-  {
-    id: 5,
-    data_url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
-    caption: "میرٹ اسکالرشپ ایوارڈز تقریب",
-    sort_order: 4,
-  },
-  {
-    id: 6,
-    data_url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80",
-    caption: "مجلس عاملہ کا تزویراتی اجلاس",
-    sort_order: 5,
-  },
-];
+export const defaultGallery: GalleryItem[] = [];

@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
+  initializeFirestore,
   getFirestore, 
   collection, 
   doc, 
@@ -11,6 +12,7 @@ import {
   onSnapshot, 
   query, 
   orderBy, 
+  limit,
   serverTimestamp,
   Timestamp 
 } from 'firebase/firestore';
@@ -21,7 +23,7 @@ import {
   onAuthStateChanged,
   User 
 } from 'firebase/auth';
-import { Registration, Donation, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem } from '../types';
+import { Registration, Donation, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem, ContactMessage } from '../types';
 import { processRegistrationTranslations } from '../utils/urduTransliterator';
 
 export const FIREBASE_CONFIG = {
@@ -35,22 +37,35 @@ export const FIREBASE_CONFIG = {
 
 // Initialize Firebase App singleton
 export const firebaseApp = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApp();
-export const db = getFirestore(firebaseApp);
+
+// Initialize Firestore with experimentalForceLongPolling to prevent gRPC-web/WebChannel stream drops in iframe & web container sandboxes
+function createFirestoreInstance() {
+  try {
+    return initializeFirestore(firebaseApp, {
+      experimentalForceLongPolling: true,
+    });
+  } catch {
+    return getFirestore(firebaseApp);
+  }
+}
+
+export const db = createFirestoreInstance();
 export const auth = getAuth(firebaseApp);
 
 // ── Settings Sub-Documents Mapping ──────────────────────────────
 export const SETTINGS_GROUPS: Record<string, (keyof SiteSettings)[]> = {
   identity: ['siteName', 'siteTagline', 'siteSubName', 'siteSubTagline', 'logoData'],
-  hero: ['heroBadge', 'heroTitle', 'heroSub', 'heroTagline', 'heroImage'],
-  about: ['aboutTitle', 'aboutSubtitle', 'aboutP1', 'aboutP2', 'aboutP3', 'statMembers', 'statPrograms', 'statCities', 'chairmanName', 'chairmanQuote'],
+  hero: ['heroBadge', 'heroTitle', 'heroSub', 'heroTagline', 'heroImage', 'heroImages', 'heroSlideDuration'],
+  about: ['aboutTitle', 'aboutSubtitle', 'aboutP1', 'aboutP2', 'aboutP3', 'statMembers', 'statPrograms', 'statCities', 'chairmanName', 'chairmanQuote', 'chairmanPhoto'],
   sections: ['programsTitle', 'programsDesc', 'leadershipTitle', 'membershipTitle', 'membershipDesc', 'donateTitle', 'donateDesc', 'eventsTitle', 'galleryTitle', 'galleryDesc'],
-  contact: ['contactAddress', 'contactHours', 'contactPhone', 'contactEmail'],
+  contact: ['contactAddress', 'contactHours', 'contactPhone', 'contactEmail', 'multipleContacts'],
   social: ['socialFacebook', 'socialTwitter', 'socialWhatsapp', 'socialInstagram'],
   footer: ['footerDesc', 'footerCopy'],
   donation: ['bankName', 'bankTitle', 'bankAccount', 'bankIBAN', 'bankBranch', 'epTitle', 'epNumber', 'jcTitle', 'jcNumber', 'intBank', 'intSwift', 'intIBAN'],
+  misc: ['announcementEnabled', 'announcementBadge', 'announcementText', 'announcementTextEn', 'announcementLinkText', 'announcementAction', 'websiteThemeAccent', 'lastWebsiteUpdate', 'customNoticeHeadline'],
 };
 
-import { sanitizeText, sanitizePhone, sanitizeEmail, sanitizeCardId } from '../utils/security';
+import { sanitizeText, sanitizePhone, sanitizeEmail, sanitizeCardId, isAuthorizedAdminEmail } from '../utils/security';
 
 // ── Public Submissions ──────────────────────────────────────────
 
@@ -161,6 +176,13 @@ export async function submitDonation(data: Omit<Donation, '_id' | 'submittedAt'>
  * Listen to live Registrations collection
  */
 export function subscribeToRegistrations(callback: (items: Registration[]) => void): () => void {
+  // Security guard: Registrations contain sensitive member PII protected by Firestore Security Rules.
+  // Only establish listeners when authenticated as an authorized administrator.
+  if (!auth.currentUser || !isAuthorizedAdminEmail(auth.currentUser.email)) {
+    callback([]);
+    return () => {};
+  }
+
   try {
     const q = query(collection(db, 'registrations'), orderBy('submittedAt', 'desc'));
     return onSnapshot(q, (snapshot) => {
@@ -171,8 +193,7 @@ export function subscribeToRegistrations(callback: (items: Registration[]) => vo
       callback(items);
     }, (error) => {
       console.warn('[Firebase] Registrations subscription error:', error.message);
-      const fallback = (JSON.parse(localStorage.getItem('local_registrations') || '[]') as Registration[]).map(r => processRegistrationTranslations(r));
-      callback(fallback);
+      callback([]);
     });
   } catch (e) {
     return () => {};
@@ -183,6 +204,13 @@ export function subscribeToRegistrations(callback: (items: Registration[]) => vo
  * Listen to live Donations collection
  */
 export function subscribeToDonations(callback: (items: Donation[]) => void): () => void {
+  // Security guard: Donations contain financial proof slips protected by Firestore Security Rules.
+  // Only establish listeners when authenticated as an authorized administrator.
+  if (!auth.currentUser || !isAuthorizedAdminEmail(auth.currentUser.email)) {
+    callback([]);
+    return () => {};
+  }
+
   try {
     const q = query(collection(db, 'donations'), orderBy('submittedAt', 'desc'));
     return onSnapshot(q, (snapshot) => {
@@ -193,8 +221,7 @@ export function subscribeToDonations(callback: (items: Donation[]) => void): () 
       callback(items);
     }, (error) => {
       console.warn('[Firebase] Donations subscription error:', error.message);
-      const fallback = JSON.parse(localStorage.getItem('local_donations') || '[]');
-      callback(fallback);
+      callback([]);
     });
   } catch (e) {
     return () => {};
@@ -255,10 +282,25 @@ export function subscribeToSiteConfig(
 
 // ── Admin Push Helpers ──────────────────────────────────────────
 
+function cleanUndefinedData(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(cleanUndefinedData);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.entries(obj).reduce((acc: Record<string, any>, [k, v]) => {
+      if (v !== undefined) {
+        acc[k] = cleanUndefinedData(v);
+      }
+      return acc;
+    }, {});
+  }
+  return obj;
+}
+
 export async function pushSettingsToCloud(settings: Partial<SiteSettings>): Promise<void> {
   const byGroup: Record<string, Record<string, any>> = {};
 
   for (const [key, value] of Object.entries(settings)) {
+    if (value === undefined) continue;
     let group = 'misc';
     for (const [g, fields] of Object.entries(SETTINGS_GROUPS)) {
       if ((fields as string[]).includes(key)) {
@@ -267,7 +309,7 @@ export async function pushSettingsToCloud(settings: Partial<SiteSettings>): Prom
       }
     }
     if (!byGroup[group]) byGroup[group] = {};
-    byGroup[group][key] = value;
+    byGroup[group][key] = cleanUndefinedData(value);
   }
 
   await Promise.all(
@@ -278,23 +320,23 @@ export async function pushSettingsToCloud(settings: Partial<SiteSettings>): Prom
 }
 
 export async function pushProgramsToCloud(items: Program[]): Promise<void> {
-  await setDoc(doc(db, 'siteConfig', 'programs'), { items });
+  await setDoc(doc(db, 'siteConfig', 'programs'), { items: cleanUndefinedData(items) });
 }
 
 export async function pushLeadersToCloud(items: Leader[]): Promise<void> {
-  await setDoc(doc(db, 'siteConfig', 'leaders'), { items });
+  await setDoc(doc(db, 'siteConfig', 'leaders'), { items: cleanUndefinedData(items) });
 }
 
 export async function pushEventsToCloud(items: EventItem[]): Promise<void> {
-  await setDoc(doc(db, 'siteConfig', 'events'), { items });
+  await setDoc(doc(db, 'siteConfig', 'events'), { items: cleanUndefinedData(items) });
 }
 
 export async function pushPagesToCloud(items: PageItem[]): Promise<void> {
-  await setDoc(doc(db, 'siteConfig', 'pages'), { items });
+  await setDoc(doc(db, 'siteConfig', 'pages'), { items: cleanUndefinedData(items) });
 }
 
 export async function pushGalleryToCloud(items: GalleryItem[]): Promise<void> {
-  await setDoc(doc(db, 'siteConfig', 'gallery'), { items });
+  await setDoc(doc(db, 'siteConfig', 'gallery'), { items: cleanUndefinedData(items) });
 }
 
 export async function updateRegistrationStatusInCloud(id: string, status: string): Promise<void> {
@@ -388,7 +430,67 @@ export async function signOutAdmin(): Promise<void> {
   }
 }
 
-// ── Client Image Compression ────────────────────────────────────
+// ── Contact Messages ────────────────────────────────────────────
+
+export async function submitContactMessageInCloud(
+  data: Omit<ContactMessage, 'id' | 'createdAt'>
+): Promise<string> {
+  const newRef = doc(collection(db, 'messages'));
+  const sanitized = {
+    name: sanitizeText(data.name, 150),
+    email: sanitizeEmail(data.email),
+    subject: sanitizeText(data.subject || '', 200),
+    message: sanitizeText(data.message, 2000),
+    status: 'unread',
+    createdAt: new Date().toISOString(),
+  };
+
+  await setDoc(newRef, sanitized);
+  return newRef.id;
+}
+
+export function subscribeToContactMessages(
+  onMessages: (items: ContactMessage[]) => void
+): () => void {
+  // Security guard: Contact inquiries are restricted to authorized administrators.
+  if (!auth.currentUser || !isAuthorizedAdminEmail(auth.currentUser.email)) {
+    onMessages([]);
+    return () => {};
+  }
+
+  try {
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(100));
+    return onSnapshot(
+      q,
+      (snap) => {
+        const list = snap.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        })) as ContactMessage[];
+        onMessages(list);
+      },
+      (err) => {
+        console.warn('[Firebase] messages query failed:', err.message);
+        onMessages([]);
+      }
+    );
+  } catch (err: any) {
+    console.warn('[Firebase] subscribeToContactMessages setup error:', err.message);
+    return () => {};
+  }
+}
+
+export async function deleteContactMessageFromCloud(id: string): Promise<void> {
+  await deleteDoc(doc(db, 'messages', id));
+}
+
+export async function updateContactMessageStatusInCloud(
+  id: string, 
+  status: 'unread' | 'read' | 'replied'
+): Promise<void> {
+  await updateDoc(doc(db, 'messages', id), { status });
+}
+
 
 export async function compressImage(file: File, maxWidth = 900, quality = 0.75): Promise<string> {
   return new Promise((resolve, reject) => {

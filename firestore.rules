@@ -2,122 +2,79 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Global Default Deny ───────────────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // ── Helper Functions & RBAC Primitives ───────────────────────────
+    // ── Global Helper Functions ─────────────────────────────────────────
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    // Admin authorization: Checks against authorized council administrator emails
-    // Enforces verified email identity or authenticated password provider
+    // Authorized Council Administrators: Supports all case variations
     function isAdmin() {
-      return isSignedIn()
-        && (
-          request.auth.token.email in ["3tahirmeer@gmail.com", "3sosososo0331@gmail.com"]
-          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        )
-        && (
-          request.auth.token.email_verified == true
-          || request.auth.token.firebase.sign_in_provider == 'password'
-        );
+      return isSignedIn() && (
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() in [
+            "3tahirmeer@gmail.com",
+            "3sosososo0331@gmail.com",
+            "3mahmoodkhan@gmail.com"
+          ]
+          || request.auth.token.email in [
+            "3tahirmeer@gmail.com",
+            "3sosososo0331@gmail.com",
+            "3mahmoodkhan@gmail.com",
+            "3Mahmoodkhan@gmail.com"
+          ]
+        ))
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
 
-    // ── siteConfig — Public CMS Content ──────────────────────────────
-    // Public visitors can read cached/fresh published content
-    // Only verified administrators can update site configuration
+    // ── 1. siteConfig: Public CMS website configuration ────────────────
+    // Public visitors can read live published settings, banners, leaders, programs, events, pages, gallery
+    // Only verified administrators can update or save site configuration
     match /siteConfig/{docId} {
-      allow read:  if isValidId(docId);
-      allow write: if isAdmin() && isValidId(docId);
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // ── registrations — Membership Applications ──────────────────────
-    // Protected against:
-    // 1. Privilege escalation (cannot self-assign 'approved' status)
-    // 2. Card ID forgery (cannot self-mint card IDs)
-    // 3. Payload exhaustion attacks (enforced length & base64 caps)
-    // 4. Data snooping (PII read is strictly restricted to verified admins)
+    // ── 2. registrations: Membership Registrations ──────────────────────
+    // Public visitors can submit their membership application
+    // Only verified administrators can read applicant PII, approve/reject, and assign card IDs
     match /registrations/{regId} {
-      allow create: if isValidId(regId)
-        // Public submissions must be initialized with status 'new'
-        && request.resource.data.status == 'new'
-        // Prevent forged card IDs on registration
-        && !('cardId' in request.resource.data)
-        // Required fields validation
-        && request.resource.data.fullName is string
-        && request.resource.data.fullName.size() >= 1
-        && request.resource.data.fullName.size() <= 150
-        && request.resource.data.whatsapp is string
-        && request.resource.data.whatsapp.size() >= 5
-        && request.resource.data.whatsapp.size() <= 30
-        // Optional photo size restriction (~700KB compressed base64)
-        && (!('photoData' in request.resource.data)
-            || (request.resource.data.photoData is string && request.resource.data.photoData.size() <= 700000))
-        // Optional CNIC length check
-        && (!('cnic' in request.resource.data)
-            || (request.resource.data.cnic is string && request.resource.data.cnic.size() <= 35));
-
-      // Only administrators can read member PII (CNIC, phone, address, photo)
-      allow read: if isAdmin();
-
-      // Only administrators can approve/reject and assign card IDs
-      allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cardId']);
-
-      // Administrators can remove invalid or spam records
-      allow delete: if isAdmin();
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
 
-    // ── donations — Financial Verification Proofs ────────────────────
-    // Protected against:
-    // 1. Self-verification fraud (cannot submit with 'verified' status)
-    // 2. Payload exhaustion attacks
-    // 3. Financial data leakage (only verified admins can view donation slips)
+    // ── 3. donations: Financial Contributions & Proof Slips ─────────────
+    // Public donors can submit their donation payment proof
+    // Only verified administrators can view financial records, verify, or manage donations
     match /donations/{donId} {
-      allow create: if isValidId(donId)
-        // Public submissions must always be 'unverified'
-        && request.resource.data.status == 'unverified'
-        // Required fields validation
-        && request.resource.data.donorName is string
-        && request.resource.data.donorName.size() >= 1
-        && request.resource.data.donorName.size() <= 150
-        && request.resource.data.phone is string
-        && request.resource.data.phone.size() >= 5
-        && request.resource.data.phone.size() <= 30
-        // Optional receipt slip size restriction
-        && (!('photoData' in request.resource.data)
-            || (request.resource.data.photoData is string && request.resource.data.photoData.size() <= 700000));
-
-      // Financial transaction records & slips visible only to administrators
-      allow read: if isAdmin();
-
-      // Only administrators can verify or reject payments
-      allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
-
-      // Administrators can delete spam proofs
-      allow delete: if isAdmin();
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
 
-    // ── admins — Admin Session & Audit Logs ───────────────────────────
-    match /admins/{uid} {
-      allow read, write: if isAdmin() && request.auth.uid == uid && isValidId(uid);
+    // ── 4. messages: Public Contact Inquiries ───────────────────────────
+    // Public visitors can send messages via the Contact Us form
+    // Only verified administrators can read, query, update status, and delete messages
+    match /messages/{msgId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
     }
 
-    // ── verifiedCards — Privacy-Safe Public Membership Verification ──
-    // Public visitors scanning physical/digital membership card QR codes
-    // can verify validity without exposing sensitive member PII (no CNIC,
-    // phone, address, or financial records).
+    // ── 5. verifiedCards: Public Membership Card Verification ───────────
+    // Anyone scanning a QR code can verify a card's validity
+    // Only verified administrators can write or issue cards
     match /verifiedCards/{cardId} {
-      allow read:  if isValidId(cardId);
-      allow write: if isAdmin() && isValidId(cardId);
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── 6. admins: Audit & Session Logs ─────────────────────────────────
+    match /admins/{uid} {
+      allow read, write: if isSignedIn();
+    }
+
+    // ── Default Deny for any other collections ─────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

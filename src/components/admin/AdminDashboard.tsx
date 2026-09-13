@@ -9,10 +9,16 @@ import {
   Leader, 
   EventItem, 
   PageItem, 
-  GalleryItem 
+  GalleryItem,
+  ContactDetail
 } from '../../types';
 import { compressImage } from '../../services/firebase';
 import { MembershipCardModal } from './MembershipCardModal';
+import { 
+  resolveContactType, 
+  ContactIconComponent, 
+  getContactTypeTheme 
+} from '../../utils/contactIcons';
 import { 
   ShieldCheck, 
   Users, 
@@ -44,7 +50,15 @@ import {
   Globe,
   Check,
   Sliders,
-  Bell
+  Bell,
+  Phone,
+  MapPin,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  ArrowUp,
+  ArrowDown,
+  Building2
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -80,10 +94,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     deleteRegistration,
     updateDonationStatus,
     deleteDonation,
+    deleteContactMessage,
+    updateContactMessageStatus,
   } = useData();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'donations' | 'messages' | 'cms' | 'customUpdate'>('overview');
   const [cmsTab, setCmsTab] = useState<'customUpdate' | 'identity' | 'hero' | 'about' | 'programs' | 'leaders' | 'events' | 'pages' | 'gallery' | 'bank' | 'contact'>('customUpdate');
+  const [expandedLeaderId, setExpandedLeaderId] = useState<string | number | null>(null);
 
   // Search & Filter states
   const [memberSearch, setMemberSearch] = useState('');
@@ -933,14 +950,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {m.message}
                       </p>
 
-                      <div className="flex items-center gap-3 pt-1">
-                        <a
-                          href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject)}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16232F] text-white text-xs font-semibold hover:bg-[#25394C]"
-                        >
-                          <Mail className="w-3.5 h-3.5" />
-                          <span>Reply via Email</span>
-                        </a>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-200/80 mt-2">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`mailto:${m.email}?subject=Re: ${encodeURIComponent(m.subject || 'Inquiry')}`}
+                            onClick={() => m.id && updateContactMessageStatus(String(m.id), 'replied')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16232F] text-white text-xs font-semibold hover:bg-[#25394C] transition-colors"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Reply via Email</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => m.id && updateContactMessageStatus(String(m.id), m.status === 'read' ? 'unread' : 'read')}
+                            className="px-2.5 py-1.5 rounded-lg border text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                          >
+                            {m.status === 'read' ? 'Mark as Unread' : 'Mark as Read'}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            m.status === 'replied' ? 'bg-purple-100 text-purple-700' :
+                            m.status === 'read' ? 'bg-slate-200 text-slate-700' :
+                            'bg-amber-100 text-amber-800'
+                          }`}>
+                            {m.status === 'replied' ? 'Replied' : m.status === 'read' ? 'Read' : 'Unread'}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (m.id && confirm('Delete this message permanently?')) {
+                                deleteContactMessage(String(m.id));
+                              }
+                            }}
+                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                            title="Delete Inquiry"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -1657,107 +1708,383 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Leaders CMS */}
               {cmsTab === 'leaders' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
-                    <h4 className="text-sm font-bold text-[#16232F]">
-                      Leadership Directory ({tempLeaders.length})
-                    </h4>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2">
+                    <div>
+                      <h4 className="text-sm font-bold text-[#16232F]">
+                        Leadership Directory ({tempLeaders.length})
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Manage leader profiles, customized viewer messages, biographies, and contact channels shown in the interactive popups.
+                      </p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setTempLeaders([...tempLeaders, {
-                        id: Date.now(),
-                        name: 'Leader Name',
-                        role: 'Council Member',
-                        email: 'leader@arainbannu.org',
-                        featured: 0,
-                        initials: 'AB'
-                      }])}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold"
+                      onClick={() => {
+                        const newId = Date.now();
+                        setTempLeaders([...tempLeaders, {
+                          id: newId,
+                          name: 'Leader Name',
+                          nameUr: 'رہنما کا نام',
+                          role: 'Council Member',
+                          roleUr: 'رکن کونسل',
+                          email: 'leader@arainbannu.org',
+                          phone: '+92 331 0000000',
+                          location: 'Bannu, Khyber Pakhtunkhwa',
+                          locationUr: 'بنوں، خیبر پختونخوا',
+                          message: 'We are committed to empowering our community through education, health, and social welfare.',
+                          messageUr: 'ہم تعلیم، صحت اور سماجی فلاح و بہبود کے ذریعے اپنی برادری کی ترقی کے لیے پرعزم ہیں۔',
+                          bio: 'Dedicated community leader actively participating in welfare initiatives and educational programs.',
+                          bioUr: 'مخلص سماجی رہنما جو فلاحی منصوبوں اور تعلیمی پروگراموں میں فعال کردار ادا کر رہے ہیں۔',
+                          responsibilities: ['Community Welfare', 'Social Coordination'],
+                          featured: 0,
+                          initials: 'AB'
+                        }]);
+                        setExpandedLeaderId(newId);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors self-start sm:self-auto"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Leader</span>
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {tempLeaders.map((lead, idx) => (
-                      <div key={lead.id || idx} className="p-4 rounded-xl border bg-slate-50 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <input
-                            type="text"
-                            value={lead.name}
-                            onChange={(e) => {
-                              const updated = [...tempLeaders];
-                              updated[idx].name = e.target.value;
-                              setTempLeaders(updated);
-                            }}
-                            placeholder="Full Name"
-                            className="font-bold text-sm bg-white px-2 py-1 rounded border flex-1 mr-2"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setTempLeaders(tempLeaders.filter((_, i) => i !== idx))}
-                            className="p-1 rounded text-red-500 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                  <div className="space-y-4">
+                    {tempLeaders.map((lead, idx) => {
+                      const isExpanded = expandedLeaderId === lead.id;
+                      const photoSrc = lead.photo_data || lead.image;
+
+                      return (
+                        <div key={lead.id || idx} className="rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden shadow-xs">
+                          {/* Card Header Bar */}
+                          <div className="p-4 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-11 h-11 rounded-xl bg-[#AD7A28]/15 border border-[#AD7A28]/30 flex items-center justify-center overflow-hidden shrink-0">
+                                {photoSrc ? (
+                                  <img src={photoSrc} alt={lead.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-xs font-bold text-[#AD7A28]">{lead.initials || 'AB'}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-sm text-[#16232F] truncate">
+                                    {lead.name}
+                                  </span>
+                                  {lead.nameUr && (
+                                    <span className="text-xs text-slate-500 truncate hidden sm:inline">
+                                      ({lead.nameUr})
+                                    </span>
+                                  )}
+                                  {Boolean(lead.featured) && (
+                                    <span className="px-2 py-0.5 rounded-md bg-[#AD7A28]/15 text-[#8A5F19] text-[10px] font-bold">
+                                      Featured
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-slate-500 truncate">
+                                  {lead.role} {lead.roleUr ? `• ${lead.roleUr}` : ''}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setExpandedLeaderId(isExpanded ? null : (lead.id || idx))}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    <span>Collapse</span>
+                                    <ChevronUp className="w-3.5 h-3.5" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>Edit Details & Message</span>
+                                    <ChevronDown className="w-3.5 h-3.5" />
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(`Remove ${lead.name} from leadership directory?`)) {
+                                    setTempLeaders(tempLeaders.filter((_, i) => i !== idx));
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+                                title="Delete Leader"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Quick Summary Inputs */}
+                          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Full Name (English)</label>
+                              <input
+                                type="text"
+                                value={lead.name}
+                                onChange={(e) => {
+                                  const updated = [...tempLeaders];
+                                  updated[idx].name = e.target.value;
+                                  setTempLeaders(updated);
+                                }}
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                placeholder="e.g. Haji Muhammad Tahir"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Full Name (Urdu)</label>
+                              <input
+                                type="text"
+                                value={lead.nameUr || ''}
+                                onChange={(e) => {
+                                  const updated = [...tempLeaders];
+                                  updated[idx].nameUr = e.target.value;
+                                  setTempLeaders(updated);
+                                }}
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                placeholder="مثال: حاجی محمد طاہر"
+                                dir="rtl"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Designation (English)</label>
+                              <input
+                                type="text"
+                                value={lead.role}
+                                onChange={(e) => {
+                                  const updated = [...tempLeaders];
+                                  updated[idx].role = e.target.value;
+                                  setTempLeaders(updated);
+                                }}
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                placeholder="e.g. Chairman / President"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-slate-600 mb-1">Designation (Urdu)</label>
+                              <input
+                                type="text"
+                                value={lead.roleUr || ''}
+                                onChange={(e) => {
+                                  const updated = [...tempLeaders];
+                                  updated[idx].roleUr = e.target.value;
+                                  setTempLeaders(updated);
+                                }}
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                placeholder="مثال: چیئرمین / صدر"
+                                dir="rtl"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Expanded Full Details Section */}
+                          {isExpanded && (
+                            <div className="p-4 sm:p-5 border-t border-slate-200 bg-white space-y-4">
+                              
+                              {/* Customized Message For Viewers */}
+                              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-3">
+                                <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+                                  <MessageSquare className="w-4 h-4 text-amber-600" />
+                                  <span>Customized Message for Viewers (Displays in Click-to-Open Modal)</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Viewer Message (English)</label>
+                                    <textarea
+                                      rows={3}
+                                      value={lead.message || ''}
+                                      onChange={(e) => {
+                                        const updated = [...tempLeaders];
+                                        updated[idx].message = e.target.value;
+                                        setTempLeaders(updated);
+                                      }}
+                                      className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-amber-300"
+                                      placeholder="A direct, inspiring message from this leader to website visitors and community members..."
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Viewer Message (Urdu)</label>
+                                    <textarea
+                                      rows={3}
+                                      value={lead.messageUr || ''}
+                                      onChange={(e) => {
+                                        const updated = [...tempLeaders];
+                                        updated[idx].messageUr = e.target.value;
+                                        setTempLeaders(updated);
+                                      }}
+                                      className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-amber-300 font-urdu"
+                                      placeholder="زائرین اور برادری کے لیے خصوصی و پرخلوص پیغام..."
+                                      dir="rtl"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Detailed Bio & Profile */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Detailed Biography (English)</label>
+                                  <textarea
+                                    rows={4}
+                                    value={lead.bio || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].bio = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    placeholder="Educational background, career, community milestones and welfare leadership..."
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Detailed Biography (Urdu)</label>
+                                  <textarea
+                                    rows={4}
+                                    value={lead.bioUr || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].bioUr = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                    placeholder="تفصیلی تعارف، خدمات اور جدوجہد..."
+                                    dir="rtl"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Contact & Location */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Email Address</label>
+                                  <input
+                                    type="email"
+                                    value={lead.email || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].email = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    placeholder="leader@arainbannu.org"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Phone / WhatsApp</label>
+                                  <input
+                                    type="text"
+                                    value={lead.phone || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].phone = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono"
+                                    placeholder="+92 331 9051410"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Location (English)</label>
+                                  <input
+                                    type="text"
+                                    value={lead.location || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].location = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    placeholder="Bannu, KP"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">Location (Urdu)</label>
+                                  <input
+                                    type="text"
+                                    value={lead.locationUr || ''}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].locationUr = e.target.value;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                    placeholder="بنوں، خیبر پختونخوا"
+                                    dir="rtl"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Responsibilities */}
+                              <div>
+                                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                                  Key Responsibilities / Focus Areas (comma-separated)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={Array.isArray(lead.responsibilities) ? lead.responsibilities.join(', ') : (lead.responsibilities || '')}
+                                  onChange={(e) => {
+                                    const updated = [...tempLeaders];
+                                    const list = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
+                                    updated[idx].responsibilities = list;
+                                    setTempLeaders(updated);
+                                  }}
+                                  className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                  placeholder="e.g. Strategic Planning, Health Dispensary Oversight, Educational Scholarships"
+                                />
+                              </div>
+
+                              {/* Photo & Featured Controls */}
+                              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                                <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(lead.featured)}
+                                    onChange={(e) => {
+                                      const updated = [...tempLeaders];
+                                      updated[idx].featured = e.target.checked ? 1 : 0;
+                                      setTempLeaders(updated);
+                                    }}
+                                    className="rounded text-[#AD7A28] focus:ring-[#AD7A28]"
+                                  />
+                                  <span className="font-semibold">Featured Badge (Highlight in council view)</span>
+                                </label>
+
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-slate-500">Upload Portrait:</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        const b64 = await compressImage(file, 400, 0.82);
+                                        const updated = [...tempLeaders];
+                                        updated[idx].photo_data = b64;
+                                        setTempLeaders(updated);
+                                      }
+                                    }}
+                                    className="text-xs"
+                                  />
+                                </div>
+                              </div>
+
+                            </div>
+                          )}
                         </div>
-
-                        <input
-                          type="text"
-                          value={lead.role}
-                          onChange={(e) => {
-                            const updated = [...tempLeaders];
-                            updated[idx].role = e.target.value;
-                            setTempLeaders(updated);
-                          }}
-                          placeholder="Designation"
-                          className="w-full text-xs bg-white px-2 py-1 rounded border"
-                        />
-
-                        <input
-                          type="email"
-                          value={lead.email || ''}
-                          onChange={(e) => {
-                            const updated = [...tempLeaders];
-                            updated[idx].email = e.target.value;
-                            setTempLeaders(updated);
-                          }}
-                          placeholder="Contact Email"
-                          className="w-full text-xs bg-white px-2 py-1 rounded border"
-                        />
-
-                        <div className="flex items-center justify-between pt-1">
-                          <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={Boolean(lead.featured)}
-                              onChange={(e) => {
-                                const updated = [...tempLeaders];
-                                updated[idx].featured = e.target.checked ? 1 : 0;
-                                setTempLeaders(updated);
-                              }}
-                              className="rounded text-[#AD7A28]"
-                            />
-                            <span>Featured Badge</span>
-                          </label>
-
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const b64 = await compressImage(file, 300, 0.8);
-                                const updated = [...tempLeaders];
-                                updated[idx].photo_data = b64;
-                                setTempLeaders(updated);
-                              }
-                            }}
-                            className="text-[11px] max-w-[140px]"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -2074,72 +2401,522 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               {/* Contact CMS */}
               {cmsTab === 'contact' && (
-                <div className="space-y-4 max-w-2xl">
-                  <h4 className="text-sm font-bold text-[#16232F] border-b pb-2">
-                    Office Contact & Social Channels
-                  </h4>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Address</label>
-                    <input
-                      type="text"
-                      value={tempSettings.contactAddress}
-                      onChange={(e) => setTempSettings({ ...tempSettings, contactAddress: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border text-sm"
-                    />
+                <div className="space-y-6 max-w-4xl">
+                  
+                  {/* Header */}
+                  <div className="border-b pb-3">
+                    <h4 className="text-base font-bold text-[#16232F] flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-[#AD7A28]" />
+                      <span>Multiple Contact Channels & Office Details</span>
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Configure multiple telephone numbers, WhatsApp helplines, branch addresses, email desks, and working hours with automated icon selection and bilingual support.
+                    </p>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Office Hours</label>
-                    <input
-                      type="text"
-                      value={tempSettings.contactHours}
-                      onChange={(e) => setTempSettings({ ...tempSettings, contactHours: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border text-sm"
-                    />
+                  {/* Section 1: Multiple Contacts Manager with Automated Icons */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-amber-500" />
+                          <span className="font-bold text-sm text-[#16232F]">
+                            Multiple Contacts Directory ({(tempSettings.multipleContacts || []).length})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Automated icon recognition determines whether each entry is a phone, WhatsApp, email, office location, or hours based on value and type.
+                        </p>
+                      </div>
+
+                      {/* Quick Add Presets Bar */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = tempSettings.multipleContacts || [];
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                ...current,
+                                {
+                                  id: `contact_${Date.now()}`,
+                                  title: 'Helpline Number',
+                                  titleUr: 'ہیلپ لائن نمبر',
+                                  value: '+92 331 9051410',
+                                  type: 'phone',
+                                  note: 'Available 9 AM - 5 PM',
+                                  noteUr: 'صبح 9 تا شام 5 بجے تک',
+                                  isPrimary: current.length === 0
+                                }
+                              ]
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                        >
+                          + Phone
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = tempSettings.multipleContacts || [];
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                ...current,
+                                {
+                                  id: `contact_${Date.now()}`,
+                                  title: 'Official WhatsApp',
+                                  titleUr: 'سرکاری واٹس ایپ رابطہ',
+                                  value: '+92 331 9051410',
+                                  type: 'whatsapp',
+                                  note: 'Instant messaging & inquiries',
+                                  noteUr: 'فوری پیغامات و معلومات',
+                                  isPrimary: false
+                                }
+                              ]
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          + WhatsApp
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = tempSettings.multipleContacts || [];
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                ...current,
+                                {
+                                  id: `contact_${Date.now()}`,
+                                  title: 'Inquiry Desk',
+                                  titleUr: 'معلومات و رابطہ ای میل',
+                                  value: 'info@arainbannu.org',
+                                  type: 'email',
+                                  note: 'Official correspondence',
+                                  noteUr: 'سرکاری خط و کتابت',
+                                  isPrimary: false
+                                }
+                              ]
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-300 text-blue-800 hover:bg-blue-100 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          + Email
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = tempSettings.multipleContacts || [];
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                ...current,
+                                {
+                                  id: `contact_${Date.now()}`,
+                                  title: 'Central Secretariat',
+                                  titleUr: 'مرکزی سیکرٹریٹ و دفتر',
+                                  value: 'Arain House, Near DHQ Hospital Road, Bannu, KP',
+                                  type: 'address',
+                                  note: 'Main community secretariat',
+                                  noteUr: 'مرکزی کمیونٹی سیکرٹریٹ',
+                                  isPrimary: false
+                                }
+                              ]
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-purple-50 border border-purple-300 text-purple-800 hover:bg-purple-100 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          + Location
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = tempSettings.multipleContacts || [];
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                ...current,
+                                {
+                                  id: `contact_${Date.now()}`,
+                                  title: 'Secretariat Hours',
+                                  titleUr: 'فتری اوقات کار',
+                                  value: 'Monday to Saturday: 9:00 AM - 5:00 PM',
+                                  type: 'hours',
+                                  note: 'Sunday Closed / Emergency on call',
+                                  noteUr: 'اتوار تعطیل / ایمرجنسی آن کال',
+                                  isPrimary: false
+                                }
+                              ]
+                            });
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 hover:bg-amber-100 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          + Hours
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Contact items list */}
+                    {(!tempSettings.multipleContacts || tempSettings.multipleContacts.length === 0) ? (
+                      <div className="py-8 text-center bg-white rounded-xl border border-dashed border-slate-300 space-y-3">
+                        <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+                          <Phone className="w-5 h-5" />
+                        </div>
+                        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                          No multiple contacts created yet. Click any preset button above or import from your single basic contact details below.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTempSettings({
+                              ...tempSettings,
+                              multipleContacts: [
+                                {
+                                  id: 'c_phone_1',
+                                  title: 'Helpline & Inquiries',
+                                  titleUr: 'مرکزی رابطہ و معلومات',
+                                  value: tempSettings.contactPhone || '+92 331 9051410',
+                                  type: 'phone',
+                                  note: 'Direct call assistance',
+                                  noteUr: 'براہ راست رابطہ',
+                                  isPrimary: true
+                                },
+                                {
+                                  id: 'c_whatsapp_1',
+                                  title: 'WhatsApp Official',
+                                  titleUr: 'سرکاری واٹس ایپ',
+                                  value: tempSettings.contactPhone || '+92 331 9051410',
+                                  type: 'whatsapp',
+                                  note: 'Fast chat support',
+                                  noteUr: 'فوری میسج سروس',
+                                  isPrimary: false
+                                },
+                                {
+                                  id: 'c_email_1',
+                                  title: 'Official Email',
+                                  titleUr: 'سرکاری ای میل',
+                                  value: tempSettings.contactEmail || 'contact@arainbannu.org',
+                                  type: 'email',
+                                  note: 'Membership & verified queries',
+                                  noteUr: 'ممبرشپ اور عمومی سوالات',
+                                  isPrimary: false
+                                },
+                                {
+                                  id: 'c_address_1',
+                                  title: 'Office Address',
+                                  titleUr: 'مرکزی دفتر و پتہ',
+                                  value: tempSettings.contactAddress || 'Near DHQ Hospital Road, Bannu, KP',
+                                  type: 'address',
+                                  note: 'Visitors welcome during office hours',
+                                  noteUr: 'دفتری اوقات میں زائرین خوش آمدید',
+                                  isPrimary: false
+                                }
+                              ]
+                            });
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16232F] text-white text-xs font-semibold hover:bg-[#25394C] transition-colors cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Populate Default Multiple Contacts</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {tempSettings.multipleContacts.map((contact, idx) => {
+                          const detectedType = resolveContactType(contact);
+                          const theme = getContactTypeTheme(detectedType);
+
+                          return (
+                            <div
+                              key={contact.id || idx}
+                              className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs space-y-3"
+                            >
+                              {/* Contact Row Header */}
+                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                                <div className="flex items-center gap-2.5">
+                                  {/* Real-time automated icon badge */}
+                                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${theme.iconBg} ${theme.badgeBg} ${theme.iconColor}`}>
+                                    <ContactIconComponent type={detectedType} className="w-4 h-4" />
+                                  </div>
+
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-xs sm:text-sm text-[#16232F]">
+                                        {contact.title || 'Contact Channel'}
+                                      </span>
+                                      {contact.isPrimary && (
+                                        <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                          Primary
+                                        </span>
+                                      )}
+                                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-mono">
+                                        Auto-detected: {detectedType}
+                                      </span>
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 font-mono truncate max-w-xs">
+                                      {contact.value || 'No value entered'}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Row Controls */}
+                                <div className="flex items-center gap-1">
+                                  {/* Move Up */}
+                                  <button
+                                    type="button"
+                                    disabled={idx === 0}
+                                    onClick={() => {
+                                      if (idx === 0) return;
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      const temp = list[idx - 1];
+                                      list[idx - 1] = list[idx];
+                                      list[idx] = temp;
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                    title="Move Up"
+                                  >
+                                    <ArrowUp className="w-4 h-4" />
+                                  </button>
+
+                                  {/* Move Down */}
+                                  <button
+                                    type="button"
+                                    disabled={idx === (tempSettings.multipleContacts || []).length - 1}
+                                    onClick={() => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      if (idx >= list.length - 1) return;
+                                      const temp = list[idx + 1];
+                                      list[idx + 1] = list[idx];
+                                      list[idx] = temp;
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                                    title="Move Down"
+                                  >
+                                    <ArrowDown className="w-4 h-4" />
+                                  </button>
+
+                                  {/* Delete */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const list = (tempSettings.multipleContacts || []).filter((_, i) => i !== idx);
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+                                    title="Delete Contact"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Form Inputs Grid */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Title (English)</label>
+                                  <input
+                                    type="text"
+                                    value={contact.title}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], title: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    placeholder="e.g. Secretariat Helpline"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Title (Urdu)</label>
+                                  <input
+                                    type="text"
+                                    value={contact.titleUr || ''}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], titleUr: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                    placeholder="مثال: سیکرٹریٹ ہیلپ لائن"
+                                    dir="rtl"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                                    Icon Mode & Channel Type
+                                  </label>
+                                  <select
+                                    value={contact.type || ''}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], type: e.target.value as any };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold"
+                                  >
+                                    <option value="">Auto-Detect (Automated Icons)</option>
+                                    <option value="phone">📞 Phone / Telephone</option>
+                                    <option value="whatsapp">💬 WhatsApp Helpline</option>
+                                    <option value="email">✉️ Official Email</option>
+                                    <option value="address">📍 Physical Address / Secretariat</option>
+                                    <option value="hours">🕒 Office Hours / Availability</option>
+                                    <option value="link">🌐 Web Portal / Custom Link</option>
+                                  </select>
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                                    Contact Value (Phone, Email, Address, or URL)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={contact.value}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], value: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono"
+                                    placeholder="e.g. +92 331 9051410 or info@arainbannu.org or Bannu, KP"
+                                  />
+                                </div>
+
+                                <div className="flex items-center pt-4">
+                                  <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={Boolean(contact.isPrimary)}
+                                      onChange={(e) => {
+                                        const list = [...(tempSettings.multipleContacts || [])];
+                                        list[idx] = { ...list[idx], isPrimary: e.target.checked };
+                                        setTempSettings({ ...tempSettings, multipleContacts: list });
+                                      }}
+                                      className="rounded text-[#AD7A28] focus:ring-[#AD7A28]"
+                                    />
+                                    <span className="font-semibold">Mark as Primary Channel</span>
+                                  </label>
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Timing / Note (English)</label>
+                                  <input
+                                    type="text"
+                                    value={contact.note || ''}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], note: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    placeholder="e.g. Mon - Sat: 9 AM - 5 PM"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">Timing / Note (Urdu)</label>
+                                  <input
+                                    type="text"
+                                    value={contact.noteUr || ''}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], noteUr: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-urdu"
+                                    placeholder="مثال: پیر تا ہفتہ: صبح 9 تا شام 5 بجے"
+                                    dir="rtl"
+                                  />
+                                </div>
+
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Section 2: General & Social Fallbacks */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4">
+                    <h5 className="font-bold text-sm text-[#16232F] border-b pb-2 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-slate-500" />
+                      <span>General Secretariat Contact & Social Links (Fallback)</span>
+                    </h5>
+
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Phone / WhatsApp</label>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Main Secretariat Address</label>
                       <input
                         type="text"
-                        value={tempSettings.contactPhone}
-                        onChange={(e) => setTempSettings({ ...tempSettings, contactPhone: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border text-sm font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Official Email</label>
-                      <input
-                        type="email"
-                        value={tempSettings.contactEmail}
-                        onChange={(e) => setTempSettings({ ...tempSettings, contactEmail: e.target.value })}
+                        value={tempSettings.contactAddress}
+                        onChange={(e) => setTempSettings({ ...tempSettings, contactAddress: e.target.value })}
                         className="w-full px-3 py-2 rounded-xl border text-sm"
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Standard Office Hours</label>
+                      <input
+                        type="text"
+                        value={tempSettings.contactHours}
+                        onChange={(e) => setTempSettings({ ...tempSettings, contactHours: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Phone / WhatsApp</label>
+                        <input
+                          type="text"
+                          value={tempSettings.contactPhone}
+                          onChange={(e) => setTempSettings({ ...tempSettings, contactPhone: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Official Email</label>
+                        <input
+                          type="email"
+                          value={tempSettings.contactEmail}
+                          onChange={(e) => setTempSettings({ ...tempSettings, contactEmail: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">Facebook Page / Community URL</label>
+                        <input
+                          type="text"
+                          value={tempSettings.socialFacebook || ''}
+                          onChange={(e) => setTempSettings({ ...tempSettings, socialFacebook: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Group / Community Link</label>
+                        <input
+                          type="text"
+                          value={tempSettings.socialWhatsapp || ''}
+                          onChange={(e) => setTempSettings({ ...tempSettings, socialWhatsapp: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Facebook URL</label>
-                      <input
-                        type="text"
-                        value={tempSettings.socialFacebook || ''}
-                        onChange={(e) => setTempSettings({ ...tempSettings, socialFacebook: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">WhatsApp Group / Contact URL</label>
-                      <input
-                        type="text"
-                        value={tempSettings.socialWhatsapp || ''}
-                        onChange={(e) => setTempSettings({ ...tempSettings, socialWhatsapp: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border text-sm"
-                      />
-                    </div>
-                  </div>
                 </div>
               )}
 

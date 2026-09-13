@@ -18,7 +18,9 @@ import {
   defaultPages, 
   defaultGallery 
 } from '../data/defaultData';
+import { onAuthStateChanged } from 'firebase/auth';
 import { 
+  auth,
   subscribeToSiteConfig, 
   subscribeToRegistrations, 
   subscribeToDonations, 
@@ -34,8 +36,13 @@ import {
   deleteRegistrationFromCloud,
   updateDonationStatusInCloud,
   deleteDonationFromCloud,
-  assignCardIdInCloud
+  assignCardIdInCloud,
+  submitContactMessageInCloud,
+  subscribeToContactMessages,
+  deleteContactMessageFromCloud,
+  updateContactMessageStatusInCloud
 } from '../services/firebase';
+import { isAuthorizedAdminEmail } from '../utils/security';
 
 interface DataContextType {
   settings: SiteSettings;
@@ -66,6 +73,8 @@ interface DataContextType {
   updateDonationStatus: (id: string, status: string) => Promise<void>;
   deleteDonation: (id: string) => Promise<void>;
   getOrCreateMemberCardId: (registration: Registration) => Promise<string>;
+  deleteContactMessage: (id: string) => Promise<void>;
+  updateContactMessageStatus: (id: string, status: 'unread' | 'read' | 'replied') => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -81,20 +90,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
-  const [messages, setMessages] = useState<ContactMessage[]>([
-    {
-      id: 1,
-      name: "عثمان طارق",
-      email: "usman@example.com",
-      subject: "تعلیمی مہم میں رضاکارانہ شمولیت",
-      message: "السلام علیکم، میں بنوں کے نوجوانوں کو آئی ٹی کی بنیادی تعلیم دینے کے لیے رضاکارانہ وقت دینا چاہتا ہوں۔ رابطہ فرمائیں۔",
-      status: "unread",
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [isCloudConnected, setIsCloudConnected] = useState<boolean>(true);
 
-  // Proactively purge any leftover cache keys on mount so app is guaranteed 100% fresh
+  // Proactively purge any leftover cache keys on mount so app is guaranteed 100% fresh and relies only on Firestore
   useEffect(() => {
     try {
       const keysToPurge = [
@@ -105,6 +104,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'site_pages',
         'site_gallery',
         'site_messages',
+        'local_registrations',
+        'local_donations',
+        'local_messages',
         'arain_bannu_cache'
       ];
       keysToPurge.forEach(k => {
@@ -127,7 +129,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Subscribe to Cloud Config & Collections
+  // Subscribe to Public Cloud Site Configuration (available to all visitors)
   useEffect(() => {
     const unsubConfig = subscribeToSiteConfig(
       (patch) => {
@@ -160,20 +162,50 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    const unsubRegs = subscribeToRegistrations((items) => {
-      setRegistrations(items);
-      setIsCloudConnected(true);
-    });
+    return () => {
+      unsubConfig();
+    };
+  }, []);
 
-    const unsubDons = subscribeToDonations((items) => {
-      setDonations(items);
-      setIsCloudConnected(true);
+  // Subscribe to Protected Admin Collections (registrations, donations, messages)
+  // strictly when an authorized administrator is authenticated.
+  useEffect(() => {
+    let unsubRegs: (() => void) | null = null;
+    let unsubDons: (() => void) | null = null;
+    let unsubMsgs: (() => void) | null = null;
+
+    const unsubAuth = onAuthStateChanged(auth, (user) => {
+      // Clean up existing listeners if any
+      if (unsubRegs) { unsubRegs(); unsubRegs = null; }
+      if (unsubDons) { unsubDons(); unsubDons = null; }
+      if (unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
+
+      if (user && isAuthorizedAdminEmail(user.email)) {
+        unsubRegs = subscribeToRegistrations((items) => {
+          setRegistrations(items);
+          setIsCloudConnected(true);
+        });
+
+        unsubDons = subscribeToDonations((items) => {
+          setDonations(items);
+          setIsCloudConnected(true);
+        });
+
+        unsubMsgs = subscribeToContactMessages((items) => {
+          if (Array.isArray(items)) {
+            setMessages(items);
+          }
+        });
+      } else {
+        setIsCloudConnected(false);
+      }
     });
 
     return () => {
-      unsubConfig();
-      unsubRegs();
-      unsubDons();
+      unsubAuth();
+      if (unsubRegs) unsubRegs();
+      if (unsubDons) unsubDons();
+      if (unsubMsgs) unsubMsgs();
     };
   }, []);
 
@@ -189,13 +221,35 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const sendContactMessage = async (data: Omit<ContactMessage, 'id' | 'createdAt'>) => {
-    const newMsg: ContactMessage = {
-      ...data,
-      id: Date.now(),
-      status: 'unread',
-      createdAt: new Date().toISOString()
-    };
-    setMessages(prev => [newMsg, ...prev]);
+    try {
+      const cloudId = await submitContactMessageInCloud(data);
+      const newMsg: ContactMessage = {
+        ...data,
+        id: cloudId,
+        status: 'unread',
+        createdAt: new Date().toISOString()
+      };
+      setMessages(prev => [newMsg, ...prev.filter(m => m.id !== cloudId)]);
+    } catch (err) {
+      console.warn('[DataContext] Error submitting message to cloud, using local fallback:', err);
+      const fallbackMsg: ContactMessage = {
+        ...data,
+        id: String(Date.now()),
+        status: 'unread',
+        createdAt: new Date().toISOString()
+      };
+      setMessages(prev => [fallbackMsg, ...prev]);
+    }
+  };
+
+  const deleteContactMessage = async (id: string) => {
+    setMessages(prev => prev.filter(m => m.id !== id));
+    await deleteContactMessageFromCloud(id);
+  };
+
+  const updateContactMessageStatus = async (id: string, status: 'unread' | 'read' | 'replied') => {
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, status } : m));
+    await updateContactMessageStatusInCloud(id, status);
   };
 
   // Admin CMS & Data Operations
@@ -284,6 +338,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       updateDonationStatus,
       deleteDonation,
       getOrCreateMemberCardId,
+      deleteContactMessage,
+      updateContactMessageStatus,
     }}>
       {children}
     </DataContext.Provider>

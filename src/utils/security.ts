@@ -160,7 +160,8 @@ export function resetLoginSecurity(): void {
  */
 export const AUTHORIZED_ADMIN_EMAILS: readonly string[] = [
   '3tahirmeer@gmail.com',
-  '3sosososo0331@gmail.com'
+  '3sosososo0331@gmail.com',
+  '3mahmoodkhan@gmail.com'
 ];
 
 /**
