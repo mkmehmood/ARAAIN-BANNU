@@ -9,12 +9,35 @@ export interface Program {
   sort_order?: number;
 }
 
+export interface ContactDetail {
+  id: string;
+  title: string;
+  titleUr?: string;
+  value: string;
+  type?: 'phone' | 'whatsapp' | 'email' | 'address' | 'hours' | 'link' | 'auto';
+  icon?: string;
+  note?: string;
+  noteUr?: string;
+  isPrimary?: boolean;
+}
+
 export interface Leader {
   id?: number | string;
   initials: string;
   name: string;
+  nameUr?: string;
   role: string;
+  roleUr?: string;
   email?: string;
+  phone?: string;
+  location?: string;
+  locationUr?: string;
+  message?: string;
+  messageUr?: string;
+  bio?: string;
+  bioUr?: string;
+  responsibilities?: string[];
+  responsibilitiesUr?: string[];
   featured?: boolean | number;
   photo_data?: string;
   sort_order?: number;
@@ -95,6 +118,7 @@ export interface SiteSettings {
   contactHours: string;
   contactPhone: string;
   contactEmail: string;
+  multipleContacts?: ContactDetail[];
 
   // Social
   socialFacebook: string;
