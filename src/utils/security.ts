@@ -153,3 +153,35 @@ export function resetLoginSecurity(): void {
     // ignore
   }
 }
+
+/**
+ * List of verified authorized administrator accounts
+ * In sync with Firestore Security Rules
+ */
+export const AUTHORIZED_ADMIN_EMAILS: readonly string[] = [
+  '3tahirmeer@gmail.com',
+  '3sosososo0331@gmail.com'
+];
+
+/**
+ * Validates if an email belongs to the authorized council admin whitelist
+ */
+export function isAuthorizedAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const normalized = email.trim().toLowerCase();
+  return AUTHORIZED_ADMIN_EMAILS.includes(normalized);
+}
+
+/**
+ * Sanitizes and validates a Card ID for QR verification
+ */
+export function sanitizeCardId(cardId: unknown): string {
+  if (typeof cardId !== 'string') return '';
+  const cleaned = cardId.trim().toUpperCase();
+  // Format: e.g. AB-26-123456 or alphanumeric with hyphens up to 32 chars
+  if (/^[A-Z0-9_-]{3,32}$/.test(cleaned)) {
+    return cleaned;
+  }
+  return '';
+}
+

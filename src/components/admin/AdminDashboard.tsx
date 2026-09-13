@@ -37,7 +37,14 @@ import {
   Layers,
   Sparkles,
   RefreshCw,
-  FileText
+  FileText,
+  Zap,
+  Megaphone,
+  Palette,
+  Globe,
+  Check,
+  Sliders,
+  Bell
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -75,8 +82,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     deleteDonation,
   } = useData();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'donations' | 'messages' | 'cms'>('overview');
-  const [cmsTab, setCmsTab] = useState<'identity' | 'hero' | 'about' | 'programs' | 'leaders' | 'events' | 'pages' | 'gallery' | 'bank' | 'contact'>('identity');
+  const [activeTab, setActiveTab] = useState<'overview' | 'members' | 'donations' | 'messages' | 'cms' | 'customUpdate'>('overview');
+  const [cmsTab, setCmsTab] = useState<'customUpdate' | 'identity' | 'hero' | 'about' | 'programs' | 'leaders' | 'events' | 'pages' | 'gallery' | 'bank' | 'contact'>('customUpdate');
 
   // Search & Filter states
   const [memberSearch, setMemberSearch] = useState('');
@@ -97,6 +104,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [tempPages, setTempPages] = useState<PageItem[]>(pages);
   const [tempGallery, setTempGallery] = useState<GalleryItem[]>(gallery);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [newHeroImageUrl, setNewHeroImageUrl] = useState('');
 
   // Sync temp CMS data when external/cloud data arrives
   React.useEffect(() => {
@@ -230,28 +238,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       
       {/* Admin Top Header */}
       <header className="bg-[#16232F] text-white border-b border-[#AD7A28]/30 sticky top-0 z-30 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#AD7A28] flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#AD7A28] flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-sm shrink-0">
               {isUrdu ? 'آ ب' : 'AB'}
             </div>
-            <div>
-              <div className="font-bold text-sm sm:text-base leading-tight flex items-center gap-2">
-                <span>{tSetting('siteName', settings)}</span>
-                <span className="px-2 py-0.5 rounded-full bg-[#AD7A28]/20 border border-[#AD7A28]/40 text-[#F5CA7B] text-[10px] font-semibold uppercase">
-                  {isUrdu ? 'مرکزی ایڈمن پینل' : 'Central Admin'}
+            <div className="min-w-0">
+              <div className="font-bold text-xs sm:text-base leading-tight flex items-center gap-1.5 truncate">
+                <span className="truncate">{tSetting('siteName', settings)}</span>
+                <span className="hidden xs:inline-block px-1.5 sm:px-2 py-0.5 rounded-full bg-[#AD7A28]/20 border border-[#AD7A28]/40 text-[#F5CA7B] text-[9px] sm:text-[10px] font-semibold uppercase shrink-0">
+                  {isUrdu ? 'مرکزی ایڈمن' : 'Central Admin'}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-400">
-                {isUrdu ? 'لاگ ان بطور: ' : 'Logged in as: '}<span className="text-amber-200 font-mono">{adminEmail}</span>
+              <div className="text-[10px] sm:text-[11px] text-slate-400 truncate">
+                <span className="hidden sm:inline">{isUrdu ? 'لاگ ان بطور: ' : 'Logged in as: '}</span>
+                <span className="text-amber-200 font-mono">{adminEmail}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Live Firestore indicator */}
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>{t('cloudSynced', 'Cloud Synced')}</span>
             </div>
@@ -259,7 +268,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* Language Switcher in Admin */}
             <button
               onClick={() => setLanguage(lang === 'en' ? 'ur' : 'en')}
-              className="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 hover:bg-amber-500/30 text-xs font-bold transition-colors cursor-pointer"
+              className="px-2 sm:px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-400/30 text-amber-200 hover:bg-amber-500/30 text-[11px] sm:text-xs font-bold transition-colors cursor-pointer"
               title="Switch Language"
             >
               {lang === 'en' ? 'اردو' : 'English'}
@@ -267,72 +276,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               onClick={onExitAdmin}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+              title={t('btnPublicSite', 'View Public Site')}
             >
-              <ExternalLink className="w-4 h-4" />
-              <span>{t('btnPublicSite', 'View Public Site')}</span>
+              <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">{t('btnPublicSite', 'View Public Site')}</span>
+              <span className="sm:hidden text-[11px]">Site</span>
             </button>
 
             <button
               onClick={onLogout}
-              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors cursor-pointer"
               title={isUrdu ? 'لاگ آؤٹ' : 'Sign Out'}
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
         </div>
 
-        {/* Tab Navigation */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 border-t border-white/5 py-1">
+        {/* Tab Navigation - Mobile Touch Friendly Horizontal Scroll */}
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex overflow-x-auto gap-1 border-t border-white/10 py-1.5 scrollbar-none">
+          <button
+            onClick={() => {
+              setActiveTab('customUpdate');
+              setCmsTab('customUpdate');
+            }}
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
+              activeTab === 'customUpdate' ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md ring-1 ring-amber-300' : 'bg-[#AD7A28]/25 text-amber-300 hover:bg-[#AD7A28]/40'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" />
+            <span>{isUrdu ? '⚡ لائیو ویب سائٹ اپڈیٹ' : '⚡ Custom Website Update'}</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
               activeTab === 'overview' ? 'bg-[#AD7A28] text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Layers className="w-4 h-4" />
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t('tabOverview', 'Overview')}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('members')}
-            className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
               activeTab === 'members' ? 'bg-[#AD7A28] text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t('tabRegistrations', 'Membership Applications')} ({registrations.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('donations')}
-            className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
               activeTab === 'donations' ? 'bg-[#AD7A28] text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Heart className="w-4 h-4" />
+            <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t('tabDonations', 'Donations')} ({donations.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('messages')}
-            className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
               activeTab === 'messages' ? 'bg-[#AD7A28] text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Mail className="w-4 h-4" />
+            <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t('tabMessages', 'Inquiries')} ({messages.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('cms')}
-            className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-2 cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer ${
               activeTab === 'cms' ? 'bg-[#AD7A28] text-white' : 'text-slate-300 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{t('tabCMS', 'Site Content CMS')}</span>
           </button>
         </div>
@@ -642,8 +666,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <div className="font-bold text-[#16232F]">
                                   {isUrdu ? (reg.fullNameUr || reg.fullName) : (reg.fullNameEn || reg.fullName)}
                                 </div>
-                                <div className="text-[11px] text-slate-500">
-                                  {isUrdu ? `ولدیت: ${reg.fatherNameUr || reg.fatherName}` : `S/O: ${reg.fatherNameEn || reg.fatherName}`}
+                                <div className="text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap mt-0.5">
+                                  <span>{isUrdu ? `ولدیت: ${reg.fatherNameUr || reg.fatherName}` : `S/O: ${reg.fatherNameEn || reg.fatherName}`}</span>
+                                  {(reg.caste || reg.casteUr || reg.casteEn) && (
+                                    <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-semibold">
+                                      {isUrdu ? (reg.casteUr || reg.caste) : (reg.casteEn || reg.caste)}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -921,20 +950,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         )}
 
-        {/* ===================== TAB 5: CMS CONTENT MANAGER ===================== */}
-        {activeTab === 'cms' && (
+        {/* ===================== TAB 5: CMS CONTENT MANAGER & CUSTOM UPDATE ===================== */}
+        {(activeTab === 'cms' || activeTab === 'customUpdate') && (
           <div className="space-y-6 animate-fadeIn">
             
             {/* Top Bar for CMS with Save button */}
             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#16232F]">
-                  {isUrdu ? 'ویب سائٹ مواد اور ترتیبات کا انتظام (CMS)' : 'Website Content Management'}
+                <h3 className="text-lg font-bold text-[#16232F] flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-amber-500" />
+                  <span>{isUrdu ? 'ویب سائٹ مواد، اعلانات اور کسٹم اپڈیٹ' : 'Website Content, Live Updates & CMS'}</span>
                 </h3>
                 <p className="text-xs text-slate-500">
                   {isUrdu 
-                    ? 'تمام متون، بینرز، فلاحی پروگرامز، قیادت، گیلری اور بینک اکاؤنٹس کو اپ ڈیٹ کریں۔ تبدیلیاں براہ راست کلاؤڈ پر محفوظ ہوتی ہیں۔'
-                    : 'Edit texts, banners, programs, leadership, and accounts. Pushes directly to Firebase.'}
+                    ? 'اعلانات، نوٹسز، ممبرشپ کارڈ ترتیبات، فلاحی پروگرامز، قیادت، گیلری اور بینک اکاؤنٹس کو اپ ڈیٹ کریں۔'
+                    : 'Manage breaking announcements, notice ribbons, member card settings, programs, and live site contents.'}
                 </p>
               </div>
 
@@ -955,8 +985,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* CMS Section Pills */}
-            <div className="flex overflow-x-auto gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div className="flex overflow-x-auto gap-2 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm scrollbar-none">
               {[
+                { id: 'customUpdate', label: isUrdu ? '⚡ فوری لائیو اپڈیٹ' : '⚡ Live Website Update', isSpecial: true },
                 { id: 'identity', label: isUrdu ? 'شناخت و مونوگرام' : 'Identity & Brand' },
                 { id: 'hero', label: isUrdu ? 'ہیرو بینر و اعداد و شمار' : 'Hero & Stats' },
                 { id: 'about', label: isUrdu ? 'ہمارے متعلق و مشن' : 'About & Quote' },
@@ -972,7 +1003,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   key={sub.id}
                   onClick={() => setCmsTab(sub.id as any)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                    cmsTab === sub.id ? 'bg-[#16232F] text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
+                    cmsTab === sub.id 
+                      ? (sub.isSpecial ? 'bg-amber-500 text-slate-950 font-extrabold shadow-sm' : 'bg-[#16232F] text-white shadow-sm') 
+                      : (sub.isSpecial ? 'bg-amber-50 text-amber-900 border border-amber-300/60 hover:bg-amber-100' : 'text-slate-600 hover:bg-slate-100')
                   }`}
                 >
                   {sub.label}
@@ -983,6 +1016,221 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {/* CMS Form Containers */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
               
+              {/* Custom Live Website Update CMS */}
+              {cmsTab === 'customUpdate' && (
+                <div className="space-y-6 max-w-3xl">
+                  <div className="border-b border-slate-200 pb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+                        <Zap className="w-5 h-5" />
+                      </span>
+                      <div>
+                        <h4 className="text-base font-bold text-[#16232F]">
+                          {isUrdu ? '⚡ فوری کسٹم ویب سائٹ اپڈیٹ و کنٹرول پینل' : '⚡ Live Website Custom Update & Control Center'}
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          {isUrdu 
+                            ? 'ویب سائٹ کے اعلانات، نوٹس ربن، ممبرشپ کارڈ جنریٹر اور لائیو فیچرز کو فوری تبدیل کریں۔'
+                            : 'Quickly publish announcements, notice ribbons, membership card settings, and real-time site updates.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section 1: Live Site Announcement Bar */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Megaphone className="w-4 h-4 text-amber-600" />
+                        <span className="font-bold text-xs sm:text-sm text-slate-800">
+                          {isUrdu ? 'ٹاپ اناؤنسمنٹ بار (سائٹ کی ہیڈر پٹی)' : 'Top Header Announcement Bar'}
+                        </span>
+                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={tempSettings.announcementEnabled ?? true}
+                          onChange={(e) => setTempSettings({ ...tempSettings, announcementEnabled: e.target.checked })}
+                          className="w-4 h-4 text-[#AD7A28] rounded focus:ring-[#AD7A28]"
+                        />
+                        <span className="text-xs font-semibold text-slate-700">
+                          {isUrdu ? 'فعال ہے (Active)' : 'Enabled on Live Site'}
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          {isUrdu ? 'بیج کا عنوان (اردو)' : 'Badge Label (Urdu)'}
+                        </label>
+                        <input
+                          type="text"
+                          value={tempSettings.announcementBadgeUr || ''}
+                          onChange={(e) => setTempSettings({ ...tempSettings, announcementBadgeUr: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm font-urdu text-right"
+                          placeholder="مثلاً: اہم اعلان"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          Badge Label (English)
+                        </label>
+                        <input
+                          type="text"
+                          value={tempSettings.announcementBadgeEn || ''}
+                          onChange={(e) => setTempSettings({ ...tempSettings, announcementBadgeEn: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                          placeholder="e.g. OFFICIAL ANNOUNCEMENT"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        {isUrdu ? 'اعلان کا متن (اردو)' : 'Announcement Text (Urdu)'}
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={tempSettings.announcementTextUr || ''}
+                        onChange={(e) => setTempSettings({ ...tempSettings, announcementTextUr: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm font-urdu text-right"
+                        placeholder="اردو میں سائٹ اناؤنسمنٹ لکھیے..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Announcement Text (English)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={tempSettings.announcementTextEn || ''}
+                        onChange={(e) => setTempSettings({ ...tempSettings, announcementTextEn: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm"
+                        placeholder="Enter announcement text in English..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        {isUrdu ? 'اعلان کا ایکشن لنک (اختیاری)' : 'Action Link URL (Optional)'}
+                      </label>
+                      <input
+                        type="text"
+                        value={tempSettings.announcementLink || ''}
+                        onChange={(e) => setTempSettings({ ...tempSettings, announcementLink: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm font-mono"
+                        placeholder="#register or https://..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 2: Hero Section Live Notice Ribbon */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-emerald-600" />
+                      <span className="font-bold text-xs sm:text-sm text-slate-800">
+                        {isUrdu ? 'ہیرو بینر لائیو نوٹس ربن' : 'Hero Section Live Notice Ribbon'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        {isUrdu ? 'بریکنگ نوٹس ہیڈ لائن' : 'Breaking Notice Headline'}
+                      </label>
+                      <input
+                        type="text"
+                        value={tempSettings.customNoticeHeadline || ''}
+                        onChange={(e) => setTempSettings({ ...tempSettings, customNoticeHeadline: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm"
+                        placeholder="e.g. Free Eye Medical Camp on 25th September at DHQ Bannu"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        {isUrdu 
+                          ? 'یہ نوٹس ہوم پیج کے بالکل شروع میں گولڈن ربن میں نظر آئے گا۔'
+                          : 'This notice is shown prominently inside the gold notice ribbon in the Hero section.'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        {isUrdu ? 'ویب سائٹ کی آخری اپڈیٹ کی تاریخ / ٹیگ' : 'Last Website Update Badge Text'}
+                      </label>
+                      <input
+                        type="text"
+                        value={tempSettings.lastWebsiteUpdate || ''}
+                        onChange={(e) => setTempSettings({ ...tempSettings, lastWebsiteUpdate: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border text-sm"
+                        placeholder="e.g. September 2026 - Official Verification Live"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Section 3: Membership Card Generator Customization Defaults */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-[#AD7A28]" />
+                      <span className="font-bold text-xs sm:text-sm text-slate-800">
+                        {isUrdu ? 'ممبرشپ کارڈ جنریٹر کی عالمی ترتیبات' : 'Membership Card Generator Global Defaults'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          {isUrdu ? 'کارڈ پر ایسوسی ایشن کا انگریزی نام' : 'Card Association English Name'}
+                        </label>
+                        <input
+                          type="text"
+                          value={tempSettings.siteName}
+                          onChange={(e) => setTempSettings({ ...tempSettings, siteName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                          {isUrdu ? 'کارڈ سب ٹائٹل / چیپٹر کا نام' : 'Card Subtitle / Chapter'}
+                        </label>
+                        <input
+                          type="text"
+                          value={tempSettings.siteSubName}
+                          onChange={(e) => setTempSettings({ ...tempSettings, siteSubName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500">
+                      {isUrdu 
+                        ? 'ممبرشپ کارڈ موڈل میں ایڈمن کسی بھی رکن کا کارڈ گولڈ، زمرد، نیوی یا کرمسن تھیم میں ڈاؤن لوڈ اور پرنٹ کر سکتے ہیں۔'
+                        : 'Admins can dynamically customize themes (Gold, Emerald, Navy, Crimson) and signatories in real-time from the Member Card Generator.'}
+                    </p>
+                  </div>
+
+                  {/* One-Click Save & Sync Button */}
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3 items-center justify-between">
+                    {saveStatus ? (
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
+                        {saveStatus}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-500">
+                        {isUrdu ? 'تبدیلیاں محفوظ کرنے کے لیے بٹن دبائیں۔' : 'Press to immediately sync all updates to cloud.'}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSaveCms}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-md transition-all cursor-pointer"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>{isUrdu ? 'لائیو ویب سائٹ پر شائع کریں' : 'Publish Live Update Now'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Identity CMS */}
               {cmsTab === 'identity' && (
                 <div className="space-y-4 max-w-2xl">
@@ -1119,6 +1367,98 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Hero Background Pictures Manager */}
+                  <div className="pt-4 border-t border-slate-200 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          Hero Background Pictures (Single or Multi-Slideshow)
+                        </h5>
+                        <p className="text-[11px] text-slate-500">
+                          Add single or multiple pictures for the public hero background with Animated.timing transitions.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <label className="text-xs text-slate-600 font-medium">Slide Timing:</label>
+                        <select
+                          value={tempSettings.heroSlideDuration || 5}
+                          onChange={(e) => setTempSettings({ ...tempSettings, heroSlideDuration: Number(e.target.value) })}
+                          className="px-2 py-1 rounded-lg border text-xs bg-white"
+                        >
+                          <option value={3}>3 Seconds</option>
+                          <option value={5}>5 Seconds (Recommended)</option>
+                          <option value={7}>7 Seconds</option>
+                          <option value={10}>10 Seconds</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Image List / Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : [])).map((img, idx) => (
+                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
+                          <img src={img} alt={`Hero ${idx + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <span className="text-[10px] text-white font-mono absolute top-1 left-2 bg-black/50 px-1.5 py-0.5 rounded">#{idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentList = [...(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : []))];
+                                currentList.splice(idx, 1);
+                                setTempSettings({ ...tempSettings, heroImages: currentList, heroImage: currentList[0] || '' });
+                              }}
+                              className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-semibold cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Image Controls: File upload or URL */}
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                      <input
+                        type="url"
+                        placeholder="Paste image URL (https://...)"
+                        value={newHeroImageUrl}
+                        onChange={(e) => setNewHeroImageUrl(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl border text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!newHeroImageUrl.trim()) return;
+                          const currentList = [...(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : []))];
+                          currentList.push(newHeroImageUrl.trim());
+                          setTempSettings({ ...tempSettings, heroImages: currentList, heroImage: currentList[0] });
+                          setNewHeroImageUrl('');
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-[#AD7A28] hover:bg-[#8C601A] text-white text-xs font-bold cursor-pointer shrink-0"
+                      >
+                        + Add Image URL
+                      </button>
+
+                      <label className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold cursor-pointer text-center shrink-0">
+                        <span>Upload File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const b64 = await compressImage(file, 1280, 0.82);
+                              const currentList = [...(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : []))];
+                              currentList.push(b64);
+                              setTempSettings({ ...tempSettings, heroImages: currentList, heroImage: currentList[0] });
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1177,6 +1517,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         onChange={(e) => setTempSettings({ ...tempSettings, chairmanQuote: e.target.value })}
                         className="w-full px-3 py-2 rounded-xl border text-sm"
                       />
+                    </div>
+                  </div>
+
+                  {/* Chairman Photo Management */}
+                  <div className="pt-3 border-t border-slate-200">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Global Chairman Picture (عالمی چیئرمین کی تصویر)
+                    </label>
+                    <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      <div className="relative shrink-0">
+                        {tempSettings.chairmanPhoto ? (
+                          <img
+                            src={tempSettings.chairmanPhoto}
+                            alt="Global Chairman"
+                            className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-md"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 text-xs border border-dashed border-slate-300">
+                            No Photo
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Chairman photo URL (e.g. https://...)"
+                          value={tempSettings.chairmanPhoto || ''}
+                          onChange={(e) => setTempSettings({ ...tempSettings, chairmanPhoto: e.target.value })}
+                          className="w-full px-3 py-1.5 rounded-xl border text-xs bg-white"
+                        />
+                        <div className="flex items-center gap-2">
+                          <label className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer">
+                            <span>Upload Picture</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const b64 = await compressImage(file, 400, 0.85);
+                                  setTempSettings({ ...tempSettings, chairmanPhoto: b64 });
+                                }
+                              }}
+                            />
+                          </label>
+                          {tempSettings.chairmanPhoto && (
+                            <button
+                              type="button"
+                              onClick={() => setTempSettings({ ...tempSettings, chairmanPhoto: '' })}
+                              className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs cursor-pointer"
+                            >
+                              Remove Picture
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1800,6 +2197,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl">
+              <div><strong>{isUrdu ? "قومیت / قبیلہ:" : "Caste:"}</strong> <span className="font-semibold text-[#AD7A28]">{isUrdu ? (viewingRegDetails.casteUr || viewingRegDetails.caste || "آرائیں") : (viewingRegDetails.casteEn || viewingRegDetails.caste || "Araain")}</span></div>
               <div><strong>WhatsApp:</strong> <span className="font-mono">{viewingRegDetails.whatsapp}</span></div>
               <div><strong>Email:</strong> {viewingRegDetails.email || '—'}</div>
               <div><strong>{isUrdu ? 'جنس:' : 'Gender:'}</strong> {isUrdu ? (viewingRegDetails.genderUr || viewingRegDetails.gender) : (viewingRegDetails.genderEn || viewingRegDetails.gender)}</div>

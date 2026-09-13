@@ -202,7 +202,7 @@ export const ContactSection: React.FC = () => {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder={t('phFullName', 'e.g. Asad Chaudhary')}
+                    placeholder={t('contactPhFullName', 'e.g. Asad Chaudhary')}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
                   />
                 </div>

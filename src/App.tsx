@@ -2,6 +2,9 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { DataProvider } from './context/DataContext';
 import { PageItem } from './types';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, signOutAdmin } from './services/firebase';
+import { isAuthorizedAdminEmail, sanitizeCardId } from './utils/security';
 
 // Public Components (eagerly bundled for fast first-paint)
 import { Navbar } from './components/Navbar';
@@ -20,6 +23,7 @@ import { Footer } from './components/Footer';
 import { MembershipModal } from './components/MembershipModal';
 import { DonationModal } from './components/DonationModal';
 import { PageModal } from './components/PageModal';
+import { CardVerificationModal } from './components/CardVerificationModal';
 
 /**
  * TASK 2: CODE SEPARATION VIA DYNAMIC IMPORTS
@@ -56,14 +60,74 @@ const MainApp: React.FC = () => {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState<PageItem | null>(null);
 
-  // Admin authentication state
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
-    return localStorage.getItem('is_admin_logged_in') === 'true';
-  });
-  const [adminEmail, setAdminEmail] = useState(() => {
-    return localStorage.getItem('admin_email') || '';
-  });
+  // Card Verification state (for QR scanning and public authenticity checks)
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+  const [verifyCardId, setVerifyCardId] = useState('');
+
+  // Admin authentication state (strictly bound to Firebase Auth)
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [isInAdminMode, setIsInAdminMode] = useState(false);
+
+  /**
+   * SECURITY ENFORCEMENT:
+   * Real-time Firebase Auth session synchronization.
+   * Prevents client-side spoofing (e.g. localStorage tampering) by verifying
+   * actual cryptographic credentials against the authorized admin whitelist.
+   */
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && isAuthorizedAdminEmail(user.email)) {
+        setIsAdminLoggedIn(true);
+        setAdminEmail(user.email || '');
+      } else {
+        setIsAdminLoggedIn(false);
+        setAdminEmail('');
+        setIsInAdminMode(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  /**
+   * Public QR Code and URL verification listener
+   * Supports ?verify=CARD_ID, ?card=CARD_ID, and #verify=CARD_ID
+   */
+  useEffect(() => {
+    const checkVerificationParam = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash;
+      
+      const verifyParam = params.get('verify') || params.get('card');
+      let cardIdFromHash = '';
+      if (hash.startsWith('#verify=')) {
+        cardIdFromHash = hash.replace('#verify=', '');
+      }
+
+      const targetCard = verifyParam || cardIdFromHash;
+      if (targetCard) {
+        const cleanCard = sanitizeCardId(targetCard);
+        if (cleanCard) {
+          setVerifyCardId(cleanCard);
+          setIsVerificationOpen(true);
+
+          // Clean URL parameter without page reload
+          const currentPath = window.location.pathname;
+          const currentSearch = window.location.search
+            .replace(/[?&]verify(=[^&]*)?/i, '')
+            .replace(/[?&]card(=[^&]*)?/i, '')
+            .replace(/^[?&]/, '');
+          const cleanUrl = currentPath + (currentSearch ? `?${currentSearch}` : '');
+          window.history.replaceState(null, '', cleanUrl || '/');
+        }
+      }
+    };
+
+    checkVerificationParam();
+    window.addEventListener('hashchange', checkVerificationParam);
+    return () => window.removeEventListener('hashchange', checkVerificationParam);
+  }, []);
 
   const openAdminPortal = () => {
     if (isAdminLoggedIn) {
@@ -76,12 +140,6 @@ const MainApp: React.FC = () => {
   /**
    * TASK 3 — HIDDEN ADMIN ENTRY POINT MECHANISM 1:
    * Hidden URL trigger via URL Hash (#admin, #portal) or Query Parameter (?admin=1, ?portal=admin).
-   * 
-   * Cross-device advantage:
-   * Works identically on mobile (Android/iOS) and desktop/laptop browsers.
-   * Immediately scrubs the token from the browser address bar via history.replaceState
-   * so it is not visible to observers or accidentally saved in shared bookmarks/history.
-   * Compatible with GitHub Pages static hosting (hashes and query params do not cause 404s).
    */
   useEffect(() => {
     const checkUrlSecret = () => {
@@ -133,16 +191,13 @@ const MainApp: React.FC = () => {
     setIsAdminLoggedIn(true);
     setAdminEmail(email);
     setIsInAdminMode(true);
-    localStorage.setItem('is_admin_logged_in', 'true');
-    localStorage.setItem('admin_email', email);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsAdminLoggedIn(false);
     setIsInAdminMode(false);
     setAdminEmail('');
-    localStorage.removeItem('is_admin_logged_in');
-    localStorage.removeItem('admin_email');
+    await signOutAdmin();
   };
 
   const scrollToSection = (id: string) => {
@@ -216,6 +271,10 @@ const MainApp: React.FC = () => {
         onOpenMembership={() => setIsMembershipOpen(true)}
         onOpenDonation={() => setIsDonationOpen(true)}
         onOpenAdmin={openAdminPortal}
+        onOpenVerification={() => {
+          setVerifyCardId('');
+          setIsVerificationOpen(true);
+        }}
       />
 
       {/* Sidebar Drawer (Clean navigation & language switcher; zero admin or cloud status) */}
@@ -225,6 +284,10 @@ const MainApp: React.FC = () => {
         onOpenMembership={() => setIsMembershipOpen(true)}
         onOpenDonation={() => setIsDonationOpen(true)}
         onNavigateSection={scrollToSection}
+        onOpenVerification={() => {
+          setVerifyCardId('');
+          setIsVerificationOpen(true);
+        }}
       />
 
       {/* Public Modals */}
@@ -241,6 +304,12 @@ const MainApp: React.FC = () => {
       <PageModal
         page={selectedPage}
         onClose={() => setSelectedPage(null)}
+      />
+
+      <CardVerificationModal
+        isOpen={isVerificationOpen}
+        onClose={() => setIsVerificationOpen(false)}
+        initialCardId={verifyCardId}
       />
 
       {/* 

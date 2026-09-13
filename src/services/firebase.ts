@@ -50,7 +50,7 @@ export const SETTINGS_GROUPS: Record<string, (keyof SiteSettings)[]> = {
   donation: ['bankName', 'bankTitle', 'bankAccount', 'bankIBAN', 'bankBranch', 'epTitle', 'epNumber', 'jcTitle', 'jcNumber', 'intBank', 'intSwift', 'intIBAN'],
 };
 
-import { sanitizeText, sanitizePhone, sanitizeEmail } from '../utils/security';
+import { sanitizeText, sanitizePhone, sanitizeEmail, sanitizeCardId } from '../utils/security';
 
 // ── Public Submissions ──────────────────────────────────────────
 
@@ -313,7 +313,23 @@ export async function deleteDonationFromCloud(id: string): Promise<void> {
   await deleteDoc(doc(db, 'donations', id));
 }
 
-export async function assignCardIdInCloud(regId: string, orgName: string): Promise<string> {
+export interface PublicVerifiedCard {
+  cardId: string;
+  fullNameEn: string;
+  fullNameUr: string;
+  membershipTypeEn: string;
+  membershipTypeUr: string;
+  status: string;
+  issuedAt: string;
+  expiresAt?: string;
+  councilName?: string;
+}
+
+export async function assignCardIdInCloud(
+  regId: string, 
+  orgName: string, 
+  registrationData?: Partial<Registration>
+): Promise<string> {
   const prefix = orgName
     ? orgName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4) || 'AB'
     : 'AB';
@@ -323,10 +339,53 @@ export async function assignCardIdInCloud(regId: string, orgName: string): Promi
 
   try {
     await updateDoc(doc(db, 'registrations', regId), { cardId });
+
+    // Publish privacy-safe public verification entry (contains NO sensitive PII)
+    const verifiedEntry: PublicVerifiedCard = {
+      cardId,
+      fullNameEn: sanitizeText(registrationData?.fullNameEn || registrationData?.fullName || '', 150),
+      fullNameUr: sanitizeText(registrationData?.fullNameUr || registrationData?.fullName || '', 150),
+      membershipTypeEn: sanitizeText(registrationData?.membershipTypeEn || registrationData?.membershipType || 'Member', 60),
+      membershipTypeUr: sanitizeText(registrationData?.membershipTypeUr || registrationData?.membershipType || 'ممبر', 60),
+      status: 'verified',
+      issuedAt: new Date().toLocaleDateString('en-GB'),
+      councilName: orgName || 'ARAAIN ASSOCIATION BANNU',
+    };
+    await setDoc(doc(db, 'verifiedCards', cardId), verifiedEntry, { merge: true });
   } catch (err) {
     console.warn('[Firebase] Could not update cardId in cloud:', err);
   }
   return cardId;
+}
+
+/**
+ * Privacy-preserving public membership verification lookup
+ * Only fetches from verifiedCards collection; never accesses member PII (no CNIC/phone/address)
+ */
+export async function lookupVerifiedCard(rawCardId: string): Promise<PublicVerifiedCard | null> {
+  const cardId = sanitizeCardId(rawCardId);
+  if (!cardId) return null;
+
+  try {
+    const snap = await getDoc(doc(db, 'verifiedCards', cardId));
+    if (snap.exists()) {
+      return snap.data() as PublicVerifiedCard;
+    }
+  } catch (err: any) {
+    console.warn('[Firebase] lookupVerifiedCard error:', err.message);
+  }
+  return null;
+}
+
+/**
+ * Securely signs out admin from Firebase Authentication
+ */
+export async function signOutAdmin(): Promise<void> {
+  try {
+    await signOut(auth);
+  } catch (e: any) {
+    console.warn('[Firebase] Sign out error:', e?.message);
+  }
 }
 
 // ── Client Image Compression ────────────────────────────────────

@@ -5,7 +5,16 @@ import { Quote, CheckCircle2 } from 'lucide-react';
 
 export const AboutSection: React.FC = () => {
   const { t, isUrdu, tSetting } = useLanguage();
-  const { settings } = useData();
+  const { settings, leaders } = useData();
+
+  // Find chairman photo from settings or leaders directory
+  const chairmanLeader = leaders.find(l => 
+    l.role?.toLowerCase().includes('chairman') || 
+    l.role?.includes('چیئرمین') ||
+    l.name?.toLowerCase().includes('aizaz') ||
+    l.name?.includes('اعزاز')
+  );
+  const chairmanPhoto = settings.chairmanPhoto || chairmanLeader?.photo_data || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80";
 
   return (
     <section id="about" className="py-20 sm:py-24 bg-[#F8F4E8] border-b border-[#AD7A28]/15">
@@ -71,15 +80,28 @@ export const AboutSection: React.FC = () => {
                   "{tSetting('chairmanQuote', settings)}"
                 </blockquote>
 
-                <div className="pt-4 border-t border-white/15 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#AD7A28] to-amber-300 flex items-center justify-center text-[#16232F] font-black text-lg shadow-sm">
-                    {isUrdu ? 'چ چی' : 'AC'}
+                <div className="pt-4 border-t border-white/15 flex items-center gap-3.5">
+                  <div className="relative shrink-0">
+                    {chairmanPhoto ? (
+                      <img
+                        src={chairmanPhoto}
+                        alt={tSetting('chairmanName', settings)}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-md ring-2 ring-[#AD7A28]/30"
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#AD7A28] to-amber-300 flex items-center justify-center text-[#16232F] font-black text-lg shadow-sm border-2 border-amber-400">
+                        {isUrdu ? 'چ چی' : 'AC'}
+                      </div>
+                    )}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#16232F] flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                    </div>
                   </div>
                   <div>
-                    <div className="font-bold text-white text-base">
+                    <div className="font-bold text-white text-base sm:text-lg leading-tight">
                       {tSetting('chairmanName', settings)}
                     </div>
-                    <div className="text-xs text-amber-300/80 font-medium">
+                    <div className="text-xs sm:text-sm text-amber-300/90 font-medium mt-0.5">
                       {t('chairmanRole', 'Global Chairman')} · {tSetting('siteName', settings)}
                     </div>
                   </div>

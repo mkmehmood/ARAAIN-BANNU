@@ -8,6 +8,7 @@ import {
   SlidersHorizontal,
   Globe 
 } from 'lucide-react';
+import { AnnouncementBar } from './AnnouncementBar';
 
 interface NavbarProps {
   onOpenMembership: () => void;
@@ -80,11 +81,18 @@ export const Navbar: React.FC<NavbarProps> = ({
       id="main-header"
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-[#16232F]/95 backdrop-blur-md shadow-md py-3 border-b border-[#AD7A28]/20 text-white' 
-          : 'bg-[#16232F] py-4 text-white'
+          ? 'bg-[#16232F]/95 backdrop-blur-md shadow-md py-2.5 sm:py-3 border-b border-[#AD7A28]/20 text-white' 
+          : 'bg-[#16232F] pb-3 sm:pb-4 text-white'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Top Announcement & Live Custom Website Update Bar */}
+      <AnnouncementBar
+        onOpenMembership={onOpenMembership}
+        onOpenDonation={onOpenDonation}
+        onNavigateSection={onNavigateSection}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
         <div className="flex items-center justify-between gap-4">
           
           {/* Brand Logo & Name (5 rapid taps/clicks triggers admin modal) */}

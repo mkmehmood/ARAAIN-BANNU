@@ -3,7 +3,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../context/DataContext';
 import { Registration } from '../../types';
 import QRCode from 'qrcode';
-import { X, Printer, ShieldCheck, Download, Check, Eye } from 'lucide-react';
+import { X, Printer, ShieldCheck, Download, Check, Eye, Sliders, Palette, Calendar, RefreshCw, CheckCircle2, ScanLine } from 'lucide-react';
+import { testDecodeQrDataUrl, ExtractedMemberData } from '../../utils/qrScanner';
 import { 
   translateNameToEnglish, 
   translateAddressToEnglish, 
@@ -46,9 +47,31 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
   const [copiedPayload, setCopiedPayload] = useState(false);
   const [showPayloadModal, setShowPayloadModal] = useState(false);
 
+  // Custom Website & Card Generator Branding Controls
+  const [customTitle, setCustomTitle] = useState(settings.siteNameEn || 'ARAAIN BANNU WELFARE ASSOCIATION');
+  const [customSubtitle, setCustomSubtitle] = useState('Khyber Pakhtunkhwa, Pakistan');
+  const [customSignatory, setCustomSignatory] = useState('Authorized Signatory / President');
+  const [customExpiry, setCustomExpiry] = useState(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 3);
+    return d.toISOString().slice(0, 10);
+  });
+  const [customWebsite, setCustomWebsite] = useState('www.araainbannu.org');
+  const [cardTheme, setCardTheme] = useState<'gold' | 'emerald' | 'navy' | 'crimson'>('gold');
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [mobileFace, setMobileFace] = useState<'both' | 'front' | 'back'>('both');
+  const [qrTestResult, setQrTestResult] = useState<{
+    tested: boolean;
+    success: boolean;
+    extracted?: ExtractedMemberData;
+  } | null>(null);
+  const [testingQr, setTestingQr] = useState(false);
+
   // Resolved English values for the card (English-only card)
   const englishFullName = registration ? (registration.fullNameEn || translateNameToEnglish(registration.fullName)) : '';
   const englishFatherName = registration ? (registration.fatherNameEn || translateNameToEnglish(registration.fatherName)) : '';
+  const englishCaste = registration ? (registration.casteEn || registration.caste || 'Araain') : 'Araain';
+  const urduCaste = registration ? (registration.casteUr || registration.caste || 'آرائیں') : 'آرائیں';
   const englishWork = registration ? (registration.workEn || translateOccupationToEnglish(registration.work || '')) : '';
   const englishStreet = registration ? (registration.streetEn || (registration.street ? translateAddressToEnglish(registration.street) : '')) : '';
   const englishCity = registration ? (registration.cityEn || translateCityToEnglish(registration.city)) : 'Bannu';
@@ -60,6 +83,46 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
   const englishResidentialStatus = registration ? (registration.residentialStatusEn || translateResidentialStatusToEnglish(registration.residentialStatus)) : 'Resident (Pakistan)';
 
   const fullEnglishAddress = [englishStreet, englishCity, englishState, englishCountry].filter(Boolean).join(', ');
+
+  const themeMap = {
+    gold: {
+      headerGrad: 'from-[#16232F] via-[#1E3040] to-[#16232F]',
+      borderAccent: '#AD7A28',
+      textAccent: '#F5CA7B',
+      badgeBg: 'bg-[#AD7A28]',
+      badgeText: 'text-white',
+      footerBg: 'bg-[#F8F5EE]',
+      footerAccent: 'text-[#AD7A28]',
+    },
+    emerald: {
+      headerGrad: 'from-[#064E3B] via-[#047857] to-[#064E3B]',
+      borderAccent: '#10B981',
+      textAccent: '#6EE7B7',
+      badgeBg: 'bg-[#059669]',
+      badgeText: 'text-white',
+      footerBg: 'bg-[#ECFDF5]',
+      footerAccent: 'text-[#059669]',
+    },
+    navy: {
+      headerGrad: 'from-[#0F172A] via-[#1E293B] to-[#0F172A]',
+      borderAccent: '#38BDF8',
+      textAccent: '#7DD3FC',
+      badgeBg: 'bg-[#0284C7]',
+      badgeText: 'text-white',
+      footerBg: 'bg-[#F0F9FF]',
+      footerAccent: 'text-[#0284C7]',
+    },
+    crimson: {
+      headerGrad: 'from-[#4C0519] via-[#881337] to-[#4C0519]',
+      borderAccent: '#FB7185',
+      textAccent: '#FECDD3',
+      badgeBg: 'bg-[#E11D48]',
+      badgeText: 'text-white',
+      footerBg: 'bg-[#FFF1F2]',
+      footerAccent: 'text-[#E11D48]',
+    },
+  };
+  const activeTheme = themeMap[cardTheme] || themeMap.gold;
 
   useEffect(() => {
     if (!registration) return;
@@ -90,14 +153,17 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
           urduCountry
         ].filter(Boolean).join('، ');
 
-        // Construct COMPLETE QR CODE PAYLOAD containing ALL user registration data:
+        // Construct COMPLETE QR CODE PAYLOAD with web verification link at the top:
+        const verifyUrl = typeof window !== 'undefined' ? `${window.location.origin}/?verify=${id}` : `https://araainbannu.org/?verify=${id}`;
         const comprehensiveQrPayload = [
+          verifyUrl,
           `═══ ARAAIN BANNU KPK OFFICIAL MEMBER ═══`,
           `Card ID: ${id}`,
           `Full Name (English): ${englishFullName}`,
           `نام (Urdu): ${urduFullName}`,
           `Father / Guardian (English): ${englishFatherName}`,
           `ولدیت (Urdu): ${urduFatherName}`,
+          `Caste / قومیت: ${englishCaste} (${urduCaste})`,
           `CNIC: ${registration.cnic || '—'}`,
           `DOB: ${registration.dob || '—'}`,
           `Gender: ${englishGender} (${urduGender})`,
@@ -114,7 +180,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
           `Submitted Date: ${registration.submittedAt ? (typeof registration.submittedAt === 'string' ? registration.submittedAt : new Date(registration.submittedAt.seconds * 1000).toISOString().slice(0, 10)) : new Date().toISOString().slice(0, 10)}`,
           `Verification: Official Verified Member`,
           `Authority: Executive Council Araain Bannu`,
-          `Website: https://araainbannu.org`,
+          `Portal: ${verifyUrl}`,
         ].join('\n');
 
         setQrPayloadText(comprehensiveQrPayload);
@@ -146,6 +212,26 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleTestQrCodeScan = async () => {
+    if (!qrCodeUrl) return;
+    setTestingQr(true);
+    try {
+      const res = await testDecodeQrDataUrl(qrCodeUrl);
+      setQrTestResult({
+        tested: true,
+        success: res.success,
+        extracted: res.extracted,
+      });
+    } catch {
+      setQrTestResult({
+        tested: true,
+        success: false,
+      });
+    } finally {
+      setTestingQr(false);
+    }
   };
 
   const copyQrData = () => {
@@ -227,6 +313,27 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
+              onClick={handleTestQrCodeScan}
+              disabled={testingQr || !qrCodeUrl}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+              title="Test QR Code scanner and verify accurate data extraction with jsQR"
+            >
+              <ScanLine className="w-3.5 h-3.5" />
+              <span>{testingQr ? 'Scanning QR...' : 'Verify QR Scan'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowCustomizer(!showCustomizer)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                showCustomizer ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-white/10 hover:bg-white/15 text-slate-200'
+              }`}
+              title="Customize Card Template & Council Branding"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Customize</span>
+            </button>
+
+            <button
               onClick={() => setShowPayloadModal(!showPayloadModal)}
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-medium transition-colors cursor-pointer"
               title="View Raw QR Registration Data"
@@ -237,10 +344,11 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-bold shadow transition-all active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-lg bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-bold shadow transition-all active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Card</span>
+              <span className="hidden xs:inline">Print Card</span>
+              <span className="xs:hidden">Print</span>
             </button>
 
             <button
@@ -252,6 +360,108 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Card Customizer Drawer */}
+        {showCustomizer && (
+          <div className="no-print bg-slate-900 text-slate-200 px-4 sm:px-6 py-4 border-b border-slate-700 text-xs animate-fadeIn space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                <Sliders className="w-4 h-4" />
+                <span>Card Template & Council Branding Customizer</span>
+              </div>
+              <button
+                onClick={() => {
+                  setCustomTitle(settings.siteNameEn || 'ARAAIN BANNU WELFARE ASSOCIATION');
+                  setCustomSubtitle('Khyber Pakhtunkhwa, Pakistan');
+                  setCustomSignatory('Authorized Signatory / President');
+                  setCustomWebsite('www.araainbannu.org');
+                  setCardTheme('gold');
+                }}
+                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white cursor-pointer"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Reset Defaults</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Association Title (English)</label>
+                <input
+                  type="text"
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Council / Chapter Subtitle</label>
+                <input
+                  type="text"
+                  value={customSubtitle}
+                  onChange={(e) => setCustomSubtitle(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Signatory Title</label>
+                <input
+                  type="text"
+                  value={customSignatory}
+                  onChange={(e) => setCustomSignatory(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Valid Thru / Expiry Date</label>
+                <input
+                  type="text"
+                  value={customExpiry}
+                  onChange={(e) => setCustomExpiry(e.target.value)}
+                  className="w-full px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-400">Card Color Scheme:</span>
+                <div className="flex items-center gap-1.5">
+                  {[
+                    { id: 'gold', name: 'Gold & Navy', hex: '#AD7A28' },
+                    { id: 'emerald', name: 'Emerald KP', hex: '#10B981' },
+                    { id: 'navy', name: 'Royal Navy', hex: '#0284C7' },
+                    { id: 'crimson', name: 'Crimson', hex: '#E11D48' },
+                  ].map((th) => (
+                    <button
+                      key={th.id}
+                      onClick={() => setCardTheme(th.id as any)}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                        cardTheme === th.id ? 'ring-2 ring-white text-white' : 'opacity-70 hover:opacity-100 text-slate-300'
+                      }`}
+                      style={{ backgroundColor: th.hex }}
+                    >
+                      <span>{th.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-400">Website URL:</span>
+                <input
+                  type="text"
+                  value={customWebsite}
+                  onChange={(e) => setCustomWebsite(e.target.value)}
+                  className="px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-amber-300 text-xs font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* View QR Payload Details Drawer/Modal (if opened) */}
         {showPayloadModal && (
@@ -275,8 +485,71 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
         )}
 
         {/* Card Stage Container */}
-        <div className="p-4 sm:p-8 overflow-y-auto bg-slate-200/70 flex-1 flex flex-col items-center justify-center gap-6">
+        <div className="p-4 sm:p-8 overflow-y-auto bg-slate-200/70 flex-1 flex flex-col items-center justify-center gap-4 sm:gap-6">
           
+          {/* QR Verification Test Banner (when tested) */}
+          {qrTestResult && (
+            <div className={`no-print w-full max-w-4xl p-3.5 rounded-2xl border text-xs shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fadeIn ${
+              qrTestResult.success
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                : 'bg-red-50 border-red-300 text-red-900'
+            }`}>
+              <div className="flex items-start gap-2.5">
+                <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
+                  qrTestResult.success ? 'bg-emerald-200 text-emerald-800' : 'bg-red-200 text-red-800'
+                }`}>
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-bold text-sm flex items-center gap-2">
+                    <span>{qrTestResult.success ? 'QR Code Scanned & Verified with 100% Accuracy!' : 'QR Code Scan Failed'}</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-200 text-emerald-800">
+                      jsQR Engine
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-emerald-700 mt-0.5">
+                    Extracted Card ID: <strong className="font-mono">{qrTestResult.extracted?.cardId || '—'}</strong> | Name: <strong>{qrTestResult.extracted?.fullName || '—'}</strong> | Caste: <strong className="text-amber-800">{qrTestResult.extracted?.caste || '—'}</strong> | CNIC: <strong className="font-mono">{qrTestResult.extracted?.cnic || '—'}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQrTestResult(null)}
+                className="text-xs text-slate-500 hover:text-slate-800 font-medium px-2 py-1 rounded hover:bg-slate-200/50 cursor-pointer self-end sm:self-center"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+          
+          {/* Mobile Face Switcher (Only visible on mobile screens) */}
+          <div className="no-print sm:hidden flex items-center justify-center gap-1 bg-slate-300/80 p-1 rounded-xl w-full max-w-[340px] shadow-inner">
+            <button
+              onClick={() => setMobileFace('both')}
+              className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                mobileFace === 'both' ? 'bg-[#16232F] text-white shadow-xs' : 'text-slate-700'
+              }`}
+            >
+              Both Faces
+            </button>
+            <button
+              onClick={() => setMobileFace('front')}
+              className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                mobileFace === 'front' ? 'bg-[#16232F] text-white shadow-xs' : 'text-slate-700'
+              }`}
+            >
+              Front Only
+            </button>
+            <button
+              onClick={() => setMobileFace('back')}
+              className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                mobileFace === 'back' ? 'bg-[#16232F] text-white shadow-xs' : 'text-slate-700'
+              }`}
+            >
+              Back (QR)
+            </button>
+          </div>
+
           {isLoading ? (
             <div className="py-20 text-center text-slate-500 font-medium">
               <div className="w-8 h-8 border-3 border-[#AD7A28] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
@@ -294,7 +567,9 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                   Standard English/Latin typography & formatting
                  ════════════════════════════════════════════════════════════════ */}
               <div 
-                className="cr80-standard-card w-full max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex flex-col justify-between relative select-none"
+                className={`cr80-standard-card w-full max-w-[340px] sm:max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex-col justify-between relative select-none ${
+                  mobileFace === 'back' ? 'hidden sm:flex' : 'flex'
+                }`}
                 style={{ direction: 'ltr' }}
               >
                 {/* Micro Security Pattern Watermark */}
@@ -307,10 +582,16 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 />
 
                 {/* Top Header Bar */}
-                <div className="bg-gradient-to-r from-[#16232F] via-[#1E3040] to-[#16232F] text-white px-3 py-2 border-b-2 border-[#AD7A28] flex items-center justify-between relative z-10 shrink-0">
+                <div 
+                  className={`bg-gradient-to-r ${activeTheme.headerGrad} text-white px-3 py-2 border-b-2 flex items-center justify-between relative z-10 shrink-0`}
+                  style={{ borderBottomColor: activeTheme.borderAccent }}
+                >
                   <div className="flex items-center gap-2">
                     {/* Official Association Seal */}
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#AD7A28] to-[#F5CA7B] p-0.5 shadow shrink-0 flex items-center justify-center">
+                    <div 
+                      className="w-8 h-8 rounded-full p-0.5 shadow shrink-0 flex items-center justify-center"
+                      style={{ background: `linear-gradient(135deg, ${activeTheme.borderAccent}, #FFFFFF)` }}
+                    >
                       {settings.logoData ? (
                         <img 
                           src={settings.logoData} 
@@ -324,29 +605,38 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                       )}
                     </div>
                     <div>
-                      <div className="font-extrabold text-[11px] sm:text-[12px] tracking-tight leading-none text-[#F5CA7B] uppercase">
-                        ARAAIN BANNU WELFARE ASSOCIATION
+                      <div 
+                        className="font-extrabold text-[10px] sm:text-[12px] tracking-tight leading-none uppercase truncate max-w-[210px] sm:max-w-[280px]"
+                        style={{ color: activeTheme.textAccent }}
+                      >
+                        {customTitle}
                       </div>
-                      <div className="text-[8px] sm:text-[9px] text-slate-300 tracking-wide mt-0.5">
-                        Khyber Pakhtunkhwa, Pakistan
+                      <div className="text-[8px] sm:text-[9px] text-slate-300 tracking-wide mt-0.5 truncate max-w-[210px] sm:max-w-[280px]">
+                        {customSubtitle}
                       </div>
                     </div>
                   </div>
 
                   {/* Card ID Badge */}
                   <div className="text-right shrink-0">
-                    <span className="inline-block px-2 py-0.5 rounded bg-[#AD7A28] text-white text-[8px] sm:text-[9px] font-bold font-mono tracking-wider">
+                    <span 
+                      className="inline-block px-2 py-0.5 rounded text-white text-[8px] sm:text-[9px] font-bold font-mono tracking-wider"
+                      style={{ backgroundColor: activeTheme.borderAccent }}
+                    >
                       {cardId}
                     </span>
                   </div>
                 </div>
 
                 {/* Front Card Body: Photo & English Details */}
-                <div className="px-3 sm:px-4 py-2 flex-1 flex items-center gap-3 relative z-10">
+                <div className="px-3 sm:px-4 py-2 flex-1 flex items-center gap-2.5 sm:gap-3 relative z-10">
                   
                   {/* Member Photo */}
                   <div className="shrink-0 flex flex-col items-center">
-                    <div className="w-[72px] h-[90px] sm:w-[82px] sm:h-[102px] rounded-lg border-2 border-[#AD7A28] bg-slate-100 overflow-hidden shadow-sm flex items-center justify-center">
+                    <div 
+                      className="w-[68px] h-[85px] sm:w-[82px] sm:h-[102px] rounded-lg border-2 bg-slate-100 overflow-hidden shadow-sm flex items-center justify-center"
+                      style={{ borderColor: activeTheme.borderAccent }}
+                    >
                       {registration.photoData ? (
                         <img 
                           src={registration.photoData} 
@@ -359,39 +649,45 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                         </div>
                       )}
                     </div>
-                    <div className="mt-1 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-[8px] font-bold uppercase tracking-wider text-center max-w-[85px] truncate">
+                    <div className="mt-1 px-1.5 py-0.5 rounded bg-emerald-100 border border-emerald-300 text-emerald-800 text-[7.5px] sm:text-[8px] font-bold uppercase tracking-wider text-center max-w-[75px] sm:max-w-[85px] truncate">
                       {englishType}
                     </div>
                   </div>
 
                   {/* Personal Particulars in English */}
-                  <div className="flex-1 min-w-0 text-left space-y-1">
+                  <div className="flex-1 min-w-0 text-left space-y-0.5 sm:space-y-1">
                     {/* Full Name */}
                     <div>
-                      <div className="text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Member Name:</div>
-                      <div className="text-[14px] sm:text-[15px] font-extrabold text-[#16232F] truncate leading-tight mt-0.5">
+                      <div className="text-[8px] sm:text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Member Name:</div>
+                      <div className="text-[13px] sm:text-[15px] font-extrabold text-[#16232F] truncate leading-tight mt-0.5">
                         {englishFullName}
                       </div>
                     </div>
 
                     {/* Father / Guardian Name */}
                     <div>
-                      <div className="text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Father / Guardian:</div>
-                      <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 truncate mt-0.5">
+                      <div className="text-[8px] sm:text-[9px] text-slate-500 font-medium leading-none uppercase tracking-wider">Father / Guardian:</div>
+                      <div className="text-[10px] sm:text-[12px] font-bold text-slate-800 truncate mt-0.5">
                         {englishFatherName}
                       </div>
                     </div>
 
-                    {/* CNIC */}
-                    <div className="flex items-center gap-1.5 pt-0.5">
-                      <span className="text-[9px] text-slate-500 font-medium uppercase tracking-wider shrink-0">CNIC No:</span>
-                      <span className="text-[11px] sm:text-[12px] font-mono font-bold text-[#16232F] tracking-wider">
-                        {registration.cnic || '—'}
-                      </span>
+                    {/* Caste & CNIC */}
+                    <div className="flex items-center justify-between text-[8px] sm:text-[9px] pt-0.5">
+                      <div className="flex items-center gap-1 truncate max-w-[120px]">
+                        <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">Caste:</span>
+                        <span className="font-bold text-[#AD7A28] truncate">{englishCaste}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">CNIC:</span>
+                        <span className="font-mono font-bold text-[#16232F] tracking-wider">
+                          {registration.cnic || '—'}
+                        </span>
+                      </div>
                     </div>
 
                     {/* DOB & Gender */}
-                    <div className="flex items-center justify-between text-[9px] pt-0.5">
+                    <div className="flex items-center justify-between text-[8px] sm:text-[9px] pt-0.5">
                       <div className="flex items-center gap-1">
                         <span className="text-slate-500 uppercase tracking-wider">DOB:</span>
                         <span className="font-mono font-semibold text-slate-800">
@@ -404,25 +700,33 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Issue Date */}
-                    <div className="flex items-center gap-1 text-[8px] text-slate-500 pt-0.5">
-                      <span className="uppercase tracking-wider">Issue Date:</span>
-                      <span className="font-mono font-semibold text-slate-700">
-                        {issueDate}
-                      </span>
+                    {/* Issue Date & Expiry */}
+                    <div className="flex items-center justify-between text-[7.5px] sm:text-[8px] text-slate-500 pt-0.5">
+                      <div className="flex items-center gap-1">
+                        <span className="uppercase tracking-wider">Issued:</span>
+                        <span className="font-mono font-semibold text-slate-700">
+                          {issueDate}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="uppercase tracking-wider">Valid Thru:</span>
+                        <span className="font-mono font-semibold text-slate-700">
+                          {customExpiry}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                 </div>
 
                 {/* Front Footer Bar */}
-                <div className="bg-[#F8F5EE] px-3 py-1.5 border-t border-slate-200 flex items-center justify-between relative z-10 shrink-0">
-                  <div className="text-[8px] text-[#AD7A28] font-bold flex items-center gap-1 uppercase tracking-wider">
+                <div className={`${activeTheme.footerBg} px-3 py-1.5 border-t border-slate-200 flex items-center justify-between relative z-10 shrink-0`}>
+                  <div className={`text-[7.5px] sm:text-[8px] ${activeTheme.footerAccent} font-bold flex items-center gap-1 uppercase tracking-wider`}>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                     <span>Verified Official Member • Bannu KPK</span>
                   </div>
-                  <div className="text-[8px] text-slate-600 font-medium">
-                    Authorized Signatory / President
+                  <div className="text-[7.5px] sm:text-[8px] text-slate-600 font-medium truncate max-w-[150px]">
+                    {customSignatory}
                   </div>
                 </div>
 
@@ -435,7 +739,9 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                   Complete QR Code Containing ALL Registration Information
                  ════════════════════════════════════════════════════════════════ */}
               <div 
-                className="cr80-standard-card w-full max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex flex-col justify-between relative select-none"
+                className={`cr80-standard-card w-full max-w-[340px] sm:max-w-[430px] aspect-[85.6/53.98] rounded-xl sm:rounded-2xl bg-white shadow-xl border border-slate-300 overflow-hidden flex-col justify-between relative select-none ${
+                  mobileFace === 'front' ? 'hidden sm:flex' : 'flex'
+                }`}
                 style={{ direction: 'ltr' }}
               >
                 {/* Micro Security Pattern Watermark */}
@@ -448,20 +754,26 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 />
 
                 {/* Back Top Header */}
-                <div className="bg-[#16232F] text-white px-3 py-1.5 border-b-2 border-[#AD7A28] flex items-center justify-between relative z-10 shrink-0">
-                  <div className="font-bold text-[10px] sm:text-[11px] text-[#F5CA7B] uppercase tracking-wider">
+                <div 
+                  className={`bg-gradient-to-r ${activeTheme.headerGrad} text-white px-3 py-1.5 border-b-2 flex items-center justify-between relative z-10 shrink-0`}
+                  style={{ borderBottomColor: activeTheme.borderAccent }}
+                >
+                  <div 
+                    className="font-bold text-[9px] sm:text-[11px] uppercase tracking-wider"
+                    style={{ color: activeTheme.textAccent }}
+                  >
                     Official Identification & Verification
                   </div>
-                  <div className="text-[8px] sm:text-[9px] text-amber-200 font-mono tracking-wider">
-                    VERIFIED MEMBER • {cardId}
+                  <div className="text-[7.5px] sm:text-[9px] text-amber-200 font-mono tracking-wider">
+                    VERIFIED • {cardId}
                   </div>
                 </div>
 
                 {/* Back Card Body: Address, Profession, Contact & COMPLETE REGISTRATION QR CODE */}
-                <div className="px-3 sm:px-4 py-2 flex-1 flex items-center justify-between gap-2.5 relative z-10">
+                <div className="px-3 sm:px-4 py-2 flex-1 flex items-center justify-between gap-2 sm:gap-2.5 relative z-10">
                   
                   {/* Left Column: English Particulars */}
-                  <div className="flex-1 min-w-0 space-y-1 text-[9px] text-left">
+                  <div className="flex-1 min-w-0 space-y-0.5 sm:space-y-1 text-[8.5px] sm:text-[9px] text-left">
                     
                     {/* Address in English */}
                     <div>
@@ -500,14 +812,17 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                     {/* Official Website */}
                     <div className="flex items-center gap-1">
                       <span className="text-slate-500 font-medium uppercase tracking-wider shrink-0">Website:</span>
-                      <span className="font-mono text-[8px] text-[#AD7A28] font-bold">
-                        www.araainbannu.org
+                      <span 
+                        className="font-mono text-[8px] font-bold"
+                        style={{ color: activeTheme.borderAccent }}
+                      >
+                        {customWebsite}
                       </span>
                     </div>
 
                     {/* Terms Notice */}
-                    <div className="text-[7.5px] text-slate-500 leading-tight pt-0.5 border-t border-slate-100">
-                      This card is the property of Araain Bannu Welfare Association. If found, please return to the central office.
+                    <div className="text-[7px] sm:text-[7.5px] text-slate-500 leading-tight pt-0.5 border-t border-slate-100">
+                      Property of Araain Bannu Welfare Association. If found, please return to central office.
                     </div>
                   </div>
 
@@ -518,18 +833,21 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                         <img 
                           src={qrCodeUrl} 
                           alt="Registration QR Code" 
-                          className="w-[78px] h-[78px] sm:w-[88px] sm:h-[88px] object-contain"
+                          className="w-[72px] h-[72px] sm:w-[88px] sm:h-[88px] object-contain"
                         />
                       ) : (
-                        <div className="w-[78px] h-[78px] flex items-center justify-center text-[9px] text-slate-400">
+                        <div className="w-[72px] h-[72px] flex items-center justify-center text-[9px] text-slate-400">
                           QR Code
                         </div>
                       )}
                     </div>
-                    <div className="text-[7.5px] text-[#AD7A28] font-bold mt-1 text-center leading-none uppercase tracking-wider">
-                      SCAN FOR FULL DOSSIER
+                    <div 
+                      className="text-[7px] sm:text-[7.5px] font-bold mt-1 text-center leading-none uppercase tracking-wider"
+                      style={{ color: activeTheme.borderAccent }}
+                    >
+                      SCAN FULL DOSSIER
                     </div>
-                    <div className="text-[6.5px] text-slate-400 text-center font-mono mt-0.5">
+                    <div className="text-[6px] sm:text-[6.5px] text-slate-400 text-center font-mono mt-0.5">
                       ALL REGISTERED DATA
                     </div>
                   </div>
@@ -537,12 +855,12 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
                 </div>
 
                 {/* Back Footer */}
-                <div className="bg-[#F8F5EE] px-3 py-1 border-t border-slate-200 flex items-center justify-between text-[7.5px] text-slate-600 relative z-10 shrink-0">
-                  <div>
-                    Central Office: Mohallah Qasaban, Bannu City, Khyber Pakhtunkhwa
+                <div className={`${activeTheme.footerBg} px-3 py-1 border-t border-slate-200 flex items-center justify-between text-[7px] sm:text-[7.5px] text-slate-600 relative z-10 shrink-0`}>
+                  <div className="truncate max-w-[200px]">
+                    Central Office: Bannu City, Khyber Pakhtunkhwa
                   </div>
-                  <div className="font-mono">
-                    ISO 7810 ID-1 CR80
+                  <div className="font-mono shrink-0">
+                    ISO 7810 CR80
                   </div>
                 </div>
 

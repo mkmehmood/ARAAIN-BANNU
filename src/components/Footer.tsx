@@ -6,7 +6,8 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  MessageCircle 
+  MessageCircle,
+  ShieldCheck
 } from 'lucide-react';
 import { sanitizeUrl } from '../utils/security';
 
@@ -16,6 +17,7 @@ interface FooterProps {
   onOpenMembership: () => void;
   onOpenDonation: () => void;
   onOpenAdmin?: () => void;
+  onOpenVerification?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -24,6 +26,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenMembership,
   onOpenDonation,
   onOpenAdmin,
+  onOpenVerification,
 }) => {
   const { t, isUrdu, tSetting, getPages } = useLanguage();
   const { settings, pages } = useData();
@@ -210,6 +213,17 @@ export const Footer: React.FC<FooterProps> = ({
                   {t('navDonate')}
                 </button>
               </li>
+              {onOpenVerification && (
+                <li>
+                  <button
+                    onClick={onOpenVerification}
+                    className="text-amber-200 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#AD7A28]" />
+                    <span>{isUrdu ? 'کارڈ کی تصدیق' : 'Verify Membership Card'}</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 

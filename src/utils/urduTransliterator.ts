@@ -2922,6 +2922,7 @@ export function processRegistrationTranslations(reg: any): any {
 
   const isNameUrdu = isUrduText(reg.fullName);
   const isFatherUrdu = isUrduText(reg.fatherName);
+  const isCasteUrdu = isUrduText(reg.caste);
   const isStreetUrdu = isUrduText(reg.street);
   const isCityUrdu = isUrduText(reg.city);
   const isWorkUrdu = isUrduText(reg.work);
@@ -2931,6 +2932,9 @@ export function processRegistrationTranslations(reg: any): any {
 
   const fatherNameEn = isFatherUrdu ? translateNameToEnglish(reg.fatherName) : reg.fatherName;
   const fatherNameUr = isFatherUrdu ? reg.fatherName : translateNameToUrdu(reg.fatherName);
+
+  const casteEn = isCasteUrdu ? translateNameToEnglish(reg.caste) : (reg.caste || 'Araain');
+  const casteUr = isCasteUrdu ? (reg.caste || 'آرائیں') : translateNameToUrdu(reg.caste);
 
   const streetEn = isStreetUrdu ? translateAddressToEnglish(reg.street) : (reg.street || '');
   const streetUr = isStreetUrdu ? (reg.street || '') : translateAddressToUrdu(reg.street);
@@ -2968,6 +2972,8 @@ export function processRegistrationTranslations(reg: any): any {
     fullNameUr,
     fatherNameEn,
     fatherNameUr,
+    casteEn,
+    casteUr,
     streetEn,
     streetUr,
     cityEn,

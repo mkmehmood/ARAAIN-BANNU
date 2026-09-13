@@ -16,7 +16,8 @@ import {
   Phone, 
   MapPin,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ interface SidebarProps {
   onOpenMembership: () => void;
   onOpenDonation: () => void;
   onNavigateSection: (id: string) => void;
+  onOpenVerification?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -33,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenMembership,
   onOpenDonation,
   onNavigateSection,
+  onOpenVerification,
 }) => {
   const { lang, setLanguage, t, isUrdu, tSetting } = useLanguage();
   const { settings } = useData();
@@ -204,6 +207,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </button>
                 );
               })}
+              {onOpenVerification && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenVerification();
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 transition-colors text-xs sm:text-sm font-medium cursor-pointer text-left rtl:text-right border border-amber-500/20 mt-1"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>{isUrdu ? 'کارڈ کی تصدیق' : 'Verify Membership Card'}</span>
+                  </div>
+                  <ArrowIcon className="w-3.5 h-3.5 text-amber-400/70" />
+                </button>
+              )}
             </div>
           </div>
 

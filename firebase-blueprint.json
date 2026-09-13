@@ -61,6 +61,21 @@
         "lastLogin": { "type": "string" },
         "email": { "type": "string", "maxLength": 120 }
       }
+    },
+    "VerifiedCard": {
+      "title": "VerifiedCard",
+      "description": "Privacy-safe public membership card verification record (no PII)",
+      "type": "object",
+      "properties": {
+        "cardId": { "type": "string", "maxLength": 60 },
+        "fullNameEn": { "type": "string", "maxLength": 150 },
+        "fullNameUr": { "type": "string", "maxLength": 150 },
+        "membershipType": { "type": "string", "maxLength": 80 },
+        "city": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "maxLength": 40 },
+        "issuedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["cardId", "fullNameEn", "status"]
     }
   },
   "firestore": {
@@ -79,6 +94,10 @@
     "/admins/{adminUid}": {
       "schema": "AdminSession",
       "description": "Admin identity and session document; access restricted strictly to verified administrators"
+    },
+    "/verifiedCards/{cardId}": {
+      "schema": "VerifiedCard",
+      "description": "Publicly verifiable non-sensitive membership authenticity document; read allowed publicly, writes restricted to verified admins"
     }
   }
 }

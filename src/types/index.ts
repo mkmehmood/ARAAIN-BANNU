@@ -62,6 +62,8 @@ export interface SiteSettings {
   heroSub: string;
   heroTagline: string;
   heroImage?: string;
+  heroImages?: string[];
+  heroSlideDuration?: number;
 
   // About
   aboutTitle: string;
@@ -74,6 +76,7 @@ export interface SiteSettings {
   statCities: string;
   chairmanName: string;
   chairmanQuote: string;
+  chairmanPhoto?: string;
 
   // Sections
   programsTitle: string;
@@ -117,6 +120,17 @@ export interface SiteSettings {
   intSwift: string;
   intIBAN: string;
 
+  // Custom Website Update & Announcement
+  announcementEnabled?: boolean;
+  announcementBadge?: string;
+  announcementText?: string;
+  announcementTextEn?: string;
+  announcementLinkText?: string;
+  announcementAction?: string;
+  websiteThemeAccent?: string;
+  lastWebsiteUpdate?: string;
+  customNoticeHeadline?: string;
+
   [key: string]: any;
 }
 
@@ -124,6 +138,7 @@ export interface Registration {
   _id?: string;
   fullName: string;
   fatherName: string;
+  caste?: string;
   gender: string;
   membershipType: string;
   cnic: string;
@@ -149,6 +164,8 @@ export interface Registration {
   fullNameUr?: string;
   fatherNameEn?: string;
   fatherNameUr?: string;
+  casteEn?: string;
+  casteUr?: string;
   streetEn?: string;
   streetUr?: string;
   cityEn?: string;

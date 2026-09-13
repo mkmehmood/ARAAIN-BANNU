@@ -110,5 +110,14 @@ service cloud.firestore {
     match /admins/{uid} {
       allow read, write: if isAdmin() && request.auth.uid == uid && isValidId(uid);
     }
+
+    // ── verifiedCards — Privacy-Safe Public Membership Verification ──
+    // Public visitors scanning physical/digital membership card QR codes
+    // can verify validity without exposing sensitive member PII (no CNIC,
+    // phone, address, or financial records).
+    match /verifiedCards/{cardId} {
+      allow read:  if isValidId(cardId);
+      allow write: if isAdmin() && isValidId(cardId);
+    }
   }
 }

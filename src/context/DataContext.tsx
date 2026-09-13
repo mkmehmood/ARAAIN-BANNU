@@ -253,7 +253,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getOrCreateMemberCardId = async (reg: Registration): Promise<string> => {
     if (reg.cardId) return reg.cardId;
     if (!reg._id) return 'AB-25-000000';
-    const cardId = await assignCardIdInCloud(reg._id, settings.siteName);
+    const cardId = await assignCardIdInCloud(reg._id, settings.siteName, reg);
     setRegistrations(prev => prev.map(r => r._id === reg._id ? { ...r, cardId } : r));
     return cardId;
   };

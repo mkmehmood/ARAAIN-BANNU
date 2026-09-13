@@ -28,6 +28,7 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
   const [formData, setFormData] = useState({
     fullName: '',
     fatherName: '',
+    caste: 'آرائیں',
     gender: 'Male',
     membershipType: 'General Member',
     cnic: '',
@@ -251,7 +252,7 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
                   {t('memStep1', '1. Personal Details')}
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       {t('fieldFullName', 'Full Name')} *
@@ -278,6 +279,20 @@ export const MembershipModal: React.FC<MembershipModalProps> = ({ isOpen, onClos
                       onChange={handleChange}
                       required
                       placeholder={t('phFatherName', 'e.g. Haji Meer Muhammad')}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {t('fieldCaste', 'Caste / Tribe (قومیت)')}
+                    </label>
+                    <input
+                      type="text"
+                      name="caste"
+                      value={formData.caste}
+                      onChange={handleChange}
+                      placeholder={t('phCaste', 'e.g. Araain, Mian, Malik, Chaudhry')}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
                     />
                   </div>

@@ -13,7 +13,13 @@ export const defaultSettings: SiteSettings = {
   heroTitle: "آرائیں بنوں",
   heroSub: "نئی نسل کو بااختیار بنانا، اپنے ورثے پر فخر",
   heroTagline: "دنیا بھر میں آرائیں برادری کا اتحاد — طاقت، یکجہتی، ترقی۔ برادری کی فلاح، تعلیم اور ترقی کے ایک عظیم مشن کا حصہ بنیں۔",
-  heroImage: "",
+  heroImage: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80",
+  heroImages: [
+    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1920&q=80",
+    "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1920&q=80"
+  ],
+  heroSlideDuration: 5,
 
   // About
   aboutTitle: "آرائیں بنوں",
@@ -26,6 +32,7 @@ export const defaultSettings: SiteSettings = {
   statCities: "30+",
   chairmanName: "ڈاکٹر اعزاز چوہدری",
   chairmanQuote: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
+  chairmanPhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
 
   // Sections
   programsTitle: "اہم منصوبے اور فلاحی پروگرامز",
@@ -68,6 +75,17 @@ export const defaultSettings: SiteSettings = {
   intBank: "Meezan Bank Limited, Bannu",
   intSwift: "MEZNPKKAXXX",
   intIBAN: "PK36MEZN0001020304050607",
+
+  // Custom Website Update & Announcement
+  announcementEnabled: true,
+  announcementBadge: "اہم اطلاع",
+  announcementText: "آرائیں بنوں کی ممبرشپ مہم 2025 شروع ہے۔ اپنا باضابطہ ڈیجیٹل رکنیت کارڈ حاصل کریں۔",
+  announcementTextEn: "Official Membership Drive 2025 is now active. Register online to receive your verified digital ID card.",
+  announcementLinkText: "رکنیت حاصل کریں",
+  announcementAction: "membership",
+  websiteThemeAccent: "#AD7A28",
+  lastWebsiteUpdate: "2026-09-12T12:00:00.000Z",
+  customNoticeHeadline: "بنوں اور جنوبی اضلاع کے لیے خصوصی تعلیمی و فلاحی پیکج کا باقاعدہ آغاز کر دیا گیا ہے۔",
 };
 
 export const defaultPrograms: Program[] = [
@@ -83,7 +101,7 @@ export const defaultPrograms: Program[] = [
 
 export const defaultLeaders: Leader[] = [
   { id: 1, initials: "ص م", name: "صبا ممتاز بانو", role: "چیئرپرسن (عالمی)", email: "saba@arainworldcouncil.org", featured: 0, sort_order: 0 },
-  { id: 2, initials: "ا چ", name: "ڈاکٹر اعزاز چوہدری", role: "گلوبل چیئرمین", email: "chairman@arainworldcouncil.org", featured: 1, sort_order: 1 },
+  { id: 2, initials: "ا چ", name: "ڈاکٹر اعزاز چوہدری", role: "گلوبل چیئرمین", email: "chairman@arainworldcouncil.org", photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", featured: 1, sort_order: 1 },
   { id: 3, initials: "ع چ", name: "عاصم چوہدری", role: "صدر (عالمی)", email: "asim@arainworldcouncil.org", featured: 0, sort_order: 2 },
   { id: 4, initials: "ط م", name: "طاہر میر آرائیں", role: "علاقائی صدر (بنوں)", email: "tahir@arainbannu.org", featured: 1, sort_order: 3 },
   { id: 5, initials: "خ آ", name: "محمد خالد آرائیں", role: "جنرل سیکرٹری (بنوں)", email: "khalid@arainbannu.org", featured: 0, sort_order: 4 },
