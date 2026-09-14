@@ -119,7 +119,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
             <span>{badgeText}</span>
           </span>
 
-          <p className="text-xs sm:text-[13px] text-slate-200 font-medium leading-tight truncate max-w-xl sm:max-w-2xl">
+          <p className="text-xs sm:text-[13px] text-slate-200 font-medium leading-normal sm:leading-tight line-clamp-2 sm:truncate max-w-xl sm:max-w-2xl">
             {messageText}
           </p>
         </div>

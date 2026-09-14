@@ -11,12 +11,7 @@ import {
   ContactMessage 
 } from '../types';
 import { 
-  defaultSettings, 
-  defaultPrograms, 
-  defaultLeaders, 
-  defaultEvents, 
-  defaultPages, 
-  defaultGallery 
+  defaultSettings
 } from '../data/defaultData';
 import { onAuthStateChanged } from 'firebase/auth';
 import { 
@@ -80,13 +75,13 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Always initialize fresh from defaults; no localStorage caching
+  // Rely strictly on live Firestore database; initial state is empty until Firestore snapshot resolves
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
-  const [programs, setPrograms] = useState<Program[]>(defaultPrograms);
-  const [leaders, setLeaders] = useState<Leader[]>(defaultLeaders);
-  const [events, setEvents] = useState<EventItem[]>(defaultEvents);
-  const [pages, setPages] = useState<PageItem[]>(defaultPages);
-  const [gallery, setGallery] = useState<GalleryItem[]>(defaultGallery);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [pages, setPages] = useState<PageItem[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);

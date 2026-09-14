@@ -619,12 +619,12 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
 
     contactAddress: "ARAAIN BANNU Office, Main City, Bannu, Khyber Pakhtunkhwa, Pakistan",
     contactHours: "Monday – Saturday: 09:00 AM – 05:00 PM (PKT)",
-    contactPhone: "+92 300 1234567",
-    contactEmail: "info@arainbannu.org",
+    contactPhone: "03369948409",
+    contactEmail: "3tahirmeer@gmail.com",
 
     socialFacebook: "https://facebook.com",
     socialTwitter: "https://x.com",
-    socialWhatsapp: "https://wa.me/923001234567",
+    socialWhatsapp: "https://wa.me/923369948409",
     socialInstagram: "https://instagram.com",
 
     footerDesc: "ARAAIN BANNU is committed to empowering the Arain community across Bannu, Khyber Pakhtunkhwa, and globally through education, economic empowerment, and humanitarian welfare.",
@@ -632,16 +632,16 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
 
     bankName: "Meezan Bank Limited",
     bankTitle: "ARAAIN BANNU Welfare Fund",
-    bankAccount: "01020304050607",
-    bankIBAN: "PK36MEZN0001020304050607",
-    bankBranch: "Bannu Branch (Code 0123)",
+    bankAccount: "",
+    bankIBAN: "",
+    bankBranch: "Bannu Branch",
     epTitle: "Tahir Meer (Finance Secretary)",
-    epNumber: "0300-1234567",
+    epNumber: "03369948409",
     jcTitle: "ARAAIN BANNU Welfare",
-    jcNumber: "0321-7654321",
+    jcNumber: "03369948409",
     intBank: "Meezan Bank Limited, Bannu",
-    intSwift: "MEZNPKKAXXX",
-    intIBAN: "PK36MEZN0001020304050607",
+    intSwift: "",
+    intIBAN: "",
     announcementBadge: "Official Announcement",
     announcementText: "Araain Bannu Membership Drive is live. Register now to receive your official digital ID card.",
     customNoticeHeadline: "Special educational and welfare package has been officially inaugurated for Bannu and Southern districts.",
@@ -664,10 +664,10 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
     aboutP1: "آرائیں بنوں پاکستان اور بیرون ملک بسنے والے ہزاروں خاندانوں کی نمائندگی کرتی ہے، جو تعلیم، فلاح اور پائیدار ترقی کے مشترکہ عزم سے جڑے ہوئے ہیں۔",
     aboutP2: "اسٹریٹجک منصوبوں، تعلیمی وظائف، کمیونٹی سینٹرز اور نوجوانوں کی رہنمائی کے ذریعے ہم روایات اور جدید مواقع کے درمیان مضبوط پل تعمیر کر رہے ہیں۔",
     aboutP3: "بنوں میں ہماری علاقائی شاخ نچلی سطح پر فعال ہے، جو جنوبی خیبر پختونخوا کے خاندانوں کے لیے امداد، کیریئر رہنمائی اور باہمی اتحاد فراہم کرتی ہے۔",
-    statMembers: "+۵۰۰",
-    statPrograms: "+۸",
-    statCities: "+۳۰",
-    chairmanName: "ڈاکٹر اعزاز چوہدری",
+    statMembers: "50",
+    statPrograms: "8",
+    statCities: "30+",
+    chairmanName: "محمود خان / مولانا محمد طاہر خان",
     chairmanQuote: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
 
     programsTitle: "اہم منصوبے اور فلاحی پروگرامز",
@@ -683,12 +683,12 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
 
     contactAddress: "دفتر آرائیں بنوں، مین سٹی، بنوں، خیبر پختونخوا، پاکستان",
     contactHours: "پیر تا ہفتہ: صبح نو بجے تا شام پانچ بجے",
-    contactPhone: "۰۳۰۰۱۲۳۴۵۶۷",
-    contactEmail: "info@arainbannu.org",
+    contactPhone: "03369948409",
+    contactEmail: "3tahirmeer@gmail.com",
 
     socialFacebook: "https://facebook.com",
     socialTwitter: "https://x.com",
-    socialWhatsapp: "https://wa.me/923001234567",
+    socialWhatsapp: "https://wa.me/923369948409",
     socialInstagram: "https://instagram.com",
 
     footerDesc: "آرائیں بنوں تعلیم، معاشی خود مختاری اور انسانی فلاح کے ذریعے بنوں، خیبر پختونخوا اور دنیا بھر میں برادری کو بااختیار بنانے کے لیے کوشاں ہے۔",
@@ -696,16 +696,16 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
 
     bankName: "میزان بینک لمیٹڈ",
     bankTitle: "آرائیں بنوں ویلفیئر فنڈ",
-    bankAccount: "01020304050607",
-    bankIBAN: "PK36MEZN0001020304050607",
-    bankBranch: "بنوں برانچ (کوڈ ۰۱۲۳)",
+    bankAccount: "",
+    bankIBAN: "",
+    bankBranch: "بنوں برانچ",
     epTitle: "طاہر میر (فنانس سیکرٹری)",
-    epNumber: "0300-1234567",
+    epNumber: "03369948409",
     jcTitle: "آرائیں بنوں ویلفیئر",
-    jcNumber: "0321-7654321",
+    jcNumber: "03369948409",
     intBank: "میزان بینک لمیٹڈ، بنوں",
-    intSwift: "MEZNPKKAXXX",
-    intIBAN: "PK36MEZN0001020304050607",
+    intSwift: "",
+    intIBAN: "",
   }
 };
 
@@ -734,347 +734,25 @@ export const LOCALIZED_PROGRAMS: Record<Language, Program[]> = {
   ]
 };
 
-// ── Complete Bilingual Leaders ──────────────────────────────────
+// ── Complete Bilingual Leaders (Defaults empty, sourced strictly from Firestore) ────
 
 export const LOCALIZED_LEADERS: Record<Language, Leader[]> = {
-  en: [
-    { 
-      id: 1, 
-      initials: "SM", 
-      name: "Saba Mumtaz Bano", 
-      nameUr: "صبا ممتاز بانو",
-      role: "Chairperson (Global)", 
-      roleUr: "چیئرپرسن (عالمی)",
-      email: "saba@arainworldcouncil.org", 
-      phone: "+92 300 9876543",
-      location: "Lahore / Global Council",
-      locationUr: "لاہور / عالمی کونسل",
-      message: "Empowering women and educating our youth are the twin engines of sustainable social transformation. Every family in Bannu deserves dignity, skills, and opportunity.",
-      messageUr: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
-      bio: "Prominent social worker and education advocate leading global women empowerment desks and vocational centers.",
-      bioUr: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
-      responsibilities: ["Global Council Outreach", "Women's Empowerment Desk", "Family Welfare Programs"],
-      responsibilitiesUr: ["عالمی کونسل روابط", "خواتین ڈیسک", "خاندانی فلاحی منصوبے"],
-      featured: 0, 
-      sort_order: 0 
-    },
-    { 
-      id: 2, 
-      initials: "AC", 
-      name: "Dr. Aitzaz Chaudhary", 
-      nameUr: "ڈاکٹر اعزاز چوہدری",
-      role: "Global Chairman", 
-      roleUr: "گلوبل چیئرمین",
-      email: "chairman@arainworldcouncil.org", 
-      phone: "+92 300 1122334",
-      location: "Islamabad / Bannu",
-      locationUr: "اسلام آباد / بنوں",
-      photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", 
-      message: "Our unity is our greatest strength. When we support our students with scholarships and build modern institutions, we establish an enduring legacy for generations.",
-      messageUr: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
-      bio: "Eminent scholar, visionary leader, and philanthropist committed to socio-economic uplift, educational excellence, and healthcare across Pakistan.",
-      bioUr: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
-      responsibilities: ["Supreme Council Strategic Policy", "Educational Trust & Scholarships", "Institutional Expansion"],
-      responsibilitiesUr: ["اعلیٰ کونسل اسٹریٹجک پالیسی", "ایجوکیشنل ٹرسٹ و اسکالرشپس", "تنظیمی توسیع"],
-      featured: 1, 
-      sort_order: 1 
-    },
-    { 
-      id: 3, 
-      initials: "AS", 
-      name: "Asim Chaudhary", 
-      nameUr: "عاصم چوہدری",
-      role: "President (Global)", 
-      roleUr: "صدر (عالمی)",
-      email: "asim@arainworldcouncil.org", 
-      phone: "+92 321 4455667",
-      location: "Islamabad / International",
-      locationUr: "اسلام آباد / بین الاقوامی",
-      message: "Connecting our vibrant youth with contemporary digital careers and global mentorship unlocks limitless potential for our future.",
-      messageUr: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
-      bio: "Senior corporate strategist and youth mentor dedicated to tech education, digital skills training, and entrepreneurship incubation.",
-      bioUr: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
-      responsibilities: ["Global Youth Network", "Digital Transformation", "Entrepreneurship Grants"],
-      responsibilitiesUr: ["گلوبل یوتھ نیٹ ورک", "ڈیجیٹل منصوبہ جات", "کاروباری گرانٹس"],
-      featured: 0, 
-      sort_order: 2 
-    },
-    { 
-      id: 4, 
-      initials: "TM", 
-      name: "Tahir Meer Arain", 
-      nameUr: "طاہر میر آرائیں",
-      role: "Regional President (Bannu)", 
-      roleUr: "علاقائی صدر (بنوں)",
-      email: "tahir@arainbannu.org", 
-      phone: "+92 300 1234567",
-      location: "Bannu, Khyber Pakhtunkhwa",
-      locationUr: "بنوں، خیبر پختونخوا",
-      message: "We are on the ground every day in Bannu to ensure that genuine welfare, emergency relief, and respectable community identity reach every household.",
-      messageUr: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
-      bio: "Dedicated grassroots leader driving regional operations, member enrollment, flood relief operations, and public coordination across Bannu division.",
-      bioUr: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
-      responsibilities: ["Regional Executive Governance", "Grassroots Emergency Relief", "Bannu Secretariat Supervision"],
-      responsibilitiesUr: ["علاقائی انتظامی نگرانی", "زمینی امدادی سرگرمیاں", "بنوں سیکرٹریٹ کی سربراہی"],
-      featured: 1, 
-      sort_order: 3 
-    },
-    { 
-      id: 5, 
-      initials: "MK", 
-      name: "Muhammad Khalid Arain", 
-      nameUr: "محمد خالد آرائیں",
-      role: "General Secretary (Bannu)", 
-      roleUr: "جنرل سیکرٹری (بنوں)",
-      email: "khalid@arainbannu.org", 
-      phone: "+92 313 5566778",
-      location: "Bannu, Khyber Pakhtunkhwa",
-      locationUr: "بنوں، خیبر پختونخوا",
-      message: "Our doors are always open to all members of our community for support, transparent documentation, and cooperative progress.",
-      messageUr: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
-      bio: "Community organizer maintaining executive council records, verification workflows, official correspondence, and member affairs.",
-      bioUr: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
-      responsibilities: ["Council Secretariat Records", "Membership ID Card Verifications", "Public Inquiries & Events"],
-      responsibilitiesUr: ["سیکرٹریٹ ریکارڈ و مراسلت", "شناختی کارڈ تصدیق و اجراء", "عوامی رابطہ و تقریبات"],
-      featured: 0, 
-      sort_order: 4 
-    },
-  ],
-  ur: [
-    { 
-      id: 1, 
-      initials: "ص م", 
-      name: "صبا ممتاز بانو", 
-      nameUr: "صبا ممتاز بانو",
-      role: "چیئرپرسن (عالمی)", 
-      roleUr: "چیئرپرسن (عالمی)",
-      email: "saba@arainworldcouncil.org", 
-      phone: "+92 300 9876543",
-      location: "Lahore / Global Council",
-      locationUr: "لاہور / عالمی کونسل",
-      message: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
-      messageUr: "خواتین کو بااختیار بنانا اور نئی نسل کو جدید تعلیم سے آراستہ کرنا پائیدار سماجی تبدیلی کے دو بنیادی ستون ہیں۔ ہم بنوں کے ہر خاندان کی فلاح کے لیے پرعزم ہیں۔",
-      bio: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
-      bioUr: "نامور سماجی رہنما اور تعلیمی سرپرست جو خواتین کے فنی تربیتی مراکز اور خاندانی فلاح کے منصوبوں کی سربراہی کر رہی ہیں۔",
-      responsibilities: ["Global Council Outreach", "Women's Empowerment Desk", "Family Welfare Programs"],
-      responsibilitiesUr: ["عالمی کونسل روابط", "خواتین ڈیسک", "خاندانی فلاحی منصوبے"],
-      featured: 0, 
-      sort_order: 0 
-    },
-    { 
-      id: 2, 
-      initials: "ا چ", 
-      name: "ڈاکٹر اعزاز چوہدری", 
-      nameUr: "ڈاکٹر اعزاز چوہدری",
-      role: "گلوبل چیئرمین", 
-      roleUr: "گلوبل چیئرمین",
-      email: "chairman@arainworldcouncil.org", 
-      phone: "+92 300 1122334",
-      location: "Islamabad / Bannu",
-      locationUr: "اسلام آباد / بنوں",
-      photo_data: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", 
-      message: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
-      messageUr: "ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے طلبہ کو تعلیمی وظائف فراہم کرتے ہیں اور فلاحی ادارے بناتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔",
-      bio: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
-      bioUr: "ممتاز اسکالر، دوراندیش رہنما اور مخیر شخصیت جو پاکستان بھر میں تعلیمی ترقی، فری میڈیکل سہولیات اور برادری کے اتحاد کے لیے سرگرم ہیں۔",
-      responsibilities: ["Supreme Council Strategic Policy", "Educational Trust & Scholarships", "Institutional Expansion"],
-      responsibilitiesUr: ["اعلیٰ کونسل اسٹریٹجک پالیسی", "ایجوکیشنل ٹرسٹ و اسکالرشپس", "تنظیمی توسیع"],
-      featured: 1, 
-      sort_order: 1 
-    },
-    { 
-      id: 3, 
-      initials: "ع چ", 
-      name: "عاصم چوہدری", 
-      nameUr: "عاصم چوہدری",
-      role: "صدر (عالمی)", 
-      roleUr: "صدر (عالمی)",
-      email: "asim@arainworldcouncil.org", 
-      phone: "+92 321 4455667",
-      location: "Islamabad / International",
-      locationUr: "اسلام آباد / بین الاقوامی",
-      message: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
-      messageUr: "نوجوانوں کو جدید ڈیجیٹل شعبہ جات، بین الاقوامی سرپرستی اور کاروباری مواقع سے جوڑ کر ہم شاندار مستقبل تعمیر کر سکتے ہیں۔",
-      bio: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
-      bioUr: "سینئر کارپوریٹ ماہر اور یوتھ مینٹور جو نوجوانوں کو آئی ٹی کی تربیت اور کاروبار شروع کرنے کے لیے عملی رہنمائی فراہم کر رہے ہیں۔",
-      responsibilities: ["Global Youth Network", "Digital Transformation", "Entrepreneurship Grants"],
-      responsibilitiesUr: ["گلوبل یوتھ نیٹ ورک", "ڈیجیٹل منصوبہ جات", "کاروباری گرانٹس"],
-      featured: 0, 
-      sort_order: 2 
-    },
-    { 
-      id: 4, 
-      initials: "ط م", 
-      name: "طاہر میر آرائیں", 
-      nameUr: "طاہر میر آرائیں",
-      role: "علاقائی صدر (بنوں)", 
-      roleUr: "علاقائی صدر (بنوں)",
-      email: "tahir@arainbannu.org", 
-      phone: "+92 300 1234567",
-      location: "Bannu, Khyber Pakhtunkhwa",
-      locationUr: "بنوں، خیبر پختونخوا",
-      message: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
-      messageUr: "ہم بنوں میں روزانہ زمینی سطح پر متحرک ہیں تاکہ حقیقی فلاح، ہنگامی امداد اور باوقار شناخت برادری کے ہر گھرانے تک بلاتفریق پہنچ سکے۔",
-      bio: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
-      bioUr: "مخلص عوامی رہنما جو بنوں ڈویژن میں کونسل کے دفتری امور، رکنیت مہم، ہنگامی امدادی سرگرمیوں اور عوامی رابطے کی قیادت کر رہے ہیں۔",
-      responsibilities: ["Regional Executive Governance", "Grassroots Emergency Relief", "Bannu Secretariat Supervision"],
-      responsibilitiesUr: ["علاقائی انتظامی نگرانی", "زمینی امدادی سرگرمیاں", "بنوں سیکرٹریٹ کی سربراہی"],
-      featured: 1, 
-      sort_order: 3 
-    },
-    { 
-      id: 5, 
-      initials: "خ آ", 
-      name: "محمد خالد آرائیں", 
-      nameUr: "محمد خالد آرائیں",
-      role: "جنرل سیکرٹری (بنوں)", 
-      roleUr: "جنرل سیکرٹری (بنوں)",
-      email: "khalid@arainbannu.org", 
-      phone: "+92 313 5566778",
-      location: "Bannu, Khyber Pakhtunkhwa",
-      locationUr: "بنوں، خیبر پختونخوا",
-      message: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
-      messageUr: "کونسل کے دروازے برادری کے ہر فرد کی رہنمائی، باہمی اتحاد، شفاف ریکارڈ اور باوقار تعاون کے لیے ہمہ وقت کھلے ہیں۔",
-      bio: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
-      bioUr: "تنظیمی منتظم جو باضابطہ مراسلات، ممبرشپ تصدیق، کونسل کے اجلاسوں اور تنظیمی ریکارڈ کی مکمل دیکھ بھال انجام دیتے ہیں۔",
-      responsibilities: ["Council Secretariat Records", "Membership ID Card Verifications", "Public Inquiries & Events"],
-      responsibilitiesUr: ["سیکرٹریٹ ریکارڈ و مراسلت", "شناختی کارڈ تصدیق و اجراء", "عوامی رابطہ و تقریبات"],
-      featured: 0, 
-      sort_order: 4 
-    },
-  ]
+  en: [],
+  ur: []
 };
 
-// ── Complete Bilingual Events ───────────────────────────────────
+// ── Complete Bilingual Events (Defaults empty, sourced strictly from Firestore) ──────
 
 export const LOCALIZED_EVENTS: Record<Language, EventItem[]> = {
-  en: [
-    { id: 1, day: "02", month: "Jan", tag: "Business", title: "Strategically Build Your Business", time_str: "15:00 – 19:00", place: "Bannu, KPK, Pakistan", sort_order: 0 },
-    { id: 2, day: "19", month: "Apr", tag: "Community", title: "ARAAIN BANNU Annual Gathering 2025", time_str: "09:30 – 13:00", place: "Bannu Sports Complex", sort_order: 1 },
-    { id: 3, day: "10", month: "Dec", tag: "Youth", title: "Youth Leadership Summit 2025", time_str: "10:00 – 16:00", place: "Bannu Press Club", sort_order: 2 },
-  ],
-  ur: [
-    { id: 1, day: "۰۲", month: "جنوری", tag: "کاروبار", title: "اپنے کاروبار کو مضبوط بنیادوں پر استوار کریں", time_str: "دوپہر ۳:۰۰ تا شام ۷:۰۰", place: "بنوں، خیبر پختونخوا، پاکستان", sort_order: 0 },
-    { id: 2, day: "۱۹", month: "اپریل", tag: "کمیونٹی", title: "آرائیں بنوں سالانہ اجتماع ۲۰۲۵", time_str: "صبح ۹:۳۰ تا دوپہر ۱:۰۰", place: "بنوں اسپورٹس کمپلیکس", sort_order: 1 },
-    { id: 3, day: "۱۰", month: "دسمبر", tag: "نوجوان", title: "یوتھ لیڈرشپ سمٹ ۲۰۲۵", time_str: "صبح ۱۰:۰۰ تا شام ۴:۰۰", place: "بنوں پریس کلب", sort_order: 2 },
-  ]
+  en: [],
+  ur: []
 };
 
-// ── Complete Bilingual Dynamic Pages ────────────────────────────
+// ── Complete Bilingual Dynamic Pages (Defaults empty, sourced strictly from Firestore) ───
 
 export const LOCALIZED_PAGES: Record<Language, PageItem[]> = {
-  en: [
-    {
-      id: 1,
-      slug: "blog",
-      label: "Our Blog",
-      title: "ARAAIN BANNU Blog & News",
-      body: "Welcome to the ARAAIN BANNU Blog. Stay updated with the latest news, stories, and announcements from the ARAAIN BANNU community. We regularly post updates on student scholarship disbursements, medical camp schedules, career seminars, and local council achievements across the Bannu division.",
-      published: 1,
-      sort_order: 0,
-    },
-    {
-      id: 2,
-      slug: "history",
-      label: "Our History",
-      title: "History of the Arain Community & Council",
-      body: "The ARAAIN BANNU was founded with a vision to unite Arains globally. From humble beginnings, ARAAIN BANNU has grown into a worldwide movement for community empowerment and development.\n\nThe Arain community has a storied history of agricultural enterprise, civil service, law, medicine, and nation-building in the Indus basin. Today, ARAAIN BANNU honors this noble ancestry by fostering mutual collaboration and uplifting every family.",
-      published: 1,
-      sort_order: 1,
-    },
-    {
-      id: 3,
-      slug: "documentation",
-      label: "Documentation",
-      title: "Official Documents & Bylaws",
-      body: "Official documents, policies, and guidelines of the ARAAIN BANNU. All resources are available for members and the public.\n\n1. Constitution of ARAAIN BANNU\n2. Code of Ethics for Executive Council Members\n3. Financial Transparency and Audit Procedures\n4. Membership Rights and Voting Bylaws\n5. Welfare Fund Disbursement Criteria",
-      published: 1,
-      sort_order: 2,
-    },
-    {
-      id: 4,
-      slug: "environmental",
-      label: "Environmental",
-      title: "Environmental & Green Initiatives",
-      body: "ARAAIN BANNU is deeply committed to environmental sustainability and climate resilience in Southern KPK. Drawing inspiration from our historical agrarian traditions, we lead:\n\n• Annual Tree Plantation Drives in schools and public spaces\n• Clean Drinking Water Filtration Plants in underserved union councils\n• Solid Waste Awareness and Plastic Reduction Seminars",
-      published: 1,
-      sort_order: 3,
-    },
-    {
-      id: 5,
-      slug: "gallery_page",
-      label: "Town Gallery",
-      title: "Bannu Community Gallery",
-      body: "Explore photographic archives from ARAAIN BANNU community gatherings, medical camps, Eid gift distributions, and student award ceremonies across Bannu and neighboring districts.",
-      published: 1,
-      sort_order: 4,
-    },
-    {
-      id: 6,
-      slug: "department",
-      label: "Department",
-      title: "Functional Departments & Wings",
-      body: "ARAAIN BANNU operates through several specialized departments, each led by experienced professionals:\n\n• Education & Scholarships Wing\n• Healthcare & Emergency Welfare Cell\n• Youth Empowerment & IT Mentorship Desk\n• Matrimonial & Family Reconciliation Committee\n• Public Relations & Overseas Diaspora Liaison",
-      published: 1,
-      sort_order: 5,
-    }
-  ],
-  ur: [
-    {
-      id: 1,
-      slug: "blog",
-      label: "ہمارا بلاگ",
-      title: "آرائیں بنوں بلاگ اور تازہ ترین خبریں",
-      body: "آرائیں بنوں کے باضابطہ بلاگ میں خوش آمدید۔ یہاں آپ کو برادری کی تازہ ترین خبروں، فلاحی سرگرمیوں اور اعلانات سے باخبر رکھا جاتا ہے۔ ہم باقاعدگی سے طلبہ کے تعلیمی وظائف، فری میڈیکل کیمپس کے نظام الاوقات، کیریئر سیمینارز اور بنوں ڈویژن میں کونسل کی فلاحی کامیابیوں کی تفصیلات شائع کرتے ہیں۔",
-      published: 1,
-      sort_order: 0,
-    },
-    {
-      id: 2,
-      slug: "history",
-      label: "ہماری تاریخ",
-      title: "آرائیں برادری اور تنظیم کی تاریخ",
-      body: "آرائیں بنوں کی بنیاد دنیا بھر میں آرائیں برادری کے افراد کو باہمی اتحاد، اخوت اور ترقی کے ایک مشترکہ پلیٹ فارم پر لانے کے لیے رکھی گئی۔ وادی سندھ کی تاریخ میں آرائیں برادری زراعت، تعلیم، قانون، طب اور قومی تعمیر میں ہمیشہ ہراول دستے کا کردار ادا کرتی رہی ہے۔ آج آرائیں بنوں اسی شاندار ورثے کو برقرار رکھتے ہوئے ہر خاندان کی فلاح کے لیے کوشاں ہے۔",
-      published: 1,
-      sort_order: 1,
-    },
-    {
-      id: 3,
-      slug: "documentation",
-      label: "باضابطہ دستاویزات",
-      title: "تنظیم کے ضوابط اور دستوری دستاویزات",
-      body: "آرائیں بنوں کے باضابطہ قواعد و ضوابط اور تنظیمی پالیسیاں تمام اراکین اور برادری کے لیے دستیاب ہیں:\n\n۱۔ آرائیں بنوں کا باضابطہ آئین\n۲۔ مجلس عاملہ کے اراکین کے لیے ضابطہ اخلاق\n۳۔ مالی شفافیت اور آڈٹ کے قواعد\n۴۔ اراکین کے حقوق اور ووٹنگ کا طریقہ کار\n۵۔ فلاحی فنڈ کی تقسیم کے معیارات",
-      published: 1,
-      sort_order: 2,
-    },
-    {
-      id: 4,
-      slug: "environmental",
-      label: "ماحولیاتی اقدامات",
-      title: "سرسبز بنوں اور ماحولیاتی مہمات",
-      body: "آرائیں بنوں جنوبی خیبر پختونخوا میں ماحولیاتی پائیداری اور شجرکاری کے لیے پرعزم ہے۔ اپنی زرعی روایات سے تحریک لیتے ہوئے ہم مندرجہ ذیل سرگرمیوں کی قیادت کرتے ہیں:\n\n• اسکولوں اور عوامی مقامات پر سالانہ شجرکاری مہم\n• پسماندہ یونین کونسلوں میں صاف پانی کے فلٹریشن پلانٹس کا قیام\n• پلاسٹک کے استعمال میں کمی اور صفائی کے شعور کے لیے سیمینارز",
-      published: 1,
-      sort_order: 3,
-    },
-    {
-      id: 5,
-      slug: "gallery_page",
-      label: "بنوں گیلری",
-      title: "بنوں کمیونٹی کی تصویری گیلری",
-      body: "بنوں اور ملحقہ اضلاع میں آرائیں بنوں کے فلاحی اجتماعات، فری میڈیکل کیمپس، عید گفٹ تقسیم اور ہونہار طلبہ کی تقاریب اعزاز کی تصویری تاریخ ملاحظہ فرمائیں۔",
-      published: 1,
-      sort_order: 4,
-    },
-    {
-      id: 6,
-      slug: "department",
-      label: "شعبہ جات",
-      title: "فعال شعبہ جات اور تنظیمی ونگز",
-      body: "آرائیں بنوں متعدد خصوصی شعبہ جات کے ذریعے کام کرتی ہے جن کی قیادت باصلاحیت اور تجربہ کار افراد کے سپرد ہے:\n\n• شعبہ تعلیم اور اسکالرشپس ونگ\n• شعبہ صحت اور ہنگامی فلاحی بہبود سیل\n• نوجوانوں کی خود مختاری اور آئی ٹی رہنمائی ڈیسک\n• رشتہ ناطہ اور عائلی مصالحتی کمیٹی\n• تعلقات عامہ اور اوورسیز رابطہ ونگ",
-      published: 1,
-      sort_order: 5,
-    }
-  ]
+  en: [],
+  ur: []
 };
 
 // ── Smart Script Detection Helpers ──────────────────────────────
@@ -1326,6 +1004,169 @@ export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Le
         id: item.id ?? idx + 1,
       };
     }
+  });
+}
+
+// ── Contact Channels Localization Dictionary & Resolver ─────────────
+
+export const CONTACT_TITLES_EN_TO_UR: Record<string, string> = {
+  'helpline number': 'ہیلپ لائن نمبر',
+  'helpline': 'ہیلپ لائن نمبر',
+  'official whatsapp': 'سرکاری واٹس ایپ رابطہ',
+  'whatsapp helpline': 'واٹس ایپ ہیلپ لائن',
+  'inquiry desk': 'معلومات و رابطہ ای میل',
+  'official email': 'سرکاری ای میل',
+  'office address': 'مرکزی سیکرٹریٹ و دفتر',
+  'secretariat': 'مرکزی کمیونٹی سیکرٹریٹ',
+  'main secretariat': 'مرکزی کمیونٹی سیکرٹریٹ',
+  'central office': 'مرکزی دفتر و پتہ',
+  'secretariat hours': 'دفتری اوقات کار',
+  'general inquiries': 'مرکزی رابطہ و معلومات',
+  'direct contact': 'براہ راست رابطہ',
+  'official contact': 'سرکاری رابطہ',
+  'community desk': 'کمیونٹی ڈیسک',
+  'emergency cell': 'ایمرجنسی سیل',
+  'membership desk': 'رکنیت ڈیسک',
+  'donation desk': 'عطیات و فنڈز رابطہ',
+  'media & press': 'میڈیا و پریس رابطہ',
+  'headquarters': 'مرکزی ہیڈ کوارٹر',
+  'phone': 'فون رابطہ',
+  'email': 'ای میل رابطہ',
+  'address': 'پتہ',
+  'hours': 'اوقات کار'
+};
+
+export const CONTACT_TITLES_UR_TO_EN: Record<string, string> = {
+  'ہیلپ لائن نمبر': 'Helpline Number',
+  'سرکاری واٹس ایپ رابطہ': 'Official WhatsApp',
+  'واٹس ایپ ہیلپ لائن': 'WhatsApp Helpline',
+  'معلومات و رابطہ ای میل': 'Inquiry Desk',
+  'سرکاری ای میل': 'Official Email',
+  'مرکزی سیکرٹریٹ و دفتر': 'Main Secretariat & Office',
+  'مرکزی کمیونٹی سیکرٹریٹ': 'Central Community Secretariat',
+  'مرکزی دفتر و پتہ': 'Central Office & Address',
+  'دفتری اوقات کار': 'Secretariat Office Hours',
+  'مرکزی رابطہ و معلومات': 'General Inquiries',
+  'براہ راست رابطہ': 'Direct Contact',
+  'سرکاری رابطہ': 'Official Contact',
+  'کمیونٹی ڈیسک': 'Community Desk',
+  'ایمرجنسی سیل': 'Emergency Cell',
+  'رکنیت ڈیسک': 'Membership Desk',
+  'عطیات و فنڈز رابطہ': 'Donation Desk',
+  'میڈیا و پریس رابطہ': 'Media & Press Relations',
+  'مرکزی ہیڈ کوارٹر': 'Headquarters'
+};
+
+export const CONTACT_NOTES_EN_TO_UR: Record<string, string> = {
+  'available 9 am - 5 pm': 'صبح 9 تا شام 5 بجے تک دستیاب',
+  'available 9 am to 5 pm': 'صبح 9 تا شام 5 بجے تک دستیاب',
+  'mon - sat: 9 am - 5 pm': 'پیر تا ہفتہ: صبح 9 تا شام 5 بجے',
+  'mon - sat: 9 am to 5 pm': 'پیر تا ہفتہ: صبح 9 تا شام 5 بجے',
+  'monday – saturday: 09:00 am – 05:00 pm (pkt)': 'پیر تا ہفتہ: صبح نو بجے تا شام پانچ بجے',
+  'instant messaging & inquiries': 'فوری پیغامات و معلومات',
+  'official correspondence': 'سرکاری خط و کتابت',
+  'main community secretariat': 'مرکزی کمیونٹی سیکرٹریٹ',
+  'sunday closed / emergency on call': 'اتوار تعطیل / ایمرجنسی آن کال',
+  'direct contact': 'براہ راست رابطہ',
+  'instant messaging service': 'فوری میسج سروس',
+  'membership & general inquiries': 'ممبرشپ اور عمومی سوالات',
+  'visitors welcome during office hours': 'دفتری اوقات میں زائرین خوش آمدید',
+  '24/7 helpline': '24 گھنٹے ہیلپ لائن'
+};
+
+export const CONTACT_NOTES_UR_TO_EN: Record<string, string> = {
+  'صبح 9 تا شام 5 بجے تک دستیاب': 'Available 9 AM - 5 PM',
+  'صبح 9 تا شام 5 بجے تک': 'Available 9 AM - 5 PM',
+  'پیر تا ہفتہ: صبح 9 تا شام 5 بجے': 'Mon - Sat: 9 AM - 5 PM',
+  'پیر تا ہفتہ: صبح نو بجے تا شام پانچ بجے': 'Monday – Saturday: 09:00 AM – 05:00 PM (PKT)',
+  'فوری پیغامات و معلومات': 'Instant messaging & inquiries',
+  'سرکاری خط و کتابت': 'Official correspondence',
+  'مرکزی کمیونٹی سیکرٹریٹ': 'Main community secretariat',
+  'اتوار تعطیل / ایمرجنسی آن کال': 'Sunday closed / Emergency on call',
+  'براہ راست رابطہ': 'Direct contact',
+  'فوری میسج سروس': 'Instant messaging service',
+  'ممبرشپ اور عمومی سوالات': 'Membership & general inquiries',
+  'دفتری اوقات میں زائرین خوش آمدید': 'Visitors welcome during office hours',
+  '24 گھنٹے ہیلپ لائن': '24/7 Helpline'
+};
+
+export function translateContactTitleToUrdu(title: string): string {
+  if (!title) return '';
+  const key = title.trim().toLowerCase();
+  if (CONTACT_TITLES_EN_TO_UR[key]) return CONTACT_TITLES_EN_TO_UR[key];
+  return translateEnglishToUrdu(title);
+}
+
+export function translateContactTitleToEnglish(title: string): string {
+  if (!title) return '';
+  const key = title.trim();
+  if (CONTACT_TITLES_UR_TO_EN[key]) return CONTACT_TITLES_UR_TO_EN[key];
+  return translateUrduToEnglish(title);
+}
+
+export function translateContactNoteToUrdu(note: string): string {
+  if (!note) return '';
+  const key = note.trim().toLowerCase();
+  if (CONTACT_NOTES_EN_TO_UR[key]) return CONTACT_NOTES_EN_TO_UR[key];
+  return translateEnglishToUrdu(note);
+}
+
+export function translateContactNoteToEnglish(note: string): string {
+  if (!note) return '';
+  const key = note.trim();
+  if (CONTACT_NOTES_UR_TO_EN[key]) return CONTACT_NOTES_UR_TO_EN[key];
+  return translateUrduToEnglish(note);
+}
+
+/**
+ * Resolves contact items array respecting active language
+ */
+export function getLocalizedContacts(lang: Language, customContacts?: ContactDetail[]): ContactDetail[] {
+  if (!Array.isArray(customContacts) || customContacts.length === 0) return [];
+
+  return customContacts.map((c) => {
+    let title = '';
+    let note = '';
+
+    if (lang === 'ur') {
+      if (c.titleUr && isUrduText(c.titleUr)) {
+        title = c.titleUr;
+      } else if (c.title && isUrduText(c.title)) {
+        title = c.title;
+      } else {
+        title = (c.titleUr && isUrduText(c.titleUr)) ? c.titleUr : translateContactTitleToUrdu(c.title || c.titleUr || '');
+      }
+
+      if (c.noteUr && isUrduText(c.noteUr)) {
+        note = c.noteUr;
+      } else if (c.note && isUrduText(c.note)) {
+        note = c.note;
+      } else {
+        note = (c.noteUr && isUrduText(c.noteUr)) ? c.noteUr : translateContactNoteToUrdu(c.note || c.noteUr || '');
+      }
+    } else {
+      if (c.title && !isUrduText(c.title)) {
+        title = c.title;
+      } else if (c.titleUr && !isUrduText(c.titleUr)) {
+        title = c.titleUr;
+      } else {
+        title = translateContactTitleToEnglish(c.title || c.titleUr || '');
+      }
+
+      if (c.note && !isUrduText(c.note)) {
+        note = c.note;
+      } else if (c.noteUr && !isUrduText(c.noteUr)) {
+        note = c.noteUr;
+      } else {
+        note = translateContactNoteToEnglish(c.note || c.noteUr || '');
+      }
+    }
+
+    return {
+      ...c,
+      title: title || c.title || c.titleUr || '',
+      note: note || c.note || c.noteUr || '',
+    };
   });
 }
 

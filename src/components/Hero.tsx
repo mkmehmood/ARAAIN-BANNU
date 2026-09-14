@@ -141,13 +141,13 @@ export const Hero: React.FC<HeroProps> = ({
           {tSetting('heroTagline', settings)}
         </p>
 
-        {/* Call to Action Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3.5 sm:gap-4 mb-14">
+        {/* Call to Action Buttons - Responsive Touch Targets */}
+        <div className="flex flex-col xs:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-14 w-full max-w-xl mx-auto px-2">
           
           <button
             id="hero-btn-membership"
             onClick={onOpenMembership}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-semibold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer"
+            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-semibold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             <span>{t('btnBecomeMember', 'Become a Member')}</span>
@@ -156,7 +156,7 @@ export const Hero: React.FC<HeroProps> = ({
           <button
             id="hero-btn-donate"
             onClick={onOpenDonation}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-semibold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm"
+            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-semibold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm"
           >
             <Heart className="w-4 h-4 text-amber-300 fill-current" />
             <span>{t('navDonate', 'Donate & Support')}</span>
@@ -165,7 +165,7 @@ export const Hero: React.FC<HeroProps> = ({
           <button
             id="hero-btn-events"
             onClick={() => onNavigateSection('events')}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-slate-200 hover:text-white font-medium text-sm sm:text-base hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/10"
+            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-slate-200 hover:text-white font-medium text-sm sm:text-base hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/10"
           >
             <Calendar className="w-4 h-4 text-amber-300" />
             <span>{t('btnEvents', 'Upcoming Events')}</span>

@@ -54,10 +54,10 @@ export const defaultSettings: SiteSettings = {
   multipleContacts: [],
 
   // Social
-  socialFacebook: "https://facebook.com",
-  socialTwitter: "https://x.com",
+  socialFacebook: "",
+  socialTwitter: "",
   socialWhatsapp: "https://wa.me/923369948409",
-  socialInstagram: "https://instagram.com",
+  socialInstagram: "",
 
   // Footer
   footerDesc: "آرائیں بنوں تعلیم، معاشی خود مختاری اور انسانی فلاح کے ذریعے بنوں، خیبر پختونخوا اور دنیا بھر میں برادری کو بااختیار بنانے کے لیے کوشاں ہے۔",
@@ -66,16 +66,16 @@ export const defaultSettings: SiteSettings = {
   // Donation Accounts
   bankName: "Meezan Bank Limited",
   bankTitle: "ARAAIN BANNU Welfare Fund",
-  bankAccount: "01020304050607",
-  bankIBAN: "PK36MEZN0001020304050607",
-  bankBranch: "Bannu Branch (Code 0123)",
+  bankAccount: "",
+  bankIBAN: "",
+  bankBranch: "Bannu Branch",
   epTitle: "Tahir Meer (Finance Secretary)",
-  epNumber: "0300-1234567",
+  epNumber: "03369948409",
   jcTitle: "ARAAIN BANNU Welfare",
-  jcNumber: "0321-7654321",
+  jcNumber: "03369948409",
   intBank: "Meezan Bank Limited, Bannu",
-  intSwift: "MEZNPKKAXXX",
-  intIBAN: "PK36MEZN0001020304050607",
+  intSwift: "",
+  intIBAN: "",
 
   // Custom Website Update & Announcement
   announcementEnabled: false,
@@ -89,121 +89,12 @@ export const defaultSettings: SiteSettings = {
   customNoticeHeadline: "بنوں اور جنوبی اضلاع کے لیے خصوصی تعلیمی و فلاحی پیکج کا باقاعدہ آغاز کر دیا گیا ہے۔",
 };
 
-export const defaultPrograms: Program[] = [
-  { id: 1, icon_name: "heart", color: "#AD7A28", title: "فلاحی بہبود", desc: "مستحق خاندانوں کے لیے مالی معاونت، صحت کی سہولیات اور ہنگامی امداد۔", sort_order: 0 },
-  { id: 2, icon_name: "briefcase", color: "#16232F", title: "روزگار اور کیریئر", desc: "ملازمتوں کی فراہمی، پیشہ ورانہ رہنمائی اور نوجوانوں کے لیے کیریئر کونسلنگ۔", sort_order: 1 },
-  { id: 3, icon_name: "graduation-cap", color: "#AD7A28", title: "تعلیمی ادارے", desc: "ہونہار اور مستحق طلبہ کے لیے تعلیمی وظائف، مفت ڈیجیٹل خواندگی اور کتب کی فراہمی۔", sort_order: 2 },
-  { id: 4, icon_name: "trophy", color: "#16232F", title: "برادری کے ہیروز", desc: "نمایاں کارکردگی دکھانے والے اسکالرز، طلبہ، سول سرونٹس اور سماجی رہنماؤں کی حوصلہ افزائی۔", sort_order: 3 },
-  { id: 5, icon_name: "shield", color: "#AD7A28", title: "سیلاب اور ہنگامی امداد", desc: "قدرتی آفات اور ہنگامی حالات میں ریسکیو، راشن کٹس اور بحالی کے کام۔", sort_order: 4 },
-  { id: 6, icon_name: "users", color: "#16232F", title: "رشتہ ناطہ سروس", desc: "آرائیں خاندانوں کے لیے مکمل رازداری کے ساتھ ایک بااعتماد اور باوقار رشتہ داری سروس۔", sort_order: 5 },
-  { id: 7, icon_name: "building", color: "#AD7A28", title: "کمیونٹی سینٹرز", desc: "برادری کے باہمی میل جول، تقریبات اور تعلیمی سیمینارز کے لیے مراکز کا قیام۔", sort_order: 6 },
-  { id: 8, icon_name: "award", color: "#16232F", title: "خواتین ڈیسک", desc: "خواتین کی خود مختاری، ہنر مندی کی تربیت، گھریلو صنعت کے لیے گرانٹس اور رہنمائی۔", sort_order: 7 },
-];
+export const defaultPrograms: Program[] = [];
 
-export const defaultLeaders: Leader[] = [
-  { 
-    id: 1789091503538, 
-    initials: "م خ", 
-    name: "Mahmood khan ", 
-    nameUr: "محمود خان",
-    role: "چیف اگزکٹیو ", 
-    roleUr: "چیف اگزکٹیو ",
-    email: "3mahmoodkhan@gmail.com", 
-    phone: "03369948409",
-    location: "بنوں، خیبر پختونخوا",
-    locationUr: "بنوں، خیبر پختونخوا",
-    message: "برادری کی سماجی و معاشی خود مختاری اور تعلیم کے فروغ کے لیے پرعزم۔",
-    messageUr: "برادری کی سماجی و معاشی خود مختاری اور تعلیم کے فروغ کے لیے پرعزم۔",
-    bio: "چیف ایگزیکٹو، آرائیں بنوں",
-    bioUr: "چیف ایگزیکٹو، آرائیں بنوں",
-    responsibilities: ["Executive Leadership", "Strategic Direction", "Community Uplift"],
-    responsibilitiesUr: ["انتظامی قیادت", "تزویراتی منصوبہ بندی", "برادری کی فلاح"],
-    featured: 1, 
-    sort_order: 0 
-  },
-  { 
-    id: 1789216878812, 
-    initials: "ط خ", 
-    name: "مولانا محمد طاہر خان ", 
-    nameUr: "مولانا محمد طاہر خان ",
-    role: "Chief secretary ", 
-    roleUr: "چیف سیکرٹری",
-    email: "3tahirmeer@gmail.com", 
-    phone: "03369948409",
-    location: "بنوں، خیبر پختونخوا",
-    locationUr: "بنوں، خیبر پختونخوا",
-    message: "کونسل کے دفتری امور، عوامی رابطے اور فلاحی سرگرمیوں کی باقاعدہ نگرانی۔",
-    messageUr: "کونسل کے دفتری امور، عوامی رابطے اور فلاحی سرگرمیوں کی باقاعدہ نگرانی۔",
-    bio: "چیف سیکرٹری، آرائیں بنوں",
-    bioUr: "چیف سیکرٹری، آرائیں بنوں",
-    responsibilities: ["Secretariat Governance", "Public Coordination", "Member Affairs"],
-    responsibilitiesUr: ["سیکرٹریٹ نگرانی", "عوامی رابطہ", "رکنیت امور"],
-    featured: 1, 
-    sort_order: 1 
-  }
-];
+export const defaultLeaders: Leader[] = [];
 
-export const defaultEvents: EventItem[] = [
-  { id: 1, day: "02", month: "جنوری", tag: "کاروبار", title: "اپنے کاروبار کو مضبوط بنیادوں پر استوار کریں", time_str: "دوپہر 15:00 تا شام 19:00", place: "بنوں، خیبر پختونخوا، پاکستان", sort_order: 0 },
-  { id: 2, day: "19", month: "اپریل", tag: "کمیونٹی", title: "آرائیں بنوں سالانہ اجتماع", time_str: "صبح 09:30 تا دوپہر 13:00", place: "بنوں اسپورٹس کمپلیکس", sort_order: 1 },
-  { id: 3, day: "10", month: "دسمبر", tag: "نوجوان", title: "یوتھ لیڈرشپ سمٹ", time_str: "صبح 10:00 تا شام 16:00", place: "بنوں پریس کلب", sort_order: 2 },
-];
+export const defaultEvents: EventItem[] = [];
 
-export const defaultPages: PageItem[] = [
-  {
-    id: 1,
-    slug: "blog",
-    label: "ہمارا بلاگ",
-    title: "آرائیں بنوں بلاگ اور تازہ ترین خبریں",
-    body: "آرائیں بنوں کے باضابطہ بلاگ میں خوش آمدید۔ یہاں آپ کو برادری کی تازہ ترین خبروں، فلاحی سرگرمیوں اور اعلانات سے باخبر رکھا جاتا ہے۔ ہم باقاعدگی سے طلبہ کے تعلیمی وظائف، فری میڈیکل کیمپس کے نظام الاوقات، کیریئر سیمینارز اور بنوں ڈویژن میں کونسل کی فلاحی کامیابیوں کی تفصیلات شائع کرتے ہیں۔",
-    published: 1,
-    sort_order: 0,
-  },
-  {
-    id: 2,
-    slug: "history",
-    label: "ہماری تاریخ",
-    title: "آرائیں برادری اور تنظیم کی تاریخ",
-    body: "آرائیں بنوں کی بنیاد دنیا بھر میں آرائیں برادری کے افراد کو باہمی اتحاد، اخوت اور ترقی کے ایک مشترکہ پلیٹ فارم پر لانے کے لیے رکھی گئی۔ وادی سندھ کی تاریخ میں آرائیں برادری زراعت، تعلیم، قانون، طب اور قومی تعمیر میں ہمیشہ ہراول دستے کا کردار ادا کرتی رہی ہے۔ آج آرائیں بنوں اسی شاندار ورثے کو برقرار رکھتے ہوئے ہر خاندان کی فلاح کے لیے کوشاں ہے۔",
-    published: 1,
-    sort_order: 1,
-  },
-  {
-    id: 3,
-    slug: "documentation",
-    label: "باضابطہ دستاویزات",
-    title: "تنظیم کے ضوابط اور دستوری دستاویزات",
-    body: "آرائیں بنوں کے باضابطہ قواعد و ضوابط اور تنظیمی پالیسیاں تمام اراکین اور برادری کے لیے دستیاب ہیں:\n\n1۔ آرائیں بنوں کا باضابطہ آئین\n2۔ مجلس عاملہ کے اراکین کے لیے ضابطہ اخلاق\n3۔ مالی شفافیت اور آڈٹ کے قواعد\n4۔ اراکین کے حقوق اور ووٹنگ کا طریقہ کار\n5۔ فلاحی فنڈ کی تقسیم کے معیارات",
-    published: 1,
-    sort_order: 2,
-  },
-  {
-    id: 4,
-    slug: "environmental",
-    label: "ماحولیاتی اقدامات",
-    title: "سرسبز بنوں اور ماحولیاتی مہمات",
-    body: "آرائیں بنوں جنوبی خیبر پختونخوا میں ماحولیاتی پائیداری اور شجرکاری کے لیے پرعزم ہے۔ اپنی زرعی روایات سے تحریک لیتے ہوئے ہم مندرجہ ذیل سرگرمیوں کی قیادت کرتے ہیں:\n\n• اسکولوں اور عوامی مقامات پر سالانہ شجرکاری مہم\n• پسماندہ یونین کونسلوں میں صاف پانی کے فلٹریشن پلانٹس کا قیام\n• پلاسٹک کے استعمال میں کمی اور صفائی کے شعور کے لیے سیمینارز",
-    published: 1,
-    sort_order: 3,
-  },
-  {
-    id: 5,
-    slug: "gallery_page",
-    label: "بنوں گیلری",
-    title: "بنوں کمیونٹی کی تصویری گیلری",
-    body: "بنوں اور ملحقہ اضلاع میں آرائیں بنوں کے فلاحی اجتماعات، فری میڈیکل کیمپس، عید گفٹ تقسیم اور ہونہار طلبہ کی تقاریب اعزاز کی تصویری تاریخ ملاحظہ فرمائیں۔",
-    published: 1,
-    sort_order: 4,
-  },
-  {
-    id: 6,
-    slug: "department",
-    label: "شعبہ جات",
-    title: "فعال شعبہ جات اور تنظیمی ونگز",
-    body: "آرائیں بنوں متعدد خصوصی شعبہ جات کے ذریعے کام کرتی ہے جن کی قیادت باصلاحیت اور تجربہ کار افراد کے سپرد ہے:\n\n• شعبہ تعلیم اور اسکالرشپس ونگ\n• شعبہ صحت اور ہنگامی فلاحی بہبود سیل\n• نوجوانوں کی خود مختاری اور آئی ٹی رہنمائی ڈیسک\n• رشتہ ناطہ اور عائلی مصالحتی کمیٹی\n• تعلقات عامہ اور اوورسیز رابطہ ونگ",
-    published: 1,
-    sort_order: 5,
-  },
-];
+export const defaultPages: PageItem[] = [];
 
 export const defaultGallery: GalleryItem[] = [];

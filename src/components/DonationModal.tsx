@@ -315,30 +315,42 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
 
                     <div className="flex justify-between items-center py-1 border-b border-[#AD7A28]/15">
                       <span className="text-slate-600">{t('fieldAccountNumber')}:</span>
-                      <div className="flex items-center gap-2 font-mono font-bold text-[#16232F]">
-                        <span>{settings.bankAccount}</span>
-                        <button
-                          onClick={() => copyToClipboard(settings.bankAccount, 'bankAcc')}
-                          className="p-1 rounded hover:bg-[#AD7A28]/20 text-[#AD7A28] cursor-pointer"
-                          title="Copy Account Number"
-                        >
-                          {copiedField === 'bankAcc' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
+                      {settings.bankAccount ? (
+                        <div className="flex items-center gap-2 font-mono font-bold text-[#16232F]">
+                          <span>{settings.bankAccount}</span>
+                          <button
+                            onClick={() => copyToClipboard(settings.bankAccount, 'bankAcc')}
+                            className="p-1 rounded hover:bg-[#AD7A28]/20 text-[#AD7A28] cursor-pointer"
+                            title="Copy Account Number"
+                          >
+                            {copiedField === 'bankAcc' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-amber-800/80 italic font-medium">
+                          {isUrdu ? 'کونسل آفس سے رابطہ فرمائیں' : 'Contact office for account #'}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center py-1 border-b border-[#AD7A28]/15">
                       <span className="text-slate-600">{t('fieldIBAN')}:</span>
-                      <div className="flex items-center gap-2 font-mono font-bold text-[#16232F]">
-                        <span className="text-xs">{settings.bankIBAN}</span>
-                        <button
-                          onClick={() => copyToClipboard(settings.bankIBAN, 'iban')}
-                          className="p-1 rounded hover:bg-[#AD7A28]/20 text-[#AD7A28] cursor-pointer"
-                          title="Copy IBAN"
-                        >
-                          {copiedField === 'iban' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
+                      {settings.bankIBAN ? (
+                        <div className="flex items-center gap-2 font-mono font-bold text-[#16232F]">
+                          <span className="text-xs break-all">{settings.bankIBAN}</span>
+                          <button
+                            onClick={() => copyToClipboard(settings.bankIBAN, 'iban')}
+                            className="p-1 rounded hover:bg-[#AD7A28]/20 text-[#AD7A28] cursor-pointer"
+                            title="Copy IBAN"
+                          >
+                            {copiedField === 'iban' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-amber-800/80 italic font-medium">
+                          {isUrdu ? 'کونسل آفس سے رابطہ فرمائیں' : 'Available upon request'}
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center py-1">

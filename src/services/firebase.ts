@@ -267,8 +267,13 @@ export function subscribeToSiteConfig(
     if (!handler) return;
     try {
       const unsub = onSnapshot(doc(db, 'siteConfig', name), snap => {
-        if (snap.exists() && Array.isArray(snap.data().items)) {
-          handler(snap.data().items);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (Array.isArray(data?.items)) {
+            handler(data.items);
+          } else {
+            handler([]);
+          }
         }
       }, err => {
         console.warn(`[Firebase] siteConfig/${name} error:`, err.message);

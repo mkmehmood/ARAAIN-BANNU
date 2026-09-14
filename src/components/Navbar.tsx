@@ -25,7 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSidebar,
   onOpenAdmin,
 }) => {
-  const { lang, t, isUrdu, tSetting } = useLanguage();
+  const { lang, setLanguage, t, isUrdu, tSetting } = useLanguage();
   const { settings } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -161,30 +161,37 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{t('navApply', 'Join Us')}</span>
             </button>
 
-            {/* ═══════════════════════════════════════════════════════════════════
-                SIDEBAR BUTTON (CLEAN MENU & LANGUAGE SWITCHER)
-               ═══════════════════════════════════════════════════════════════════ */}
+            {/* 1-Tap Language Toggle (Visible on Mobile & Tablet) */}
+            <button
+              onClick={() => setLanguage(lang === 'ur' ? 'en' : 'ur')}
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 text-amber-200 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5 min-h-[38px]"
+              title={lang === 'ur' ? 'Switch to English' : 'اردو میں تبدیل کریں'}
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-300" />
+              <span>{lang === 'ur' ? 'English' : 'اردو'}</span>
+            </button>
+
+            {/* Desktop Settings / Menu Drawer */}
             <button
               id="btn-open-sidebar"
               onClick={onOpenSidebar}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 hover:border-[#AD7A28] text-amber-200 hover:text-white transition-all duration-200 shadow-sm cursor-pointer group"
-              title={isUrdu ? 'مینو اور زبان کی ترتیبات' : 'Menu & Language Settings'}
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 hover:border-[#AD7A28] text-amber-200 hover:text-white transition-all duration-200 shadow-sm cursor-pointer group"
+              title={isUrdu ? 'مینو اور ترتیبات' : 'Menu & Settings'}
             >
-              <Globe className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-semibold tracking-wide hidden sm:inline">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300/80" />
+              <span className="text-xs font-semibold tracking-wide">
                 {isUrdu ? 'سائیڈ بار' : 'Menu'}
               </span>
-              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300/80" />
             </button>
 
-            {/* Mobile Sidebar / Hamburger Trigger */}
+            {/* Mobile Hamburger Drawer Trigger (At least 44px touch target) */}
             <button
               id="btn-mobile-sidebar-toggle"
               onClick={onOpenSidebar}
-              className="lg:hidden p-2 rounded-lg text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 transition-colors cursor-pointer"
+              className="lg:hidden min-w-[44px] min-h-[44px] p-2.5 rounded-xl text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-xs"
               aria-label="Toggle Sidebar Menu"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 text-amber-300" />
             </button>
 
           </div>
