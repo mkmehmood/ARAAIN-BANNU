@@ -62,7 +62,7 @@ export const SETTINGS_GROUPS: Record<string, (keyof SiteSettings)[]> = {
   social: ['socialFacebook', 'socialTwitter', 'socialWhatsapp', 'socialInstagram'],
   footer: ['footerDesc', 'footerCopy'],
   donation: ['bankName', 'bankTitle', 'bankAccount', 'bankIBAN', 'bankBranch', 'epTitle', 'epNumber', 'jcTitle', 'jcNumber', 'intBank', 'intSwift', 'intIBAN'],
-  misc: ['announcementEnabled', 'announcementBadge', 'announcementText', 'announcementTextEn', 'announcementLinkText', 'announcementAction', 'websiteThemeAccent', 'lastWebsiteUpdate', 'customNoticeHeadline'],
+  misc: ['announcementEnabled', 'announcementBadge', 'announcementBadgeUr', 'announcementText', 'announcementTextEn', 'announcementTextUr', 'announcementLinkText', 'announcementAction', 'websiteThemeAccent', 'lastWebsiteUpdate', 'customNoticeHeadline'],
 };
 
 import { sanitizeText, sanitizePhone, sanitizeEmail, sanitizeCardId, isAuthorizedAdminEmail } from '../utils/security';

@@ -1,4 +1,4 @@
-import { SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem, Language } from '../types';
+import { SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem, Language, ContactDetail } from '../types';
 import {
   translateNameToUrdu,
   translateNameToEnglish,
@@ -642,6 +642,9 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
     intBank: "Meezan Bank Limited, Bannu",
     intSwift: "MEZNPKKAXXX",
     intIBAN: "PK36MEZN0001020304050607",
+    announcementBadge: "Official Announcement",
+    announcementText: "Araain Bannu Membership Drive is live. Register now to receive your official digital ID card.",
+    customNoticeHeadline: "Special educational and welfare package has been officially inaugurated for Bannu and Southern districts.",
   },
   ur: {
     siteName: "آرائیں بنوں",

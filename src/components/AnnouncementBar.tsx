@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { Sparkles, ArrowRight, X, Megaphone, CheckCircle2 } from 'lucide-react';
-import { translateUrduToEnglish, translateEnglishToUrdu, isUrduText } from '../utils/urduTransliterator';
+import { isUrduText, translateEnglishToUrdu, translateUrduToEnglish } from '../utils/urduTransliterator';
 
 interface AnnouncementBarProps {
   onOpenMembership: () => void;
@@ -15,7 +15,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
   onOpenDonation,
   onNavigateSection,
 }) => {
-  const { isUrdu } = useLanguage();
+  const { isUrdu, t } = useLanguage();
   const { settings } = useData();
   const [isDismissed, setIsDismissed] = useState(false);
 
@@ -23,17 +23,69 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
     return null;
   }
 
-  const rawBadge = settings.announcementBadge || (isUrdu ? (settings.announcementBadgeUr || 'اہم اطلاع') : (settings.announcementBadgeEn || 'Announcement'));
-  const badgeText = isUrdu
-    ? (settings.announcementBadgeUr || (isUrduText(rawBadge) ? rawBadge : translateEnglishToUrdu(rawBadge)))
-    : (settings.announcementBadgeEn || (!isUrduText(rawBadge) ? rawBadge : translateUrduToEnglish(rawBadge)));
+  // Pure language isolation: Urdu only in Urdu mode, English only in English mode
+  let badgeText = '';
+  if (isUrdu) {
+    if (settings.announcementBadgeUr && isUrduText(settings.announcementBadgeUr)) {
+      badgeText = settings.announcementBadgeUr;
+    } else if (settings.announcementBadge && isUrduText(settings.announcementBadge)) {
+      badgeText = settings.announcementBadge;
+    } else if (settings.announcementBadge) {
+      badgeText = translateEnglishToUrdu(settings.announcementBadge);
+    } else {
+      badgeText = 'اہم اطلاع';
+    }
+  } else {
+    if (settings.announcementBadge && !isUrduText(settings.announcementBadge)) {
+      badgeText = settings.announcementBadge;
+    } else if (settings.announcementBadgeUr && !isUrduText(settings.announcementBadgeUr)) {
+      badgeText = settings.announcementBadgeUr;
+    } else if (settings.announcementBadge || settings.announcementBadgeUr) {
+      badgeText = translateUrduToEnglish(settings.announcementBadge || settings.announcementBadgeUr || '');
+    } else {
+      badgeText = 'Announcement';
+    }
+  }
 
-  const rawText = settings.announcementText || (isUrdu ? settings.announcementTextUr : settings.announcementTextEn) || '';
-  const messageText = isUrdu 
-    ? (settings.announcementTextUr || (rawText ? (isUrduText(rawText) ? rawText : translateEnglishToUrdu(rawText)) : 'آرائیں بنوں کی ممبرشپ مہم 2025 جاری ہے۔ اپنا کارڈ بنوائیں۔'))
-    : (settings.announcementTextEn || (rawText ? (!isUrduText(rawText) ? rawText : translateUrduToEnglish(rawText)) : 'Araain Bannu Membership Drive 2025 is live. Register now.'));
+  let messageText = '';
+  if (isUrdu) {
+    if (settings.announcementTextUr && isUrduText(settings.announcementTextUr)) {
+      messageText = settings.announcementTextUr;
+    } else if (settings.announcementText && isUrduText(settings.announcementText)) {
+      messageText = settings.announcementText;
+    } else if (settings.announcementText) {
+      messageText = translateEnglishToUrdu(settings.announcementText);
+    } else {
+      messageText = 'آرائیں بنوں کی ممبرشپ مہم 2025 جاری ہے۔ اپنا کارڈ بنوائیں۔';
+    }
+  } else {
+    if (settings.announcementText && !isUrduText(settings.announcementText)) {
+      messageText = settings.announcementText;
+    } else if (settings.announcementTextEn && !isUrduText(settings.announcementTextEn)) {
+      messageText = settings.announcementTextEn;
+    } else if (settings.announcementTextUr && !isUrduText(settings.announcementTextUr)) {
+      messageText = settings.announcementTextUr;
+    } else if (settings.announcementText || settings.announcementTextUr) {
+      messageText = translateUrduToEnglish(settings.announcementText || settings.announcementTextUr || '');
+    } else {
+      messageText = 'Araain Bannu Membership Drive 2025 is live. Register now.';
+    }
+  }
   
-  const linkText = settings.announcementLinkText || (isUrdu ? 'رکنیت حاصل کریں' : 'Join Us');
+  let linkText = '';
+  if (isUrdu) {
+    if (settings.announcementLinkText && isUrduText(settings.announcementLinkText)) {
+      linkText = settings.announcementLinkText;
+    } else {
+      linkText = 'رکنیت حاصل کریں';
+    }
+  } else {
+    if (settings.announcementLinkText && !isUrduText(settings.announcementLinkText)) {
+      linkText = settings.announcementLinkText;
+    } else {
+      linkText = 'Join Us';
+    }
+  }
   const action = settings.announcementAction || 'membership';
 
   const handleActionClick = () => {

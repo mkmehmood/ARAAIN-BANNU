@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Language, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem } from '../types';
+import { Language, SiteSettings, Program, Leader, EventItem, PageItem, GalleryItem, ContactDetail } from '../types';
 import { 
   EN, 
   UR, 
@@ -8,7 +8,8 @@ import {
   getLocalizedLeaders, 
   getLocalizedEvents, 
   getLocalizedPages,
-  getLocalizedGallery
+  getLocalizedGallery,
+  getLocalizedContacts
 } from '../data/translations';
 
 interface LanguageContextType {
@@ -24,6 +25,7 @@ interface LanguageContextType {
   getEvents: (customEvents: EventItem[]) => EventItem[];
   getPages: (customPages: PageItem[]) => PageItem[];
   getGallery: (customGallery: GalleryItem[]) => GalleryItem[];
+  getContacts: (customContacts?: ContactDetail[]) => ContactDetail[];
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -94,6 +96,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return getLocalizedGallery(lang, customGallery);
   }, [lang]);
 
+  const getContacts = useCallback((customContacts?: ContactDetail[]): ContactDetail[] => {
+    return getLocalizedContacts(lang, customContacts);
+  }, [lang]);
+
   return (
     <LanguageContext.Provider value={{ 
       lang, 
@@ -107,7 +113,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       getLeaders,
       getEvents,
       getPages,
-      getGallery
+      getGallery,
+      getContacts
     }}>
       {children}
     </LanguageContext.Provider>

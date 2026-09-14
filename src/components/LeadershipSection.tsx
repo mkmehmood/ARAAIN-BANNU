@@ -32,8 +32,6 @@ export const LeadershipSection: React.FC = () => {
         {/* Leadership Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
           {localizedLeaders.map((leader, idx) => {
-            const hasCustomMessage = Boolean(leader.message || leader.messageUr);
-
             return (
               <div
                 key={leader.id || idx}
@@ -90,7 +88,7 @@ export const LeadershipSection: React.FC = () => {
                   </div>
 
                   {/* Teaser quote if message exists */}
-                  {Boolean(leader.message) && (
+                  {leader.message && (
                     <div className="mb-4 p-3 rounded-xl bg-[#F8F4E8]/60 border border-[#AD7A28]/20 text-xs text-slate-700 italic line-clamp-2">
                       "{leader.message}"
                     </div>

@@ -19,10 +19,9 @@ import {
   getContactActionHref, 
   getContactTypeTheme 
 } from '../utils/contactIcons';
-import { translateUrduToEnglish, translateEnglishToUrdu, isUrduText } from '../utils/urduTransliterator';
 
 export const ContactSection: React.FC = () => {
-  const { t, isUrdu, tSetting } = useLanguage();
+  const { t, isUrdu, tSetting, getContacts } = useLanguage();
   const { settings, sendContactMessage } = useData();
 
   const [name, setName] = useState('');
@@ -88,7 +87,7 @@ export const ContactSection: React.FC = () => {
   };
 
   const contactsList = settings.multipleContacts && settings.multipleContacts.length > 0
-    ? settings.multipleContacts
+    ? getContacts(settings.multipleContacts)
     : null;
 
   return (
@@ -119,17 +118,8 @@ export const ContactSection: React.FC = () => {
                 const resolvedType = resolveContactType(contact);
                 const theme = getContactTypeTheme(resolvedType);
                 const actionHref = getContactActionHref(resolvedType, contact.value);
-                const rawTitle = contact.title || contact.titleUr || '';
-                const displayTitle = isUrdu
-                  ? (contact.titleUr || (rawTitle ? (isUrduText(rawTitle) ? rawTitle : translateEnglishToUrdu(rawTitle)) : 'رابطہ'))
-                  : (rawTitle ? (!isUrduText(rawTitle) ? rawTitle : translateUrduToEnglish(rawTitle)) : 'Contact');
-
-                const rawNote = contact.note || contact.noteUr || '';
-                const displayNote = rawNote
-                  ? (isUrdu
-                      ? (contact.noteUr || (isUrduText(rawNote) ? rawNote : translateEnglishToUrdu(rawNote)))
-                      : (!isUrduText(rawNote) ? rawNote : translateUrduToEnglish(rawNote)))
-                  : '';
+                const displayTitle = contact.title;
+                const displayNote = contact.note;
 
                 return (
                   <div 

@@ -10,7 +10,8 @@ import {
   EventItem, 
   PageItem, 
   GalleryItem,
-  ContactDetail
+  ContactDetail,
+  SiteSettings
 } from '../../types';
 import { compressImage } from '../../services/firebase';
 import { MembershipCardModal } from './MembershipCardModal';
@@ -19,6 +20,23 @@ import {
   ContactIconComponent, 
   getContactTypeTheme 
 } from '../../utils/contactIcons';
+import {
+  translateNameToUrdu,
+  translateNameToEnglish,
+  translateOccupationToUrdu,
+  translateOccupationToEnglish,
+  translateAddressToUrdu,
+  translateAddressToEnglish,
+  translateUrduToEnglish,
+  translateEnglishToUrdu,
+  isUrduText,
+} from '../../utils/urduTransliterator';
+import {
+  translateContactTitleToUrdu,
+  translateContactTitleToEnglish,
+  translateContactNoteToUrdu,
+  translateContactNoteToEnglish,
+} from '../../data/translations';
 import { 
   ShieldCheck, 
   Users, 
@@ -204,9 +222,79 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSaveCms = async () => {
     setSaveStatus('Saving to Firebase Firestore...');
     try {
-      await saveSettings(tempSettings);
+      // Process leaders: populate both English and Urdu fields seamlessly from unified inputs
+      const processedLeaders: Leader[] = tempLeaders.map(lead => {
+        const nameIsUr = isUrduText(lead.name);
+        const roleIsUr = isUrduText(lead.role);
+        const msgIsUr = isUrduText(lead.message || '');
+        const bioIsUr = isUrduText(lead.bio || '');
+        const locIsUr = isUrduText(lead.location || '');
+
+        const finalName = nameIsUr ? translateNameToEnglish(lead.name) : lead.name;
+        const finalNameUr = lead.nameUr || (nameIsUr ? lead.name : translateNameToUrdu(lead.name));
+
+        const finalRole = roleIsUr ? translateOccupationToEnglish(lead.role) : lead.role;
+        const finalRoleUr = lead.roleUr || (roleIsUr ? lead.role : translateOccupationToUrdu(lead.role));
+
+        const finalMsg = msgIsUr ? translateUrduToEnglish(lead.message || '') : (lead.message || '');
+        const finalMsgUr = lead.messageUr || (msgIsUr ? (lead.message || '') : translateEnglishToUrdu(lead.message || ''));
+
+        const finalBio = bioIsUr ? translateUrduToEnglish(lead.bio || '') : (lead.bio || '');
+        const finalBioUr = lead.bioUr || (bioIsUr ? (lead.bio || '') : translateEnglishToUrdu(lead.bio || ''));
+
+        const finalLoc = locIsUr ? translateAddressToEnglish(lead.location || '') : (lead.location || '');
+        const finalLocUr = lead.locationUr || (locIsUr ? (lead.location || '') : translateAddressToUrdu(lead.location || ''));
+
+        return {
+          ...lead,
+          name: finalName,
+          nameUr: finalNameUr,
+          role: finalRole,
+          roleUr: finalRoleUr,
+          message: finalMsg,
+          messageUr: finalMsgUr,
+          bio: finalBio,
+          bioUr: finalBioUr,
+          location: finalLoc,
+          locationUr: finalLocUr,
+        };
+      });
+
+      // Process contacts: populate both English and Urdu fields seamlessly
+      const processedContacts: ContactDetail[] = (tempSettings.multipleContacts || []).map(contact => {
+        const titleIsUr = isUrduText(contact.title);
+        const noteIsUr = isUrduText(contact.note || '');
+
+        const finalTitle = titleIsUr ? translateContactTitleToEnglish(contact.title) : contact.title;
+        const finalTitleUr = contact.titleUr || (titleIsUr ? contact.title : translateContactTitleToUrdu(contact.title));
+
+        const finalNote = noteIsUr ? translateContactNoteToEnglish(contact.note || '') : (contact.note || '');
+        const finalNoteUr = contact.noteUr || (noteIsUr ? (contact.note || '') : translateContactNoteToUrdu(contact.note || ''));
+
+        return {
+          ...contact,
+          title: finalTitle,
+          titleUr: finalTitleUr,
+          note: finalNote,
+          noteUr: finalNoteUr,
+        };
+      });
+
+      // Process announcement settings
+      const badgeIsUr = isUrduText(tempSettings.announcementBadge || '');
+      const textIsUr = isUrduText(tempSettings.announcementText || '');
+      const processedSettings: SiteSettings = {
+        ...tempSettings,
+        multipleContacts: processedContacts,
+        announcementBadge: badgeIsUr ? translateUrduToEnglish(tempSettings.announcementBadge || '') : (tempSettings.announcementBadge || ''),
+        announcementBadgeUr: tempSettings.announcementBadgeUr || (badgeIsUr ? (tempSettings.announcementBadge || '') : translateEnglishToUrdu(tempSettings.announcementBadge || '')),
+        announcementText: textIsUr ? translateUrduToEnglish(tempSettings.announcementText || '') : (tempSettings.announcementText || ''),
+        announcementTextUr: tempSettings.announcementTextUr || (textIsUr ? (tempSettings.announcementText || '') : translateEnglishToUrdu(tempSettings.announcementText || '')),
+      };
+
+      await saveSettings(processedSettings);
       await savePrograms(tempPrograms);
-      await saveLeaders(tempLeaders);
+      await saveLeaders(processedLeaders);
       await saveEvents(tempEvents);
       await savePages(tempPages);
       await saveGallery(tempGallery);
@@ -1116,15 +1204,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </label>
                       <input
                         type="text"
-                        value={tempSettings.announcementBadge ?? (isUrdu ? tempSettings.announcementBadgeUr : tempSettings.announcementBadgeEn) ?? ''}
-                        onChange={(e) => setTempSettings({ 
-                          ...tempSettings, 
-                          announcementBadge: e.target.value,
-                          announcementBadgeUr: e.target.value,
-                          announcementBadgeEn: e.target.value
-                        })}
-                        className="w-full px-3 py-2 rounded-xl border text-sm"
-                        placeholder={isUrdu ? 'مثلاً: اہم اعلان یا OFFICIAL ANNOUNCEMENT' : 'e.g. OFFICIAL ANNOUNCEMENT'}
+                        value={isUrdu ? (tempSettings.announcementBadgeUr || tempSettings.announcementBadge || '') : (tempSettings.announcementBadge || tempSettings.announcementBadgeUr || '')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTempSettings({
+                            ...tempSettings,
+                            announcementBadge: isUrdu ? (tempSettings.announcementBadge || val) : val,
+                            announcementBadgeUr: isUrdu ? val : (tempSettings.announcementBadgeUr || val)
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                        placeholder={isUrdu ? 'مثلاً: اہم اعلان یا Official Announcement' : 'e.g. OFFICIAL ANNOUNCEMENT'}
+                        dir={isUrdu ? 'rtl' : 'ltr'}
                       />
                     </div>
 
@@ -1134,15 +1225,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </label>
                       <textarea
                         rows={2}
-                        value={tempSettings.announcementText ?? (isUrdu ? tempSettings.announcementTextUr : tempSettings.announcementTextEn) ?? ''}
-                        onChange={(e) => setTempSettings({ 
-                          ...tempSettings, 
-                          announcementText: e.target.value,
-                          announcementTextUr: e.target.value,
-                          announcementTextEn: e.target.value
-                        })}
-                        className="w-full px-3 py-2 rounded-xl border text-sm"
-                        placeholder={isUrdu ? 'سائٹ اناؤنسمنٹ لکھیے (اردو یا انگریزی)...' : 'Enter announcement text in Urdu or English...'}
+                        value={isUrdu ? (tempSettings.announcementTextUr || tempSettings.announcementText || '') : (tempSettings.announcementText || tempSettings.announcementTextUr || '')}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTempSettings({
+                            ...tempSettings,
+                            announcementText: isUrdu ? (tempSettings.announcementText || val) : val,
+                            announcementTextUr: isUrdu ? val : (tempSettings.announcementTextUr || val)
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                        placeholder={isUrdu ? 'سائٹ اناؤنسمنٹ لکھیے (اردو یا انگلش)...' : 'Enter announcement text in English or Urdu...'}
+                        dir={isUrdu ? 'rtl' : 'ltr'}
                       />
                     </div>
 
@@ -1213,7 +1307,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-700 mb-1">
-                          {isUrdu ? 'کارڈ پر ایسوسی ایشن کا نام' : 'Card Association Name'}
+                          {isUrdu ? 'کارڈ پر ایسوسی ایشن کا انگریزی نام' : 'Card Association English Name'}
                         </label>
                         <input
                           type="text"
@@ -1751,7 +1845,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
                                   <span className="font-bold text-sm text-[#16232F] truncate">
-                                    {lead.name}
+                                    {isUrdu ? (lead.nameUr || lead.name) : (lead.name || lead.nameUr)}
                                   </span>
                                   {Boolean(lead.featured) && (
                                     <span className="px-2 py-0.5 rounded-md bg-[#AD7A28]/15 text-[#8A5F19] text-[10px] font-bold">
@@ -1760,7 +1854,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   )}
                                 </div>
                                 <div className="text-xs text-slate-500 truncate">
-                                  {lead.role}
+                                  {isUrdu ? (lead.roleUr || lead.role) : (lead.role || lead.roleUr)}
                                 </div>
                               </div>
                             </div>
@@ -1807,14 +1901,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </label>
                               <input
                                 type="text"
-                                value={lead.name}
+                                value={isUrdu ? (lead.nameUr || lead.name || '') : (lead.name || lead.nameUr || '')}
                                 onChange={(e) => {
                                   const updated = [...tempLeaders];
-                                  updated[idx].name = e.target.value;
+                                  const val = e.target.value;
+                                  if (isUrdu) {
+                                    updated[idx].nameUr = val;
+                                    if (!updated[idx].name || isUrduText(updated[idx].name)) {
+                                      updated[idx].name = val;
+                                    }
+                                  } else {
+                                    updated[idx].name = val;
+                                    if (!updated[idx].nameUr || !isUrduText(updated[idx].nameUr)) {
+                                      updated[idx].nameUr = val;
+                                    }
+                                  }
                                   setTempLeaders(updated);
                                 }}
-                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
                                 placeholder={isUrdu ? 'مثال: حاجی محمد طاہر یا Haji Muhammad Tahir' : 'e.g. Haji Muhammad Tahir'}
+                                dir={isUrdu ? 'rtl' : 'ltr'}
                               />
                             </div>
 
@@ -1824,14 +1930,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </label>
                               <input
                                 type="text"
-                                value={lead.role}
+                                value={isUrdu ? (lead.roleUr || lead.role || '') : (lead.role || lead.roleUr || '')}
                                 onChange={(e) => {
                                   const updated = [...tempLeaders];
-                                  updated[idx].role = e.target.value;
+                                  const val = e.target.value;
+                                  if (isUrdu) {
+                                    updated[idx].roleUr = val;
+                                    if (!updated[idx].role || isUrduText(updated[idx].role)) {
+                                      updated[idx].role = val;
+                                    }
+                                  } else {
+                                    updated[idx].role = val;
+                                    if (!updated[idx].roleUr || !isUrduText(updated[idx].roleUr)) {
+                                      updated[idx].roleUr = val;
+                                    }
+                                  }
                                   setTempLeaders(updated);
                                 }}
-                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
                                 placeholder={isUrdu ? 'مثال: چیئرمین / صدر یا Chairman' : 'e.g. Chairman / President'}
+                                dir={isUrdu ? 'rtl' : 'ltr'}
                               />
                             </div>
                           </div>
@@ -1841,25 +1959,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <div className="p-4 sm:p-5 border-t border-slate-200 bg-white space-y-4">
                               
                               {/* Customized Message For Viewers */}
-                              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-3">
+                              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-2">
                                 <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
                                   <MessageSquare className="w-4 h-4 text-amber-600" />
-                                  <span>{isUrdu ? 'زائرین کے لیے پیغام (پاپ اپ موڈل میں ظاہر ہوگا)' : 'Customized Message for Viewers (Displays in Click-to-Open Modal)'}</span>
+                                  <span>{isUrdu ? 'زائرین کے لیے خصوصی پیغام (کلک کرنے پر کھلنے والے ماڈل میں ظاہر ہوگا)' : 'Customized Message for Viewers (Displays in Click-to-Open Modal)'}</span>
                                 </div>
                                 <div>
                                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                                    {isUrdu ? 'زائرین کے لیے پیغام' : 'Viewer Message'}
+                                    {isUrdu ? 'پیغام کا متن' : 'Viewer Message'}
                                   </label>
                                   <textarea
                                     rows={3}
-                                    value={lead.message || ''}
+                                    value={isUrdu ? (lead.messageUr || lead.message || '') : (lead.message || lead.messageUr || '')}
                                     onChange={(e) => {
                                       const updated = [...tempLeaders];
-                                      updated[idx].message = e.target.value;
+                                      const val = e.target.value;
+                                      if (isUrdu) {
+                                        updated[idx].messageUr = val;
+                                        if (!updated[idx].message || isUrduText(updated[idx].message)) {
+                                          updated[idx].message = val;
+                                        }
+                                      } else {
+                                        updated[idx].message = val;
+                                        if (!updated[idx].messageUr || !isUrduText(updated[idx].messageUr)) {
+                                          updated[idx].messageUr = val;
+                                        }
+                                      }
                                       setTempLeaders(updated);
                                     }}
-                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-amber-300"
-                                    placeholder={isUrdu ? 'زائرین اور برادری کے لیے خصوصی و پرخلوص پیغام...' : 'A direct, inspiring message from this leader to website visitors and community members...'}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-amber-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                                    placeholder={isUrdu ? 'زائرین اور برادری کے لیے خصوصی و پرخلوص پیغام (اردو یا انگلش)...' : 'A direct, inspiring message from this leader to website visitors and community members...'}
+                                    dir={isUrdu ? 'rtl' : 'ltr'}
                                   />
                                 </div>
                               </div>
@@ -1867,18 +1997,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               {/* Detailed Bio & Profile */}
                               <div>
                                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                                  {isUrdu ? 'تفصیلی سوانح و خدمات' : 'Detailed Biography'}
+                                  {isUrdu ? 'تفصیلی سوانح حیات / تعارف' : 'Detailed Biography'}
                                 </label>
                                 <textarea
-                                  rows={4}
-                                  value={lead.bio || ''}
+                                  rows={3}
+                                  value={isUrdu ? (lead.bioUr || lead.bio || '') : (lead.bio || lead.bioUr || '')}
                                   onChange={(e) => {
                                     const updated = [...tempLeaders];
-                                    updated[idx].bio = e.target.value;
+                                    const val = e.target.value;
+                                    if (isUrdu) {
+                                      updated[idx].bioUr = val;
+                                      if (!updated[idx].bio || isUrduText(updated[idx].bio)) {
+                                        updated[idx].bio = val;
+                                      }
+                                    } else {
+                                      updated[idx].bio = val;
+                                      if (!updated[idx].bioUr || !isUrduText(updated[idx].bioUr)) {
+                                        updated[idx].bioUr = val;
+                                      }
+                                    }
                                     setTempLeaders(updated);
                                   }}
-                                  className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
-                                  placeholder={isUrdu ? 'تعلیمی قابلیت، کیریئر، سنگ میل اور فلاحی خدمات...' : 'Educational background, career, community milestones and welfare leadership...'}
+                                  className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                                  placeholder={isUrdu ? 'تعلیمی پس منظر، خدمات اور جدوجہد (اردو یا انگلش)...' : 'Educational background, career, community milestones and welfare leadership...'}
+                                  dir={isUrdu ? 'rtl' : 'ltr'}
                                 />
                               </div>
 
@@ -1924,14 +2066,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   </label>
                                   <input
                                     type="text"
-                                    value={lead.location || ''}
+                                    value={isUrdu ? (lead.locationUr || lead.location || '') : (lead.location || lead.locationUr || '')}
                                     onChange={(e) => {
                                       const updated = [...tempLeaders];
-                                      updated[idx].location = e.target.value;
+                                      const val = e.target.value;
+                                      if (isUrdu) {
+                                        updated[idx].locationUr = val;
+                                        if (!updated[idx].location || isUrduText(updated[idx].location)) {
+                                          updated[idx].location = val;
+                                        }
+                                      } else {
+                                        updated[idx].location = val;
+                                        if (!updated[idx].locationUr || !isUrduText(updated[idx].locationUr)) {
+                                          updated[idx].locationUr = val;
+                                        }
+                                      }
                                       setTempLeaders(updated);
                                     }}
-                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300"
-                                    placeholder={isUrdu ? 'مثال: بنوں، خیبر پختونخوا' : 'e.g. Bannu, KP'}
+                                    className="w-full text-xs bg-white px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                                    placeholder={isUrdu ? 'مثال: بنوں، خیبر پختونخوا یا Bannu, KP' : 'e.g. Bannu, KP'}
+                                    dir={isUrdu ? 'rtl' : 'ltr'}
                                   />
                                 </div>
                               </div>
@@ -2559,7 +2713,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   <div>
                                     <div className="flex items-center gap-2">
                                       <span className="font-bold text-xs sm:text-sm text-[#16232F]">
-                                        {contact.title || 'Contact Channel'}
+                                        {(isUrdu ? (contact.titleUr || contact.title) : (contact.title || contact.titleUr)) || (isUrdu ? 'رابطہ چینل' : 'Contact Channel')}
                                       </span>
                                       {contact.isPrimary && (
                                         <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold">
@@ -2630,31 +2784,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
 
                               {/* Form Inputs Grid */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 <div>
                                   <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                    {isUrdu ? 'چینل کا نام / عنوان' : 'Channel Title'}
+                                    {isUrdu ? 'رابطہ کا عنوان' : 'Channel Title'}
                                   </label>
                                   <input
                                     type="text"
-                                    value={contact.title}
+                                    value={isUrdu ? (contact.titleUr || contact.title || '') : (contact.title || contact.titleUr || '')}
                                     onChange={(e) => {
+                                      const val = e.target.value;
                                       const list = [...(tempSettings.multipleContacts || [])];
-                                      list[idx] = { 
-                                        ...list[idx], 
-                                        title: e.target.value,
-                                        titleUr: e.target.value 
-                                      };
+                                      if (isUrdu) {
+                                        list[idx] = { ...list[idx], titleUr: val, title: (!list[idx].title || isUrduText(list[idx].title)) ? val : list[idx].title };
+                                      } else {
+                                        list[idx] = { ...list[idx], title: val, titleUr: (!list[idx].titleUr || !isUrduText(list[idx].titleUr)) ? val : list[idx].titleUr };
+                                      }
                                       setTempSettings({ ...tempSettings, multipleContacts: list });
                                     }}
-                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300"
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
                                     placeholder={isUrdu ? 'مثال: سیکرٹریٹ ہیلپ لائن یا Secretariat Helpline' : 'e.g. Secretariat Helpline'}
+                                    dir={isUrdu ? 'rtl' : 'ltr'}
                                   />
                                 </div>
 
                                 <div>
                                   <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                    {isUrdu ? 'آئیکن اور چینل کی قسم' : 'Icon Mode & Channel Type'}
+                                    {isUrdu ? 'چینل کی قسم و خودکار آئیکون' : 'Channel Type & Automated Icon'}
                                   </label>
                                   <select
                                     value={contact.type || ''}
@@ -2665,7 +2821,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     }}
                                     className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-semibold"
                                   >
-                                    <option value="">Auto-Detect (Automated Icons)</option>
+                                    <option value="">{isUrdu ? 'خودکار تشخیص (Automated Icons)' : 'Auto-Detect (Automated Icons)'}</option>
                                     <option value="phone">📞 Phone / Telephone</option>
                                     <option value="whatsapp">💬 WhatsApp Helpline</option>
                                     <option value="email">✉️ Official Email</option>
@@ -2673,44 +2829,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     <option value="hours">🕒 Office Hours / Availability</option>
                                     <option value="link">🌐 Web Portal / Custom Link</option>
                                   </select>
-                                </div>
-
-                                <div className="sm:col-span-2">
-                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                    {isUrdu ? 'رابطے کی تفصیل (فون، ای میل، پتہ یا ویب لنک)' : 'Contact Value (Phone, Email, Address, or URL)'}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={contact.value}
-                                    onChange={(e) => {
-                                      const list = [...(tempSettings.multipleContacts || [])];
-                                      list[idx] = { ...list[idx], value: e.target.value };
-                                      setTempSettings({ ...tempSettings, multipleContacts: list });
-                                    }}
-                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono"
-                                    placeholder="e.g. +92 331 9051410 or info@arainbannu.org or Bannu, KP"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                                    {isUrdu ? 'اوقات کار یا وضاحتی نوٹ' : 'Timing / Note'}
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={contact.note || ''}
-                                    onChange={(e) => {
-                                      const list = [...(tempSettings.multipleContacts || [])];
-                                      list[idx] = { 
-                                        ...list[idx], 
-                                        note: e.target.value,
-                                        noteUr: e.target.value 
-                                      };
-                                      setTempSettings({ ...tempSettings, multipleContacts: list });
-                                    }}
-                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300"
-                                    placeholder={isUrdu ? 'مثال: صبح 9 تا شام 5 بجے یا Mon - Sat: 9 AM - 5 PM' : 'e.g. Mon - Sat: 9 AM - 5 PM'}
-                                  />
                                 </div>
 
                                 <div className="flex items-center pt-4">
@@ -2728,6 +2846,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     <span className="font-semibold">{isUrdu ? 'مرکزی چینل قرار دیں' : 'Mark as Primary Channel'}</span>
                                   </label>
                                 </div>
+
+                                <div>
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                                    {isUrdu ? 'رابطہ کی تفصیل (فون، ای میل، پتہ، لنک)' : 'Contact Value (Phone, Email, Address, or URL)'}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={contact.value}
+                                    onChange={(e) => {
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      list[idx] = { ...list[idx], value: e.target.value };
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 font-mono"
+                                    placeholder="e.g. +92 331 9051410 or info@arainbannu.org or Bannu, KP"
+                                  />
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                                    {isUrdu ? 'اوقات کار / اضافی نوٹ' : 'Timing / Availability Note'}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={isUrdu ? (contact.noteUr || contact.note || '') : (contact.note || contact.noteUr || '')}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      const list = [...(tempSettings.multipleContacts || [])];
+                                      if (isUrdu) {
+                                        list[idx] = { ...list[idx], noteUr: val, note: (!list[idx].note || isUrduText(list[idx].note)) ? val : list[idx].note };
+                                      } else {
+                                        list[idx] = { ...list[idx], note: val, noteUr: (!list[idx].noteUr || !isUrduText(list[idx].noteUr)) ? val : list[idx].noteUr };
+                                      }
+                                      setTempSettings({ ...tempSettings, multipleContacts: list });
+                                    }}
+                                    className="w-full text-xs bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-300 focus:ring-[#AD7A28] focus:border-[#AD7A28]"
+                                    placeholder={isUrdu ? 'مثال: پیر تا ہفتہ: صبح 9 تا شام 5 بجے یا Mon - Sat: 9 AM - 5 PM' : 'e.g. Mon - Sat: 9 AM - 5 PM'}
+                                    dir={isUrdu ? 'rtl' : 'ltr'}
+                                  />
+                                </div>
+
                               </div>
                             </div>
                           );
