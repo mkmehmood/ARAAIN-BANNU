@@ -1,6 +1,17 @@
 import React, { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Leader } from '../types';
+import {
+  translateNameToUrdu,
+  translateNameToEnglish,
+  translateOccupationToUrdu,
+  translateOccupationToEnglish,
+  translateAddressToUrdu,
+  translateAddressToEnglish,
+  translateUrduToEnglish,
+  translateEnglishToUrdu,
+  isUrduText,
+} from '../utils/urduTransliterator';
 import { 
   X, 
   Mail, 
@@ -44,25 +55,30 @@ export const LeaderDetailModal: React.FC<LeaderDetailModalProps> = ({
   if (!isOpen || !leader) return null;
 
   // Bilingual resolution
+  const rawName = leader.name || leader.nameUr || '';
   const displayName = isUrdu 
-    ? (leader.nameUr || leader.name) 
-    : (leader.name || leader.nameUr);
+    ? (leader.nameUr || (rawName ? (isUrduText(rawName) ? rawName : translateNameToUrdu(rawName)) : 'رہنما'))
+    : (rawName ? (!isUrduText(rawName) ? rawName : translateNameToEnglish(rawName)) : 'Council Leader');
 
+  const rawRole = leader.role || leader.roleUr || '';
   const displayRole = isUrdu 
-    ? (leader.roleUr || leader.role) 
-    : (leader.role || leader.roleUr);
+    ? (leader.roleUr || (rawRole ? (isUrduText(rawRole) ? rawRole : translateOccupationToUrdu(rawRole)) : 'رکن کونسل'))
+    : (rawRole ? (!isUrduText(rawRole) ? rawRole : translateOccupationToEnglish(rawRole)) : 'Council Member');
 
+  const rawMessage = leader.message || leader.messageUr || '';
   const displayMessage = isUrdu 
-    ? (leader.messageUr || leader.message || 'ہمارا مقصد آرائیں برادری میں اتحاد، تعلیم کا فروغ اور ہر ضرورت مند خاندان کی بے لوث خدمت ہے۔ آئیے مل کر ایک باوقار اور مستحکم معاشرہ تشکیل دیں۔')
-    : (leader.message || leader.messageUr || 'Our mission is to foster lasting unity, educational empowerment, and dignified welfare for all families across Bannu and the global diaspora.');
+    ? (leader.messageUr || (rawMessage ? (isUrduText(rawMessage) ? rawMessage : translateEnglishToUrdu(rawMessage)) : 'ہمارا مقصد آرائیں برادری میں اتحاد، تعلیم کا فروغ اور ہر ضرورت مند خاندان کی بے لوث خدمت ہے۔ آئیے مل کر ایک باوقار اور مستحکم معاشرہ تشکیل دیں۔'))
+    : (rawMessage ? (!isUrduText(rawMessage) ? rawMessage : translateUrduToEnglish(rawMessage)) : 'Our mission is to foster lasting unity, educational empowerment, and dignified welfare for all families across Bannu and the global diaspora.');
 
+  const rawBio = leader.bio || leader.bioUr || '';
   const displayBio = isUrdu
-    ? (leader.bioUr || leader.bio || 'آرائیں بنوں کونسل کے سرگرم اور مخلص رہنما جو برادری کے فلاحی، تعلیمی اور سماجی منصوبوں میں کلیدی کردار ادا کر رہے ہیں۔')
-    : (leader.bio || leader.bioUr || 'A dedicated community leader committed to transparent governance, youth educational advancement, and grassroots welfare in Bannu division.');
+    ? (leader.bioUr || (rawBio ? (isUrduText(rawBio) ? rawBio : translateEnglishToUrdu(rawBio)) : 'آرائیں بنوں کونسل کے سرگرم اور مخلص رہنما جو برادری کے فلاحی، تعلیمی اور سماجی منصوبوں میں کلیدی کردار ادا کر رہے ہیں۔'))
+    : (rawBio ? (!isUrduText(rawBio) ? rawBio : translateUrduToEnglish(rawBio)) : 'A dedicated community leader committed to transparent governance, youth educational advancement, and grassroots welfare in Bannu division.');
 
+  const rawLocation = leader.location || leader.locationUr || '';
   const displayLocation = isUrdu
-    ? (leader.locationUr || leader.location || 'بنوں، خیبر پختونخوا')
-    : (leader.location || leader.locationUr || 'Bannu, Khyber Pakhtunkhwa');
+    ? (leader.locationUr || (rawLocation ? (isUrduText(rawLocation) ? rawLocation : translateAddressToUrdu(rawLocation)) : 'بنوں، خیبر پختونخوا'))
+    : (rawLocation ? (!isUrduText(rawLocation) ? rawLocation : translateAddressToEnglish(rawLocation)) : 'Bannu, Khyber Pakhtunkhwa');
 
   const responsibilities = isUrdu
     ? (leader.responsibilitiesUr && leader.responsibilitiesUr.length > 0 

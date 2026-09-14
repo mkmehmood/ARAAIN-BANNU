@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { Sparkles, ArrowRight, X, Megaphone, CheckCircle2 } from 'lucide-react';
+import { translateUrduToEnglish, translateEnglishToUrdu, isUrduText } from '../utils/urduTransliterator';
 
 interface AnnouncementBarProps {
   onOpenMembership: () => void;
@@ -22,10 +23,15 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
     return null;
   }
 
-  const badgeText = settings.announcementBadge || (isUrdu ? 'اہم اطلاع' : 'Announcement');
+  const rawBadge = settings.announcementBadge || (isUrdu ? (settings.announcementBadgeUr || 'اہم اطلاع') : (settings.announcementBadgeEn || 'Announcement'));
+  const badgeText = isUrdu
+    ? (settings.announcementBadgeUr || (isUrduText(rawBadge) ? rawBadge : translateEnglishToUrdu(rawBadge)))
+    : (settings.announcementBadgeEn || (!isUrduText(rawBadge) ? rawBadge : translateUrduToEnglish(rawBadge)));
+
+  const rawText = settings.announcementText || (isUrdu ? settings.announcementTextUr : settings.announcementTextEn) || '';
   const messageText = isUrdu 
-    ? (settings.announcementText || 'آرائیں بنوں کی ممبرشپ مہم 2025 جاری ہے۔ اپنا کارڈ بنوائیں۔')
-    : (settings.announcementTextEn || settings.announcementText || 'Araain Bannu Membership Drive 2025 is live. Register now.');
+    ? (settings.announcementTextUr || (rawText ? (isUrduText(rawText) ? rawText : translateEnglishToUrdu(rawText)) : 'آرائیں بنوں کی ممبرشپ مہم 2025 جاری ہے۔ اپنا کارڈ بنوائیں۔'))
+    : (settings.announcementTextEn || (rawText ? (!isUrduText(rawText) ? rawText : translateUrduToEnglish(rawText)) : 'Araain Bannu Membership Drive 2025 is live. Register now.'));
   
   const linkText = settings.announcementLinkText || (isUrdu ? 'رکنیت حاصل کریں' : 'Join Us');
   const action = settings.announcementAction || 'membership';

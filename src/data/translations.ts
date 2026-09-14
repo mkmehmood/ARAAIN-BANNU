@@ -1263,13 +1263,26 @@ export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Le
       } else if (item.roleUr) {
         role = item.roleUr;
       }
+      let message = item.messageUr || item.message || catalogUr?.message || '';
+      if (message && !isUrduText(message)) {
+        message = translateEnglishToUrdu(message);
+      }
+      let bio = item.bioUr || item.bio || catalogUr?.bio || '';
+      if (bio && !isUrduText(bio)) {
+        bio = translateEnglishToUrdu(bio);
+      }
+      let location = item.locationUr || item.location || catalogUr?.location || '';
+      if (location && !isUrduText(location)) {
+        location = translateAddressToUrdu(location);
+      }
+
       return {
         ...item,
         name,
         role,
-        message: item.messageUr || item.message || catalogUr?.message,
-        bio: item.bioUr || item.bio || catalogUr?.bio,
-        location: item.locationUr || item.location || catalogUr?.location,
+        message,
+        bio,
+        location,
         responsibilities: (item.responsibilitiesUr && item.responsibilitiesUr.length > 0)
           ? item.responsibilitiesUr 
           : (catalogUr?.responsibilitiesUr || item.responsibilities),
@@ -1283,13 +1296,26 @@ export function getLocalizedLeaders(lang: Language, customLeaders: Leader[]): Le
       if (isUrduText(role)) {
         role = item.role && !isUrduText(item.role) ? item.role : (catalogEn ? catalogEn.role : translateOccupationToEnglish(role));
       }
+      let message = item.message || item.messageUr || catalogEn?.message || '';
+      if (message && isUrduText(message)) {
+        message = translateUrduToEnglish(message);
+      }
+      let bio = item.bio || item.bioUr || catalogEn?.bio || '';
+      if (bio && isUrduText(bio)) {
+        bio = translateUrduToEnglish(bio);
+      }
+      let location = item.location || item.locationUr || catalogEn?.location || '';
+      if (location && isUrduText(location)) {
+        location = translateAddressToEnglish(location);
+      }
+
       return {
         ...item,
         name,
         role,
-        message: item.message || item.messageUr || catalogEn?.message,
-        bio: item.bio || item.bioUr || catalogEn?.bio,
-        location: item.location || item.locationUr || catalogEn?.location,
+        message,
+        bio,
+        location,
         responsibilities: (item.responsibilities && item.responsibilities.length > 0)
           ? item.responsibilities 
           : (catalogEn?.responsibilities || item.responsibilitiesUr),

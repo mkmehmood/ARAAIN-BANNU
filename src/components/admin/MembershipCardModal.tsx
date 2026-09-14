@@ -386,7 +386,7 @@ export const MembershipCardModal: React.FC<MembershipCardModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Association Title (English)</label>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Association Title</label>
                 <input
                   type="text"
                   value={customTitle}

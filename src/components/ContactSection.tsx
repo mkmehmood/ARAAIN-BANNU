@@ -19,6 +19,7 @@ import {
   getContactActionHref, 
   getContactTypeTheme 
 } from '../utils/contactIcons';
+import { translateUrduToEnglish, translateEnglishToUrdu, isUrduText } from '../utils/urduTransliterator';
 
 export const ContactSection: React.FC = () => {
   const { t, isUrdu, tSetting } = useLanguage();
@@ -118,8 +119,17 @@ export const ContactSection: React.FC = () => {
                 const resolvedType = resolveContactType(contact);
                 const theme = getContactTypeTheme(resolvedType);
                 const actionHref = getContactActionHref(resolvedType, contact.value);
-                const displayTitle = isUrdu && contact.titleUr ? contact.titleUr : contact.title;
-                const displayNote = isUrdu && contact.noteUr ? contact.noteUr : contact.note;
+                const rawTitle = contact.title || contact.titleUr || '';
+                const displayTitle = isUrdu
+                  ? (contact.titleUr || (rawTitle ? (isUrduText(rawTitle) ? rawTitle : translateEnglishToUrdu(rawTitle)) : 'رابطہ'))
+                  : (rawTitle ? (!isUrduText(rawTitle) ? rawTitle : translateUrduToEnglish(rawTitle)) : 'Contact');
+
+                const rawNote = contact.note || contact.noteUr || '';
+                const displayNote = rawNote
+                  ? (isUrdu
+                      ? (contact.noteUr || (isUrduText(rawNote) ? rawNote : translateEnglishToUrdu(rawNote)))
+                      : (!isUrduText(rawNote) ? rawNote : translateUrduToEnglish(rawNote)))
+                  : '';
 
                 return (
                   <div 

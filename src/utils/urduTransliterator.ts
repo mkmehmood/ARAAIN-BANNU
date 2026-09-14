@@ -18,7 +18,7 @@ import {
   searchBilingualDictionary,
   lookupDictionaryTerm,
   ALL_DICTIONARY_ENTRIES,
-} from '../lib/dictionary';
+} from '../lib/dictionary/index';
 
 // ── English to Urdu Names Dictionary ────────────────────────────────
 export const NAMES_DICT: Record<string, string> = {

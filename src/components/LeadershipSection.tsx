@@ -80,19 +80,19 @@ export const LeadershipSection: React.FC = () => {
                       <p className="text-xs sm:text-sm font-semibold text-[#AD7A28]">
                         {leader.role}
                       </p>
-                      {(leader.location || leader.locationUr) && (
+                      {leader.location && (
                         <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3 text-[#AD7A28]/70" />
-                          <span>{isUrdu && leader.locationUr ? leader.locationUr : (leader.location || leader.locationUr)}</span>
+                          <span>{leader.location}</span>
                         </p>
                       )}
                     </div>
                   </div>
 
                   {/* Teaser quote if message exists */}
-                  {hasCustomMessage && (
+                  {Boolean(leader.message) && (
                     <div className="mb-4 p-3 rounded-xl bg-[#F8F4E8]/60 border border-[#AD7A28]/20 text-xs text-slate-700 italic line-clamp-2">
-                      "{isUrdu && leader.messageUr ? leader.messageUr : (leader.message || leader.messageUr)}"
+                      "{leader.message}"
                     </div>
                   )}
                 </div>
