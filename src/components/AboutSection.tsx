@@ -14,7 +14,9 @@ export const AboutSection: React.FC = () => {
     l.name?.toLowerCase().includes('aizaz') ||
     l.name?.includes('اعزاز')
   );
-  const chairmanPhoto = settings.chairmanPhoto || chairmanLeader?.photo_data || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80";
+  // Find chairman photo from settings or leaders directory (strictly excluding unsplash placeholders)
+  const rawChairmanPhoto = settings.chairmanPhoto || chairmanLeader?.photo_data || "";
+  const chairmanPhoto = rawChairmanPhoto && !rawChairmanPhoto.includes('unsplash.com') ? rawChairmanPhoto : "";
 
   return (
     <section id="about" className="py-20 sm:py-24 bg-[#F8F4E8] border-b border-[#AD7A28]/15">

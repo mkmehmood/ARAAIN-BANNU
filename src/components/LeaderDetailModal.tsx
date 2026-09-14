@@ -77,7 +77,7 @@ export const LeaderDetailModal: React.FC<LeaderDetailModalProps> = ({
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             {/* Leader Avatar */}
             <div className="relative shrink-0">
-              {leader.photo_data ? (
+              {leader.photo_data && !leader.photo_data.includes('unsplash.com') ? (
                 <img
                   src={leader.photo_data}
                   alt={displayName}

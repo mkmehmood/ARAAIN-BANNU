@@ -59,7 +59,7 @@ export const LeadershipSection: React.FC = () => {
 
                 <div>
                   <div className="flex items-center gap-4 mb-4">
-                    {leader.photo_data ? (
+                    {leader.photo_data && !leader.photo_data.includes('unsplash.com') ? (
                       <img
                         src={leader.photo_data}
                         alt={leader.name}

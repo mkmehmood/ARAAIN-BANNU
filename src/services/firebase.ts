@@ -317,11 +317,33 @@ export async function pushSettingsToCloud(settings: Partial<SiteSettings>): Prom
     byGroup[group][key] = cleanUndefinedData(value);
   }
 
+  // Replace each sub-document in Firestore siteConfig with the new data.
+  // By omitting { merge: true }, setDoc completely replaces the document in Firestore,
+  // guaranteeing that any deleted pictures or replaced text completely overwrite previous entries.
   await Promise.all(
     Object.entries(byGroup).map(([group, fields]) =>
-      setDoc(doc(db, 'siteConfig', group), fields, { merge: true })
+      setDoc(doc(db, 'siteConfig', group), fields)
     )
   );
+}
+
+/**
+ * Replaces the Firestore database with the new CMS pictures and text,
+ * while deliberately preserving and keeping the Photo Gallery community memories intact.
+ */
+export async function replaceDatabaseWithCmsKeepMemories(
+  settings: SiteSettings,
+  programs: Program[],
+  leaders: Leader[],
+  events: EventItem[],
+  pages: PageItem[]
+): Promise<void> {
+  await pushSettingsToCloud(settings);
+  await pushProgramsToCloud(programs);
+  await pushLeadersToCloud(leaders);
+  await pushEventsToCloud(events);
+  await pushPagesToCloud(pages);
+  // Note: Photo Gallery (siteConfig/gallery) is intentionally kept intact because it preserves community memories.
 }
 
 export async function pushProgramsToCloud(items: Program[]): Promise<void> {

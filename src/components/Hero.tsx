@@ -30,22 +30,13 @@ export const Hero: React.FC<HeroProps> = ({
   const { t, isUrdu, tSetting } = useLanguage();
   const { settings } = useData();
 
-  // Resolve single or multiple pictures
+  // Resolve single or multiple pictures (strictly real uploaded pictures only; no unsplash placeholders)
   const heroImages = useMemo(() => {
     const list: string[] = [];
     if (Array.isArray(settings.heroImages) && settings.heroImages.length > 0) {
-      list.push(...settings.heroImages.filter(Boolean));
-    } else if (settings.heroImage) {
+      list.push(...settings.heroImages.filter((img) => Boolean(img && !img.includes('unsplash.com'))));
+    } else if (settings.heroImage && !settings.heroImage.includes('unsplash.com')) {
       list.push(settings.heroImage);
-    }
-    
-    // Fallback dignified community images if none specified
-    if (list.length === 0) {
-      list.push(
-        "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1920&q=80",
-        "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1920&q=80"
-      );
     }
     return list;
   }, [settings.heroImages, settings.heroImage]);
@@ -54,6 +45,31 @@ export const Hero: React.FC<HeroProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const slideDurationSec = Math.max(3, settings.heroSlideDuration || 5);
   const isMultiple = heroImages.length > 1;
+
+  // Touch Swipe detection for mobile devices
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    // Horizontal swipe must exceed 35px and be more horizontal than vertical
+    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 0) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
 
   // Animated Timing Slideshow Interval
   useEffect(() => {
@@ -81,9 +97,11 @@ export const Hero: React.FC<HeroProps> = ({
   return (
     <section 
       id="hero"
-      className="relative min-h-[88vh] sm:min-h-[92vh] flex items-center justify-center pt-24 pb-16 bg-[#16232F] text-white overflow-hidden group"
+      className="relative min-h-[84vh] sm:min-h-[90vh] flex items-center justify-center pt-28 sm:pt-36 md:pt-40 pb-16 sm:pb-20 bg-[#16232F] text-white overflow-hidden group select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* ═══ ANIMATED BACKGROUND PICTURES (Single or Multiple with Animated.timing) ═══ */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -108,84 +126,84 @@ export const Hero: React.FC<HeroProps> = ({
         })}
 
         {/* Cinematic Multi-layer Scrim Overlays for Pristine Legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#16232F]/90 via-[#16232F]/75 to-[#16232F]/95 z-2" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#16232F]/60 to-[#16232F] z-2" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#16232F]/92 via-[#16232F]/78 to-[#16232F]/95 z-2" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#16232F]/65 to-[#16232F] z-2" />
         
         {/* Subtle Brand Ambient Glows */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#AD7A28]/25 blur-3xl pointer-events-none z-2"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-emerald-600/20 blur-3xl pointer-events-none z-2"></div>
+        <div className="absolute -top-40 -right-40 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-[#AD7A28]/20 blur-3xl pointer-events-none z-2"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 sm:w-96 h-80 sm:h-96 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none z-2"></div>
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
         
-        {/* Top Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#AD7A28]/20 border border-[#AD7A28]/40 text-[#F5CA7B] text-xs sm:text-sm font-semibold mb-6 shadow-sm backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>{tSetting('heroBadge', settings)}</span>
+        {/* Top Heritage Badge */}
+        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#AD7A28]/25 border border-[#AD7A28]/50 text-[#F5CA7B] text-[11px] sm:text-xs md:text-sm font-semibold mb-3 sm:mb-5 shadow-sm backdrop-blur-md max-w-[92%] text-center">
+          <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-300" />
+          <span className="truncate">{tSetting('heroBadge', settings)}</span>
         </div>
 
-        {/* Main Title (Header) */}
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-5 sm:mb-7 ltr:tracking-tight rtl:tracking-normal ltr:leading-[1.15] rtl:leading-[1.45] sm:rtl:leading-[1.55] drop-shadow-sm">
-          <span className="bg-gradient-to-r from-white via-slate-100 to-amber-100 bg-clip-text text-transparent inline-block pb-2">
+        {/* Main Title (Header) - Mobile Optimized Typography & Urdu Support */}
+        <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-2.5 sm:mb-4 tracking-tight rtl:tracking-normal leading-tight sm:leading-[1.15] rtl:leading-tight sm:rtl:leading-[1.35] drop-shadow-sm max-w-4xl mx-auto">
+          <span className="bg-gradient-to-r from-white via-slate-100 to-amber-100 bg-clip-text text-transparent inline-block pb-1 sm:pb-2">
             {tSetting('heroTitle', settings)}
           </span>
         </h1>
 
         {/* Subtitle (Sub-header) */}
-        <p className="text-lg sm:text-2xl font-semibold text-amber-200/90 mb-5 sm:mb-6 max-w-3xl mx-auto ltr:tracking-wide rtl:tracking-normal ltr:leading-snug rtl:leading-[1.85] drop-shadow-sm">
+        <p className="text-sm xs:text-base sm:text-xl lg:text-2xl font-semibold text-amber-200/90 mb-2.5 sm:mb-4 max-w-2xl sm:max-w-3xl mx-auto leading-snug sm:leading-normal rtl:leading-relaxed drop-shadow-sm">
           {tSetting('heroSub', settings)}
         </p>
 
         {/* Detailed Tagline */}
-        <p className="text-sm sm:text-base lg:text-lg text-slate-200 mb-10 max-w-2xl mx-auto ltr:leading-relaxed rtl:leading-[2.0] font-normal ltr:tracking-normal rtl:tracking-normal drop-shadow-sm">
+        <p className="text-xs sm:text-sm md:text-base text-slate-200/90 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto leading-relaxed rtl:leading-relaxed font-normal drop-shadow-sm">
           {tSetting('heroTagline', settings)}
         </p>
 
-        {/* Call to Action Buttons - Responsive Touch Targets */}
-        <div className="flex flex-col xs:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-14 w-full max-w-xl mx-auto px-2">
+        {/* Call to Action Buttons - Touch-Friendly Mobile Layout */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3.5 mb-6 sm:mb-10 w-full max-w-md sm:max-w-2xl mx-auto px-2">
           
           <button
             id="hero-btn-membership"
             onClick={onOpenMembership}
-            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-semibold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-bold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation"
           >
-            <UserPlus className="w-4 h-4" />
+            <UserPlus className="w-4 h-4 shrink-0" />
             <span>{t('btnBecomeMember', 'Become a Member')}</span>
           </button>
 
           <button
             id="hero-btn-donate"
             onClick={onOpenDonation}
-            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-semibold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm"
+            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm touch-manipulation"
           >
-            <Heart className="w-4 h-4 text-amber-300 fill-current" />
+            <Heart className="w-4 h-4 text-amber-300 fill-current shrink-0" />
             <span>{t('navDonate', 'Donate & Support')}</span>
           </button>
 
           <button
             id="hero-btn-events"
             onClick={() => onNavigateSection('events')}
-            className="w-full xs:w-auto min-h-[46px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-slate-200 hover:text-white font-medium text-sm sm:text-base hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/10"
+            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-slate-200 hover:text-white font-semibold text-sm sm:text-base bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/15 touch-manipulation"
           >
-            <Calendar className="w-4 h-4 text-amber-300" />
+            <Calendar className="w-4 h-4 text-amber-300 shrink-0" />
             <span>{t('btnEvents', 'Upcoming Events')}</span>
           </button>
         </div>
 
         {/* Custom Website Live Notice Ribbon */}
         {settings.customNoticeHeadline && (
-          <div className="mb-8 max-w-3xl mx-auto p-3 sm:p-3.5 rounded-2xl bg-white/10 border border-[#AD7A28]/40 backdrop-blur-md text-amber-100 flex items-center justify-between gap-3 text-xs sm:text-sm shadow-md animate-fadeIn">
-            <div className="flex items-center gap-2.5 text-left rtl:text-right min-w-0">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#AD7A28] text-white text-[11px] font-bold shrink-0">
+          <div className="mb-6 sm:mb-8 w-full max-w-2xl mx-auto p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/10 border border-[#AD7A28]/40 backdrop-blur-md text-amber-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm shadow-md animate-fadeIn text-left rtl:text-right">
+            <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#AD7A28] text-white text-[10px] sm:text-[11px] font-bold shrink-0">
                 <Megaphone className="w-3 h-3" />
                 <span>{isUrdu ? 'اہم اپڈیٹ' : 'Live Notice'}</span>
               </span>
-              <span className="font-medium text-slate-100 truncate">
+              <span className="font-medium text-slate-100 text-xs sm:text-sm line-clamp-1">
                 {settings.customNoticeHeadline}
               </span>
             </div>
             {settings.lastWebsiteUpdate && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] text-amber-300/80 font-mono shrink-0">
+              <span className="inline-flex items-center gap-1 text-[10px] text-amber-300/80 font-mono shrink-0 self-end sm:self-auto">
                 <Clock className="w-3 h-3" />
                 <span>{isUrdu ? 'اپڈیٹ شدہ' : 'Updated'}</span>
               </span>
@@ -193,31 +211,31 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
         )}
 
-        {/* Highlight Stats Row */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-3xl mx-auto pt-8 border-t border-white/10">
-          <div className="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="text-2xl sm:text-4xl font-extrabold text-[#F5CA7B]">
+        {/* Highlight Stats Row - 3 Compact Mobile Cards */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-3xl mx-auto pt-5 sm:pt-7 border-t border-white/10">
+          <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
+            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statMembers', settings)}
             </div>
-            <div className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
+            <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">
               {t('statMembersLabel', 'Active Members')}
             </div>
           </div>
 
-          <div className="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="text-2xl sm:text-4xl font-extrabold text-[#F5CA7B]">
+          <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
+            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statPrograms', settings)}
             </div>
-            <div className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
+            <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">
               {t('statProgramsLabel', 'Flagship Programs')}
             </div>
           </div>
 
-          <div className="p-3 sm:p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-            <div className="text-2xl sm:text-4xl font-extrabold text-[#F5CA7B]">
+          <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
+            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statCities', settings)}
             </div>
-            <div className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
+            <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">
               {t('statCitiesLabel', 'Connected Cities')}
             </div>
           </div>
@@ -227,8 +245,8 @@ export const Hero: React.FC<HeroProps> = ({
 
       {/* ═══ SLIDESHOW CONTROLS & ANIMATED TIMING INDICATORS ═══ */}
       {isMultiple && (
-        <div className="absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-3 px-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/15 shadow-lg">
+        <div className="absolute bottom-2.5 sm:bottom-4 left-0 right-0 z-20 flex items-center justify-center px-4 pointer-events-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/15 shadow-lg pointer-events-auto">
             {/* Prev Arrow */}
             <button
               onClick={prevSlide}
@@ -236,11 +254,11 @@ export const Hero: React.FC<HeroProps> = ({
               title="Previous Background Image"
               aria-label="Previous Slide"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            {/* Slide Dots & Animated.timing Progress */}
-            <div className="flex items-center gap-1.5 px-1">
+            {/* Slide Dots & Progress */}
+            <div className="flex items-center gap-1 px-1">
               {heroImages.map((_, dotIdx) => {
                 const isCur = dotIdx === currentSlide;
                 return (
@@ -253,7 +271,7 @@ export const Hero: React.FC<HeroProps> = ({
                   >
                     <div 
                       className={`h-1.5 rounded-full transition-all duration-300 ${
-                        isCur ? 'w-6 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                        isCur ? 'w-5 sm:w-6 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
                       }`}
                     />
                   </button>
@@ -268,17 +286,17 @@ export const Hero: React.FC<HeroProps> = ({
               title="Next Background Image"
               aria-label="Next Slide"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
             {/* Play / Pause Toggle */}
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-1 rounded-full text-amber-300/80 hover:text-amber-300 hover:bg-white/10 transition-colors cursor-pointer ml-1"
+              className="p-1 rounded-full text-amber-300/80 hover:text-amber-300 hover:bg-white/10 transition-colors cursor-pointer ml-0.5"
               title={isPaused ? "Resume Slideshow" : "Pause Slideshow"}
               aria-label={isPaused ? "Resume Slideshow" : "Pause Slideshow"}
             >
-              {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+              {isPaused ? <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
             </button>
           </div>
         </div>

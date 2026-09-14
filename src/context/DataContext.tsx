@@ -27,6 +27,7 @@ import {
   pushEventsToCloud,
   pushPagesToCloud,
   pushGalleryToCloud,
+  replaceDatabaseWithCmsKeepMemories,
   updateRegistrationStatusInCloud,
   deleteRegistrationFromCloud,
   updateDonationStatusInCloud,
@@ -63,6 +64,13 @@ interface DataContextType {
   saveEvents: (items: EventItem[]) => Promise<void>;
   savePages: (items: PageItem[]) => Promise<void>;
   saveGallery: (items: GalleryItem[]) => Promise<void>;
+  replaceDatabaseWithCms: (
+    newSettings: SiteSettings,
+    newPrograms: Program[],
+    newLeaders: Leader[],
+    newEvents: EventItem[],
+    newPages: PageItem[]
+  ) => Promise<void>;
   updateRegistrationStatus: (id: string, status: string) => Promise<void>;
   deleteRegistration: (id: string) => Promise<void>;
   updateDonationStatus: (id: string, status: string) => Promise<void>;
@@ -251,7 +259,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveSettings = async (newSettings: Partial<SiteSettings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
-    await pushSettingsToCloud(newSettings);
+    await pushSettingsToCloud(updated);
   };
 
   const savePrograms = async (items: Program[]) => {
@@ -277,6 +285,27 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveGallery = async (items: GalleryItem[]) => {
     setGallery(items);
     await pushGalleryToCloud(items);
+  };
+
+  const replaceDatabaseWithCms = async (
+    newSettings: SiteSettings,
+    newPrograms: Program[],
+    newLeaders: Leader[],
+    newEvents: EventItem[],
+    newPages: PageItem[]
+  ) => {
+    setSettings(newSettings);
+    setPrograms(newPrograms);
+    setLeaders(newLeaders);
+    setEvents(newEvents);
+    setPages(newPages);
+    await replaceDatabaseWithCmsKeepMemories(
+      newSettings,
+      newPrograms,
+      newLeaders,
+      newEvents,
+      newPages
+    );
   };
 
   const updateRegistrationStatus = async (id: string, status: string) => {
@@ -328,6 +357,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveEvents,
       savePages,
       saveGallery,
+      replaceDatabaseWithCms,
       updateRegistrationStatus,
       deleteRegistration,
       updateDonationStatus,

@@ -1317,126 +1317,47 @@ export function getLocalizedPages(lang: Language, customPages: PageItem[]): Page
 }
 
 /**
- * Gallery Items localized
+ * Gallery Items localized - empty defaults to ensure only authentic pictures added to Firestore or website are shown
  */
 export const LOCALIZED_GALLERY: Record<Language, GalleryItem[]> = {
-  en: [
-    {
-      id: 1,
-      data_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?auto=format&fit=crop&w=800&q=80",
-      caption: "ARAAIN BANNU Annual General Assembly",
-      sort_order: 0,
-    },
-    {
-      id: 2,
-      data_url: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&q=80",
-      caption: "Youth Leadership Summit & IT Orientation",
-      sort_order: 1,
-    },
-    {
-      id: 3,
-      data_url: "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&w=800&q=80",
-      caption: "Free Medical & Eye Camp in Bannu Rural",
-      sort_order: 2,
-    },
-    {
-      id: 4,
-      data_url: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80",
-      caption: "Ramadan Ration Distribution Drive",
-      sort_order: 3,
-    },
-    {
-      id: 5,
-      data_url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
-      caption: "Merit Scholarship Award Ceremony",
-      sort_order: 4,
-    },
-    {
-      id: 6,
-      data_url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80",
-      caption: "Executive Council Strategy Session",
-      sort_order: 5,
-    },
-  ],
-  ur: [
-    {
-      id: 1,
-      data_url: "https://images.unsplash.com/photo-1544928147-79a2dbc1f389?auto=format&fit=crop&w=800&q=80",
-      caption: "آرائیں بنوں سالانہ جنرل کونسل اجلاس",
-      sort_order: 0,
-    },
-    {
-      id: 2,
-      data_url: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=800&q=80",
-      caption: "نوجوان قیادت سیمینار اور آئی ٹی تربیتی سیشن",
-      sort_order: 1,
-    },
-    {
-      id: 3,
-      data_url: "https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&w=800&q=80",
-      caption: "بنوں دیہی علاقوں میں مفت طبی اور آنکھوں کا معائنہ کیمپ",
-      sort_order: 2,
-    },
-    {
-      id: 4,
-      data_url: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=800&q=80",
-      caption: "رمضان المبارک راشن تقسیم مہم",
-      sort_order: 3,
-    },
-    {
-      id: 5,
-      data_url: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80",
-      caption: "طلباء و طالبات کے لیے میرٹ اسکالرشپ تقریب تقسیم انعامات",
-      sort_order: 4,
-    },
-    {
-      id: 6,
-      data_url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80",
-      caption: "ایگزیکٹو کونسل مشاورتی اور منصوبہ بندی اجلاس",
-      sort_order: 5,
-    },
-  ],
+  en: [],
+  ur: [],
 };
 
 /**
- * Resolves gallery array respecting the active language and reflecting Firestore data
+ * Resolves gallery array respecting the active language and reflecting Firestore data.
+ * Strictly filters out any empty or placeholder URLs (such as unsplash.com) to only show
+ * pictures actually uploaded to Firestore or the website.
  */
 export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]): GalleryItem[] {
   const sourceList = Array.isArray(customGallery) ? customGallery : [];
-  return sourceList.map((item, idx) => {
-    const catalogUr = LOCALIZED_GALLERY.ur.find(g => g.id === item.id);
-    const catalogEn = LOCALIZED_GALLERY.en.find(g => g.id === item.id);
-
-    let caption = item.caption || '';
-    if (isCorruptedTransliteration(caption)) {
-      caption = catalogUr ? (lang === 'ur' ? catalogUr.caption : (catalogEn?.caption || caption)) : cleanCorruptedUrdu(caption);
-    }
-
-    if (catalogEn && caption.trim().toLowerCase() === catalogEn.caption.trim().toLowerCase()) {
-      caption = lang === 'ur' && catalogUr ? catalogUr.caption : catalogEn.caption;
-    }
-    if (catalogUr && caption.trim() === catalogUr.caption.trim()) {
-      caption = lang === 'en' && catalogEn ? catalogEn.caption : catalogUr.caption;
-    }
-
-    if (lang === 'ur') {
-      if (caption && !isUrduText(caption)) {
-        caption = catalogUr ? catalogUr.caption : translateEnglishToUrdu(caption);
+  
+  return sourceList
+    .filter((item) => Boolean(item && item.data_url && typeof item.data_url === 'string' && !item.data_url.includes('unsplash.com')))
+    .map((item, idx) => {
+      let caption = item.caption || '';
+      if (isCorruptedTransliteration(caption)) {
+        caption = cleanCorruptedUrdu(caption);
       }
-      return {
-        ...item,
-        caption: caption || catalogUr?.caption || '',
-        id: item.id ?? idx + 1,
-      };
-    } else {
-      if (caption && isUrduText(caption)) {
-        caption = catalogEn ? catalogEn.caption : translateUrduToEnglish(caption);
+
+      if (lang === 'ur') {
+        if (caption && !isUrduText(caption)) {
+          caption = translateEnglishToUrdu(caption);
+        }
+        return {
+          ...item,
+          caption: caption || '',
+          id: item.id ?? idx + 1,
+        };
+      } else {
+        if (caption && isUrduText(caption)) {
+          caption = translateUrduToEnglish(caption);
+        }
+        return {
+          ...item,
+          caption: caption || '',
+          id: item.id ?? idx + 1,
+        };
       }
-      return {
-        ...item,
-        caption: caption || catalogEn?.caption || '',
-        id: item.id ?? idx + 1,
-      };
-    }
-  });
+    });
 }

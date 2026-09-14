@@ -18,7 +18,7 @@ export const PROFESSIONS_DICTIONARY_ENTRIES: DictionaryEntry[] = [
   { en: 'Advocate High Court', ur: 'ایڈووکیٹ ہائی کورٹ', domain: 'professions' },
   { en: 'Advocate Supreme Court', ur: 'ایڈووکیٹ سپریم کورٹ', domain: 'professions' },
   { en: 'Judge', ur: 'جج', domain: 'professions', aliasesUr: ['قاضی', 'منصف'] },
-  { en: 'Businessman', ur: 'تاجر', domain: 'professions', aliasesEn: ['Business', 'Entrepreneur', 'Businessperson'], aliasesUr: ['کاروباری'] },
+  { en: 'Businessman', ur: 'تاجر', domain: 'professions', aliasesEn: ['Trader', 'Entrepreneur', 'Businessperson'], aliasesUr: ['کاروباری', 'تاجر حضرات'] },
   { en: 'Merchant', ur: 'سوداگر', domain: 'professions' },
   { en: 'Accountant', ur: 'اکاؤنٹنٹ', domain: 'professions', aliasesUr: ['محاسب'] },
   { en: 'Chartered Accountant', ur: 'چارٹرڈ اکاؤنٹنٹ', domain: 'professions' },

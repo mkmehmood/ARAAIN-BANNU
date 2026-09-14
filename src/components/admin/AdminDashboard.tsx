@@ -108,6 +108,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     saveEvents,
     savePages,
     saveGallery,
+    replaceDatabaseWithCms,
     updateRegistrationStatus,
     deleteRegistration,
     updateDonationStatus,
@@ -292,14 +293,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         announcementTextUr: tempSettings.announcementTextUr || (textIsUr ? (tempSettings.announcementText || '') : translateEnglishToUrdu(tempSettings.announcementText || '')),
       };
 
-      await saveSettings(processedSettings);
-      await savePrograms(tempPrograms);
-      await saveLeaders(processedLeaders);
-      await saveEvents(tempEvents);
-      await savePages(tempPages);
+      // Completely replace Firestore database content with new pictures & text information,
+      // deliberately keeping only the Photo Gallery community memories intact!
+      await replaceDatabaseWithCms(
+        processedSettings,
+        tempPrograms,
+        processedLeaders,
+        tempEvents,
+        tempPages
+      );
+      // Photo Gallery memories are kept and synchronized with any memory photo additions/updates
       await saveGallery(tempGallery);
-      setSaveStatus('Saved & Synced Successfully!');
-      setTimeout(() => setSaveStatus(null), 3000);
+      setSaveStatus(isUrdu ? 'ڈیٹا بیس ریپلیس اور محفوظ ہو گیا (میموریز محفوظ ہیں)!' : 'Database Replaced & Synced (Memories Kept Safe)!');
+      setTimeout(() => setSaveStatus(null), 3500);
     } catch (err: any) {
       console.error(err);
       setSaveStatus('Error saving: ' + err.message);
@@ -1107,13 +1113,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 {saveStatus && (
-                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 animate-pulse">
                     {saveStatus}
                   </span>
                 )}
                 <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm(isUrdu 
+                      ? 'کیا آپ فائر اسٹور ڈیٹا بیس کو موجودہ CRM ڈیٹا سے مکمل ریپلیس کرنا چاہتے ہیں؟ پرانا حذف شدہ ڈیٹا نئے ڈیٹا سے بدل دیا جائے گا جبکہ تصویری گیلری میموریز مکمل محفوظ رہیں گی۔'
+                      : 'Replace the Firestore database with the current CRM content? Deleted or changed items in Firestore will be overwritten with your new data. The Photo Gallery community memories will be safely kept.'
+                    )) {
+                      handleSaveCms();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-amber-400 border border-amber-500/30 text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer"
+                  title="Replace database keeping photo gallery memories"
+                >
+                  <RefreshCw className="w-4 h-4 text-amber-400" />
+                  <span>{isUrdu ? 'ڈیٹا بیس ریپلیس کریں (میموریز محفوظ)' : 'Replace Database (Keep Memories)'}</span>
+                </button>
+                <button
+                  type="button"
                   onClick={handleSaveCms}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer"
                 >
@@ -1397,23 +1420,48 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-2">Custom Logo Emblem</label>
-                    <div className="flex items-center gap-4">
-                      {tempSettings.logoData && (
-                        <img src={tempSettings.logoData} alt="Logo" className="w-14 h-14 rounded-full object-cover border" />
+                    <label className="block text-xs font-semibold text-slate-700 mb-2">
+                      {isUrdu ? 'کسٹم لوگو / نشان' : 'Custom Logo Emblem'}
+                    </label>
+                    <div className="flex flex-wrap items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                      {tempSettings.logoData ? (
+                        <div className="flex items-center gap-3">
+                          <img src={tempSettings.logoData} alt="Logo" className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shadow-sm" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(isUrdu ? 'کیا آپ کسٹم لوگو ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete custom logo emblem?')) {
+                                setTempSettings({ ...tempSettings, logoData: '' });
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>{isUrdu ? 'لوگو ڈیلیٹ کریں' : 'Delete Logo'}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-500 italic">
+                          {isUrdu ? 'کوئی لوگو اپلوڈ نہیں ہے (ڈیفالٹ ایمبلم استعمال ہوگا)' : 'No custom logo uploaded (default emblem will be used)'}
+                        </span>
                       )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const b64 = await compressImage(file, 400, 0.8);
-                            setTempSettings({ ...tempSettings, logoData: b64 });
-                          }
-                        }}
-                        className="text-xs"
-                      />
+                      <div className="ml-auto">
+                        <label className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5">
+                          <span>{tempSettings.logoData ? (isUrdu ? 'لوگو تبدیل کریں' : 'Change Logo') : (isUrdu ? 'لوگو اپلوڈ کریں' : 'Upload Logo')}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const b64 = await compressImage(file, 400, 0.8);
+                                setTempSettings({ ...tempSettings, logoData: b64 });
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1522,13 +1570,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
                     </div>
 
+                    {/* Hero Pictures Header & Clear All */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-slate-700">
+                        {isUrdu ? 'موجودہ ہیرو تصاویر' : 'Current Hero Background Pictures'} ({(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : [])).length})
+                      </span>
+                      {((tempSettings.heroImages && tempSettings.heroImages.length > 0) || tempSettings.heroImage) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(isUrdu ? 'کیا آپ تمام ہیرو بیک گراؤنڈ تصاویر ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete all hero background pictures? The website will display the clean navy & gold banner.')) {
+                              setTempSettings({ ...tempSettings, heroImages: [], heroImage: '' });
+                            }
+                          }}
+                          className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 inline-flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isUrdu ? 'تمام تصاویر ڈیلیٹ کریں' : 'Delete All Hero Pictures'}</span>
+                        </button>
+                      )}
+                    </div>
+
                     {/* Image List / Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : [])).map((img, idx) => (
-                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100">
-                          <img src={img} alt={`Hero ${idx + 1}`} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <span className="text-[10px] text-white font-mono absolute top-1 left-2 bg-black/50 px-1.5 py-0.5 rounded">#{idx + 1}</span>
+                    {(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : [])).length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-500 bg-slate-50">
+                        {isUrdu 
+                          ? 'کوئی ہیرو تصویر موجود نہیں ہے۔ ویب سائٹ نفیس نیوی اور سنہری تھیم ڈسپلے کرے گی۔' 
+                          : 'No hero background pictures. The hero will render the clean navy & gold theme.'}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {(tempSettings.heroImages || (tempSettings.heroImage ? [tempSettings.heroImage] : [])).map((img, idx) => (
+                          <div key={idx} className="relative rounded-xl overflow-hidden border border-slate-200 aspect-video bg-slate-100 shadow-sm">
+                            <img src={img} alt={`Hero ${idx + 1}`} className="w-full h-full object-cover" />
+                            <span className="text-[10px] text-white font-mono absolute top-1.5 left-2 bg-black/60 px-1.5 py-0.5 rounded shadow">
+                              #{idx + 1}
+                            </span>
                             <button
                               type="button"
                               onClick={() => {
@@ -1536,14 +1613,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 currentList.splice(idx, 1);
                                 setTempSettings({ ...tempSettings, heroImages: currentList, heroImage: currentList[0] || '' });
                               }}
-                              className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-semibold cursor-pointer"
+                              className="absolute top-1.5 right-1.5 px-2 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-semibold shadow flex items-center gap-1 cursor-pointer transition-colors"
+                              title="Delete this picture"
                             >
-                              Remove
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{isUrdu ? 'ڈیلیٹ' : 'Delete'}</span>
                             </button>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Add Image Controls: File upload or URL */}
                     <div className="flex flex-col sm:flex-row gap-2 pt-2">
@@ -1694,10 +1773,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {tempSettings.chairmanPhoto && (
                             <button
                               type="button"
-                              onClick={() => setTempSettings({ ...tempSettings, chairmanPhoto: '' })}
-                              className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs cursor-pointer"
+                              onClick={() => {
+                                if (confirm(isUrdu ? 'کیا آپ چیئرمین کی تصویر ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete Chairman picture?')) {
+                                  setTempSettings({ ...tempSettings, chairmanPhoto: '' });
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer inline-flex items-center gap-1 transition-colors"
                             >
-                              Remove Picture
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{isUrdu ? 'تصویر ڈیلیٹ کریں' : 'Delete Picture'}</span>
                             </button>
                           )}
                         </div>
@@ -1710,25 +1794,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Programs CMS */}
               {cmsTab === 'programs' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
                     <h4 className="text-sm font-bold text-[#16232F]">
-                      Initiatives & Programs ({tempPrograms.length})
+                      {isUrdu ? 'فلاحی پروگرامز و انیشیٹوز' : 'Initiatives & Programs'} ({tempPrograms.length})
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => setTempPrograms([...tempPrograms, {
-                        id: Date.now(),
-                        title: 'New Welfare Initiative',
-                        desc: 'Description of the new program initiative in Bannu.',
-                        icon_name: 'award',
-                        color: '#AD7A28',
-                        sort_order: tempPrograms.length + 1
-                      }])}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Program</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {tempPrograms.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(isUrdu ? 'کیا آپ تمام فلاحی پروگرامز ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete all programs?')) {
+                              setTempPrograms([]);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isUrdu ? 'تمام پروگرامز ڈیلیٹ کریں' : 'Clear All'}</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setTempPrograms([...tempPrograms, {
+                          id: Date.now(),
+                          title: 'New Welfare Initiative',
+                          desc: 'Description of the new program initiative in Bannu.',
+                          icon_name: 'award',
+                          color: '#AD7A28',
+                          sort_order: tempPrograms.length + 1
+                        }])}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>{isUrdu ? 'نیا پروگرام شامل کریں' : 'Add Program'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1747,8 +1847,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           />
                           <button
                             type="button"
-                            onClick={() => setTempPrograms(tempPrograms.filter((_, i) => i !== idx))}
-                            className="p-1 rounded text-red-500 hover:bg-red-50"
+                            onClick={() => {
+                              if (confirm(isUrdu ? 'کیا آپ اس پروگرام کو ڈیلیٹ کرنا چاہتے ہیں؟' : `Delete program "${p.title}"?`)) {
+                                setTempPrograms(tempPrograms.filter((_, i) => i !== idx));
+                              }
+                            }}
+                            className="p-1 rounded text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+                            title="Delete Program"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -2125,22 +2230,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   <span className="font-semibold">Featured Badge (Highlight in council view)</span>
                                 </label>
 
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-slate-500">Upload Portrait:</span>
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        const b64 = await compressImage(file, 400, 0.82);
-                                        const updated = [...tempLeaders];
-                                        updated[idx].photo_data = b64;
-                                        setTempLeaders(updated);
-                                      }
-                                    }}
-                                    className="text-xs"
-                                  />
+                                <div className="flex flex-wrap items-center gap-3">
+                                  {(lead.photo_data || lead.image) ? (
+                                    <div className="flex items-center gap-2">
+                                      <img
+                                        src={lead.photo_data || lead.image}
+                                        alt={lead.name}
+                                        className="w-8 h-8 rounded-full object-cover border-2 border-amber-400 shadow-sm"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (confirm(isUrdu ? 'کیا آپ اس رہنما کی تصویر ڈیلیٹ کرنا چاہتے ہیں؟' : `Delete portrait photo of "${lead.name}"?`)) {
+                                            const updated = [...tempLeaders];
+                                            updated[idx].photo_data = '';
+                                            updated[idx].image = '';
+                                            setTempLeaders(updated);
+                                          }
+                                        }}
+                                        className="px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span>{isUrdu ? 'تصویر ڈیلیٹ کریں' : 'Delete Photo'}</span>
+                                      </button>
+                                    </div>
+                                  ) : null}
+
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs text-slate-500">
+                                      {(lead.photo_data || lead.image) ? (isUrdu ? 'تصویر تبدیل کریں:' : 'Change Portrait:') : (isUrdu ? 'تصویر اپلوڈ کریں:' : 'Upload Portrait:')}
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          const b64 = await compressImage(file, 400, 0.82);
+                                          const updated = [...tempLeaders];
+                                          updated[idx].photo_data = b64;
+                                          setTempLeaders(updated);
+                                        }
+                                      }}
+                                      className="text-xs"
+                                    />
+                                  </div>
                                 </div>
                               </div>
 
@@ -2156,26 +2290,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Events CMS */}
               {cmsTab === 'events' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
                     <h4 className="text-sm font-bold text-[#16232F]">
-                      Events Schedule ({tempEvents.length})
+                      {isUrdu ? 'تقریبات و اجتماعات کا شیڈول' : 'Events Schedule'} ({tempEvents.length})
                     </h4>
-                    <button
-                      type="button"
-                      onClick={() => setTempEvents([...tempEvents, {
-                        id: Date.now(),
-                        title: 'Annual Assembly & Gathering',
-                        month: 'DEC',
-                        day: '25',
-                        time_str: '2:00 PM - 6:00 PM',
-                        place: 'Community Center, Bannu',
-                        tag: 'General'
-                      }])}
-                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Event</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {tempEvents.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(isUrdu ? 'کیا آپ تمام شیڈول شدہ تقریبات ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete all scheduled events?')) {
+                              setTempEvents([]);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer inline-flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isUrdu ? 'تمام تقریبات ڈیلیٹ کریں' : 'Clear All'}</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setTempEvents([...tempEvents, {
+                          id: Date.now(),
+                          title: 'Annual Assembly & Gathering',
+                          month: 'DEC',
+                          day: '25',
+                          time_str: '2:00 PM - 6:00 PM',
+                          place: 'Community Center, Bannu',
+                          tag: 'General'
+                        }])}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>{isUrdu ? 'نیا ایونٹ شامل کریں' : 'Add Event'}</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2194,8 +2344,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           />
                           <button
                             type="button"
-                            onClick={() => setTempEvents(tempEvents.filter((_, i) => i !== idx))}
-                            className="p-1 rounded text-red-500 hover:bg-red-50"
+                            onClick={() => {
+                              if (confirm(isUrdu ? 'کیا آپ اس ایونٹ کو ڈیلیٹ کرنا چاہتے ہیں؟' : `Delete event "${ev.title}"?`)) {
+                                setTempEvents(tempEvents.filter((_, i) => i !== idx));
+                              }
+                            }}
+                            className="p-1 rounded text-red-500 hover:bg-red-50 cursor-pointer transition-colors"
+                            title="Delete Event"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -2307,66 +2462,134 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Gallery CMS */}
               {cmsTab === 'gallery' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b pb-2">
-                    <h4 className="text-sm font-bold text-[#16232F]">
-                      Community Gallery ({tempGallery.length})
-                    </h4>
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        id="new-gallery-photo-input"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const b64 = await compressImage(file, 800, 0.8);
-                            setTempGallery([...tempGallery, {
-                              id: Date.now(),
-                              data_url: b64,
-                              caption: 'ARAAIN BANNU Event Photo',
-                              sort_order: tempGallery.length + 1
-                            }]);
-                          }
-                        }}
-                      />
-                      <label
-                        htmlFor="new-gallery-photo-input"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Upload Photo</span>
-                      </label>
+                  {/* Community Memories Banner */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border border-amber-300/80 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold shrink-0 mt-0.5">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h4 className="text-sm font-bold text-slate-900">
+                            {isUrdu ? 'کمیونٹی میموریز و یادگار تصویری آرکائیو' : 'Community Memories Vault & Photo Archive'}
+                          </h4>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold">
+                            {isUrdu ? 'میموریز محفوظ فنکشن' : 'Memories Protected'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {isUrdu
+                            ? 'یہ تصویری گیلری ارائیں بنوں کی تاریخ، یادگار لمحات، اور کمیونٹی تقاریب کی یادیں (Memories) محفوظ رکھنے کے لیے وقف ہے۔ جب آپ ویب سائٹ مواد یا ڈیٹا بیس ریپلیس کرتے ہیں، تو یہ میموریز بالکل محفوظ رکھی جاتی ہیں۔'
+                            : 'This photo gallery serves as the community memory vault preserving historical moments and gatherings. When replacing or updating website text and pictures, these memory archives remain protected.'}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {tempGallery.map((item, idx) => (
-                      <div key={item.id || idx} className="relative rounded-xl overflow-hidden border bg-slate-100 group">
-                        <img src={item.data_url} alt="Gallery" className="w-full h-32 object-cover" />
-                        <div className="p-2 bg-white">
-                          <input
-                            type="text"
-                            value={item.caption || ''}
-                            placeholder="Caption..."
-                            onChange={(e) => {
-                              const updated = [...tempGallery];
-                              updated[idx].caption = e.target.value;
-                              setTempGallery(updated);
-                            }}
-                            className="w-full text-[11px] p-1 border rounded"
-                          />
-                        </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                    <h4 className="text-sm font-bold text-[#16232F]">
+                      {isUrdu ? 'محفوظ یادگار تصاویر' : 'Preserved Memory Photos'} ({tempGallery.length})
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      {tempGallery.length > 0 && (
                         <button
                           type="button"
-                          onClick={() => setTempGallery(tempGallery.filter((_, i) => i !== idx))}
-                          className="absolute top-2 right-2 p-1 rounded-full bg-red-600 text-white text-xs"
+                          onClick={() => {
+                            if (confirm(isUrdu ? 'کیا آپ تمام یادگار تصاویر ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete all memory photos from gallery?')) {
+                              setTempGallery([]);
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold cursor-pointer inline-flex items-center gap-1"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isUrdu ? 'تمام گیلری صاف کریں' : 'Clear Gallery'}</span>
                         </button>
+                      )}
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id="new-gallery-photo-input"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const b64 = await compressImage(file, 800, 0.8);
+                              setTempGallery([...tempGallery, {
+                                id: Date.now(),
+                                data_url: b64,
+                                caption: 'ARAAIN BANNU Community Memory',
+                                sort_order: tempGallery.length + 1
+                              }]);
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor="new-gallery-photo-input"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>{isUrdu ? 'یادگار تصویر اپلوڈ کریں' : 'Upload Memory Photo'}</span>
+                        </label>
                       </div>
-                    ))}
+                    </div>
                   </div>
+
+                  {tempGallery.length === 0 ? (
+                    <div className="p-8 rounded-2xl border border-dashed border-slate-300 text-center text-xs text-slate-500 bg-slate-50">
+                      {isUrdu 
+                        ? 'کوئی یادگار تصویر موجود نہیں ہے۔ اوپر دیے گئے بٹن سے نئی تصاویر اپلوڈ کریں۔' 
+                        : 'No memory photos in the gallery. Use the button above to upload authentic community pictures.'}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      {tempGallery.map((item, idx) => (
+                        <div key={item.id || idx} className="relative rounded-xl overflow-hidden border bg-slate-100 shadow-sm flex flex-col">
+                          <img src={item.data_url} alt="Gallery" className="w-full h-32 object-cover" />
+                          <div className="p-2 bg-white flex-1 flex flex-col justify-between gap-1">
+                            <input
+                              type="text"
+                              value={item.caption || ''}
+                              placeholder={isUrdu ? 'کیپشن یا تقریب کا نام...' : 'Caption or event name...'}
+                              onChange={(e) => {
+                                const updated = [...tempGallery];
+                                updated[idx].caption = e.target.value;
+                                setTempGallery(updated);
+                              }}
+                              className="w-full text-[11px] p-1 border rounded"
+                            />
+                            <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                              <span>Memory #{idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (confirm(isUrdu ? 'کیا آپ اس یادگار تصویر کو ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete this memory photo from gallery?')) {
+                                    setTempGallery(tempGallery.filter((_, i) => i !== idx));
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-700 font-semibold cursor-pointer inline-flex items-center gap-0.5"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>{isUrdu ? 'ڈیلیٹ' : 'Delete'}</span>
+                              </button>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(isUrdu ? 'کیا آپ اس یادگار تصویر کو ڈیلیٹ کرنا چاہتے ہیں؟' : 'Delete this memory photo from gallery?')) {
+                                setTempGallery(tempGallery.filter((_, i) => i !== idx));
+                              }
+                            }}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs shadow-md transition-colors cursor-pointer"
+                            title="Delete this memory photo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

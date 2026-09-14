@@ -13,12 +13,8 @@ export const defaultSettings: SiteSettings = {
   heroTitle: "آرائیں بنوں",
   heroSub: "نئی نسل کو بااختیار بنانا، اپنے ورثے پر فخر",
   heroTagline: "دنیا بھر میں آرائیں برادری کا اتحاد — طاقت، یکجہتی، ترقی۔ برادری کی فلاح، تعلیم اور ترقی کے ایک عظیم مشن کا حصہ بنیں۔",
-  heroImage: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80",
-  heroImages: [
-    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1920&q=80",
-    "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1920&q=80"
-  ],
+  heroImage: "",
+  heroImages: [],
   heroSlideDuration: 5,
 
   // About

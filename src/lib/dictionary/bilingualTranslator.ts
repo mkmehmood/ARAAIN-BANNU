@@ -146,9 +146,8 @@ export function translateEnglishToUrduWithLibrary(
 
   // 1. Replace multi-word phrases (longest first)
   for (const pair of MULTI_WORD_PAIRS) {
-    if (pair.enRegex.test(result)) {
-      result = result.replace(pair.enRegex, pair.ur);
-    }
+    pair.enRegex.lastIndex = 0;
+    result = result.replace(pair.enRegex, pair.ur);
   }
 
   // 2. Tokenize remaining words and replace from single-word dictionary
