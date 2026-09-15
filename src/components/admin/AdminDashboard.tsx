@@ -23,12 +23,18 @@ import {
 import {
   translateNameToUrdu,
   translateNameToEnglish,
+  translateNameToUrduAsync,
+  translateNameToEnglishAsync,
   translateOccupationToUrdu,
   translateOccupationToEnglish,
   translateAddressToUrdu,
   translateAddressToEnglish,
+  translateAddressToUrduAsync,
+  translateAddressToEnglishAsync,
   translateUrduToEnglish,
   translateEnglishToUrdu,
+  translateEnglishToUrduAsync,
+  translateUrduToEnglishAsync,
   isUrduText,
 } from '../../utils/urduTransliterator';
 import {
@@ -221,45 +227,59 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Save changes handler for CMS
   const handleSaveCms = async () => {
-    setSaveStatus('Saving to Firebase Firestore...');
+    setSaveStatus(isUrdu ? 'ترجمہ اور محفوظ کیا جا رہا ہے...' : 'Translating with Azure & Saving to Firestore...');
     try {
-      // Process leaders: populate both English and Urdu fields seamlessly from unified inputs
-      const processedLeaders: Leader[] = tempLeaders.map(lead => {
-        const nameIsUr = isUrduText(lead.name);
-        const roleIsUr = isUrduText(lead.role);
-        const msgIsUr = isUrduText(lead.message || '');
-        const bioIsUr = isUrduText(lead.bio || '');
-        const locIsUr = isUrduText(lead.location || '');
+      // Process leaders with Azure Translator: populate both English and Urdu fields seamlessly
+      const processedLeaders: Leader[] = await Promise.all(
+        tempLeaders.map(async (lead) => {
+          const nameIsUr = isUrduText(lead.name);
+          const roleIsUr = isUrduText(lead.role);
+          const msgIsUr = isUrduText(lead.message || '');
+          const bioIsUr = isUrduText(lead.bio || '');
+          const locIsUr = isUrduText(lead.location || '');
 
-        const finalName = nameIsUr ? translateNameToEnglish(lead.name) : lead.name;
-        const finalNameUr = lead.nameUr || (nameIsUr ? lead.name : translateNameToUrdu(lead.name));
+          const finalName = nameIsUr ? await translateNameToEnglishAsync(lead.name) : lead.name;
+          const finalNameUr = lead.nameUr || (nameIsUr ? lead.name : await translateNameToUrduAsync(lead.name));
 
-        const finalRole = roleIsUr ? translateOccupationToEnglish(lead.role) : lead.role;
-        const finalRoleUr = lead.roleUr || (roleIsUr ? lead.role : translateOccupationToUrdu(lead.role));
+          const finalRole = roleIsUr ? translateOccupationToEnglish(lead.role) : lead.role;
+          const finalRoleUr = lead.roleUr || (roleIsUr ? lead.role : translateOccupationToUrdu(lead.role));
 
-        const finalMsg = msgIsUr ? translateUrduToEnglish(lead.message || '') : (lead.message || '');
-        const finalMsgUr = lead.messageUr || (msgIsUr ? (lead.message || '') : translateEnglishToUrdu(lead.message || ''));
+          const finalMsg = msgIsUr 
+            ? await translateUrduToEnglishAsync(lead.message || '') 
+            : (lead.message || '');
+          const finalMsgUr = lead.messageUr || (msgIsUr 
+            ? (lead.message || '') 
+            : await translateEnglishToUrduAsync(lead.message || ''));
 
-        const finalBio = bioIsUr ? translateUrduToEnglish(lead.bio || '') : (lead.bio || '');
-        const finalBioUr = lead.bioUr || (bioIsUr ? (lead.bio || '') : translateEnglishToUrdu(lead.bio || ''));
+          const finalBio = bioIsUr 
+            ? await translateUrduToEnglishAsync(lead.bio || '') 
+            : (lead.bio || '');
+          const finalBioUr = lead.bioUr || (bioIsUr 
+            ? (lead.bio || '') 
+            : await translateEnglishToUrduAsync(lead.bio || ''));
 
-        const finalLoc = locIsUr ? translateAddressToEnglish(lead.location || '') : (lead.location || '');
-        const finalLocUr = lead.locationUr || (locIsUr ? (lead.location || '') : translateAddressToUrdu(lead.location || ''));
+          const finalLoc = locIsUr 
+            ? await translateAddressToEnglishAsync(lead.location || '') 
+            : (lead.location || '');
+          const finalLocUr = lead.locationUr || (locIsUr 
+            ? (lead.location || '') 
+            : await translateAddressToUrduAsync(lead.location || ''));
 
-        return {
-          ...lead,
-          name: finalName,
-          nameUr: finalNameUr,
-          role: finalRole,
-          roleUr: finalRoleUr,
-          message: finalMsg,
-          messageUr: finalMsgUr,
-          bio: finalBio,
-          bioUr: finalBioUr,
-          location: finalLoc,
-          locationUr: finalLocUr,
-        };
-      });
+          return {
+            ...lead,
+            name: finalName,
+            nameUr: finalNameUr,
+            role: finalRole,
+            roleUr: finalRoleUr,
+            message: finalMsg,
+            messageUr: finalMsgUr,
+            bio: finalBio,
+            bioUr: finalBioUr,
+            location: finalLoc,
+            locationUr: finalLocUr,
+          };
+        })
+      );
 
       // Process contacts: populate both English and Urdu fields seamlessly
       const processedContacts: ContactDetail[] = (tempSettings.multipleContacts || []).map(contact => {
@@ -281,17 +301,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         };
       });
 
-      // Process announcement settings
+      // Process announcement settings with Azure Translator
       const badgeIsUr = isUrduText(tempSettings.announcementBadge || '');
       const textIsUr = isUrduText(tempSettings.announcementText || '');
+
+      let finalAnnBadgeEn = tempSettings.announcementBadge || '';
+      let finalAnnBadgeUr = tempSettings.announcementBadgeUr || '';
+      if (badgeIsUr) {
+        finalAnnBadgeUr = tempSettings.announcementBadge || '';
+        finalAnnBadgeEn = await translateUrduToEnglishAsync(tempSettings.announcementBadge || '');
+      } else if (tempSettings.announcementBadge) {
+        finalAnnBadgeEn = tempSettings.announcementBadge;
+        if (!finalAnnBadgeUr || !isUrduText(finalAnnBadgeUr)) {
+          finalAnnBadgeUr = await translateEnglishToUrduAsync(tempSettings.announcementBadge);
+        }
+      }
+
+      let finalAnnTextEn = tempSettings.announcementText || '';
+      let finalAnnTextUr = tempSettings.announcementTextUr || '';
+      if (textIsUr) {
+        finalAnnTextUr = tempSettings.announcementText || '';
+        finalAnnTextEn = await translateUrduToEnglishAsync(tempSettings.announcementText || '');
+      } else if (tempSettings.announcementText) {
+        finalAnnTextEn = tempSettings.announcementText;
+        if (!finalAnnTextUr || !isUrduText(finalAnnTextUr)) {
+          finalAnnTextUr = await translateEnglishToUrduAsync(tempSettings.announcementText);
+        }
+      }
+
       const processedSettings: SiteSettings = {
         ...tempSettings,
         multipleContacts: processedContacts,
-        announcementBadge: badgeIsUr ? translateUrduToEnglish(tempSettings.announcementBadge || '') : (tempSettings.announcementBadge || ''),
-        announcementBadgeUr: tempSettings.announcementBadgeUr || (badgeIsUr ? (tempSettings.announcementBadge || '') : translateEnglishToUrdu(tempSettings.announcementBadge || '')),
-        announcementText: textIsUr ? translateUrduToEnglish(tempSettings.announcementText || '') : (tempSettings.announcementText || ''),
-        announcementTextUr: tempSettings.announcementTextUr || (textIsUr ? (tempSettings.announcementText || '') : translateEnglishToUrdu(tempSettings.announcementText || '')),
+        announcementBadge: finalAnnBadgeEn,
+        announcementBadgeUr: finalAnnBadgeUr,
+        announcementText: finalAnnTextEn,
+        announcementTextUr: finalAnnTextUr,
       };
+
+      // Process gallery items with Azure Translator
+      const processedGallery: GalleryItem[] = await Promise.all(
+        tempGallery.map(async (item) => {
+          const rawCaption = item.caption || '';
+          let captionEn = item.caption || '';
+          let captionUr = item.captionUr || '';
+
+          if (isUrduText(rawCaption)) {
+            captionUr = rawCaption;
+            if (!captionEn || isUrduText(captionEn)) {
+              captionEn = await translateUrduToEnglishAsync(rawCaption);
+            }
+          } else if (rawCaption) {
+            captionEn = rawCaption;
+            if (!captionUr || !isUrduText(captionUr)) {
+              captionUr = await translateEnglishToUrduAsync(rawCaption);
+            }
+          }
+
+          return {
+            ...item,
+            caption: captionEn,
+            captionUr: captionUr,
+          };
+        })
+      );
 
       // Completely replace Firestore database content with new pictures & text information,
       // deliberately keeping only the Photo Gallery community memories intact!
@@ -303,7 +375,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         tempPages
       );
       // Photo Gallery memories are kept and synchronized with any memory photo additions/updates
-      await saveGallery(tempGallery);
+      await saveGallery(processedGallery);
       setSaveStatus(isUrdu ? 'ڈیٹا بیس ریپلیس اور محفوظ ہو گیا (میموریز محفوظ ہیں)!' : 'Database Replaced & Synced (Memories Kept Safe)!');
       setTimeout(() => setSaveStatus(null), 3500);
     } catch (err: any) {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { lookupVerifiedCard, PublicVerifiedCard } from '../services/firebase';
+import { useData } from '../context/DataContext';
+import { lookupVerifiedCard, registerVerifiedCard, PublicVerifiedCard } from '../services/firebase';
 import { sanitizeCardId } from '../utils/security';
 import { 
   scanQrFromCanvas, 
@@ -40,6 +41,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
   initialCardId = '',
 }) => {
   const { t, isUrdu } = useLanguage();
+  const { registrations, settings } = useData();
   const [activeTab, setActiveTab] = useState<'id' | 'scan'>('id');
   const [searchId, setSearchId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -89,7 +91,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     setSearched(true);
 
     try {
-      const record = await lookupVerifiedCard(clean);
+      const record = await lookupVerifiedCard(clean, registrations);
       setVerifiedRecord(record);
     } catch (err: any) {
       setErrorText(
@@ -101,7 +103,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [isUrdu]);
+  }, [isUrdu, registrations]);
 
   useEffect(() => {
     if (isOpen) {
@@ -140,19 +142,39 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access is not supported by your browser environment.');
+        throw new Error('CAMERA_UNSUPPORTED');
+      }
+
+      // Check permissions status where available
+      if (navigator.permissions && navigator.permissions.query) {
+        try {
+          const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          if (perm.state === 'denied') {
+            throw new Error('CAMERA_DENIED');
+          }
+        } catch (e: any) {
+          if (e?.message === 'CAMERA_DENIED') throw e;
+        }
       }
 
       // Stop any existing stream first
       stopCamera();
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        });
+      } catch (e) {
+        // Fallback to generic video constraint
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+      }
 
       streamRef.current = stream;
       if (videoRef.current) {
@@ -165,11 +187,19 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     } catch (err: any) {
       console.warn('Camera start error:', err);
       setCameraActive(false);
-      setCameraError(
-        isUrdu
-          ? 'کیمرہ تک رسائی ممکن نہیں ہوئی۔ براہ کرم براؤزر میں کیمرے کی اجازت چیک کریں یا نیچے تصویر اپ لوڈ کریں۔'
-          : 'Unable to access camera. Please allow camera permissions or upload an image of the QR code below.'
-      );
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || err?.message === 'CAMERA_DENIED') {
+        setCameraError(
+          isUrdu
+            ? 'کیمرہ کھولنے کی اجازت درکار ہے۔ براہ کرم براؤزر کے ایڈریس بار میں کیمرہ/لاک آئیکن پر کلک کر کے اجازت دیں، یا نیچے کارڈ کی تصویر اپ لوڈ کریں۔'
+            : 'Camera permission is required. Please grant camera access in your browser address bar permissions, or upload a photo of the card below.'
+        );
+      } else {
+        setCameraError(
+          isUrdu
+            ? 'کیمرہ تک رسائی ممکن نہیں ہوئی۔ براہ کرم نیچے دی گئی آپشن سے کارڈ کی تصویر یا کیو آر کوڈ اپ لوڈ کریں۔'
+            : 'Unable to start camera. Please allow camera permissions or upload an image of the QR code below.'
+        );
+      }
     }
   };
 
@@ -218,6 +248,26 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
     if (extracted.cardId) {
       setSearchId(extracted.cardId);
+
+      // If the scanned card payload includes signed member credentials, immediately record and verify
+      if (extracted.fullName || extracted.fullNameUr) {
+        const verifiedDirectly: PublicVerifiedCard = {
+          cardId: extracted.cardId,
+          fullNameEn: extracted.fullName || '',
+          fullNameUr: extracted.fullNameUr || extracted.fullName || '',
+          membershipTypeEn: extracted.membershipType || 'Official Member',
+          membershipTypeUr: extracted.membershipType || 'باضابطہ رکن',
+          status: 'verified',
+          issuedAt: extracted.issuedDate || new Date().toLocaleDateString('en-GB'),
+          councilName: extracted.authority || settings?.siteName || 'ARAAIN ASSOCIATION BANNU',
+        };
+        registerVerifiedCard(verifiedDirectly);
+        setVerifiedRecord(verifiedDirectly);
+        setSearched(true);
+        setErrorText(null);
+        return;
+      }
+
       performLookup(extracted.cardId);
     } else {
       setSearched(true);
@@ -346,25 +396,47 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
           {/* TAB 1: SEARCH BY CARD ID */}
           {activeTab === 'id' && (
-            <form onSubmit={handleSearchSubmit} className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value.toUpperCase())}
-                  placeholder="AB-26-XXXXXX"
-                  className="w-full pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm uppercase tracking-wider font-mono"
-                />
+            <div className="space-y-2">
+              <form onSubmit={handleSearchSubmit} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchId}
+                    onChange={(e) => setSearchId(e.target.value.toUpperCase())}
+                    placeholder={isUrdu ? "کارڈ نمبر یا شناختی کارڈ (AB-26-XXXXXX)" : "Card ID or CNIC (e.g. AB-26-XXXXXX)"}
+                    className="w-full pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm uppercase tracking-wider font-mono"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white font-semibold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                >
+                  {loading ? (isUrdu ? 'تلاش جاری...' : 'Checking...') : (isUrdu ? 'تصدیق کریں' : 'Verify')}
+                </button>
+              </form>
+
+              <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-500 px-1">
+                <span>{isUrdu ? 'کارڈ پر درج کارڈ آئی ڈی یا قومی شناختی کارڈ نمبر درج کریں' : 'Accepts printed Card ID or registered CNIC number'}</span>
+                {registrations && registrations.length > 0 && registrations.find(r => r.cardId) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sample = registrations.find(r => r.cardId);
+                      if (sample?.cardId) {
+                        setSearchId(sample.cardId);
+                        performLookup(sample.cardId);
+                      }
+                    }}
+                    className="text-[#AD7A28] hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <span>{isUrdu ? 'نمونہ کارڈ چیک کریں:' : 'Test sample card:'}</span>
+                    <span className="font-mono">{registrations.find(r => r.cardId)?.cardId}</span>
+                  </button>
+                )}
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-5 py-2.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white font-semibold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50 shrink-0"
-              >
-                {loading ? (isUrdu ? 'تلاش جاری...' : 'Checking...') : (isUrdu ? 'تصدیق کریں' : 'Verify')}
-              </button>
-            </form>
+            </div>
           )}
 
           {/* TAB 2: LIVE QR SCANNER & IMAGE UPLOADER */}

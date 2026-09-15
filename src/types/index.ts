@@ -69,6 +69,7 @@ export interface GalleryItem {
   id?: number | string;
   data_url: string;
   caption?: string;
+  captionUr?: string;
   sort_order?: number;
 }
 

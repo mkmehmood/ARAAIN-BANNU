@@ -19,6 +19,12 @@ import {
   lookupDictionaryTerm,
   ALL_DICTIONARY_ENTRIES,
 } from '../lib/dictionary/index';
+import {
+  translateViaAzure,
+  translateBatchViaAzure,
+  getCachedTranslation,
+  setCachedTranslation,
+} from '../services/azureTranslator';
 
 // ── English to Urdu Names Dictionary ────────────────────────────────
 export const NAMES_DICT: Record<string, string> = {
@@ -1659,7 +1665,23 @@ export const GENERAL_VOCAB_ENG_TO_URDU: Record<string, string> = {
   leadership: 'قیادت',
   leader: 'رہنما',
   leaders: 'رہنما',
-  gallery: 'تصویری گیلری',
+  gallery: 'گیلری',
+  'photo gallery': 'تصویری گیلری',
+  'photo galleries': 'تصویری گیلریاں',
+  memories: 'یادگار لمحات',
+  memory: 'یادگار',
+  gathering: 'اجتماع',
+  milestone: 'سنگ میل',
+  updates: 'اپڈیٹس',
+  update: 'اپڈیٹ',
+  notice: 'نوٹس',
+  notices: 'نوٹسز',
+  breaking: 'اہم',
+  headline: 'سرخی',
+  package: 'پیکج',
+  inaugurated: 'آغاز',
+  officially: 'باقاعدہ',
+  districts: 'اضلاع',
   photos: 'تصاویر',
   photo: 'تصویر',
   contact: 'رابطہ',
@@ -1810,6 +1832,76 @@ export const GENERAL_VOCAB_ENG_TO_URDU: Record<string, string> = {
   cell: 'سیل',
   desk: 'ڈیسک',
   unit: 'یونٹ',
+  build: 'تعمیر کریں',
+  builds: 'تعمیر کرتا ہے',
+  building: 'تعمیر',
+  built: 'تعمیر شدہ',
+  strategically: 'حکمت عملی کے ساتھ',
+  strategy: 'حکمت عملی',
+  your: 'آپ کا',
+  our: 'ہمارا',
+  my: 'میرا',
+  we: 'ہم',
+  you: 'آپ',
+  they: 'وہ',
+  it: 'یہ',
+  is: 'ہے',
+  are: 'ہیں',
+  was: 'تھا',
+  were: 'تھے',
+  and: 'اور',
+  or: 'یا',
+  in: 'میں',
+  on: 'پر',
+  at: 'پر',
+  to: 'کو',
+  for: 'کے لیے',
+  from: 'سے',
+  with: 'کے ساتھ',
+  by: 'کے ذریعے',
+  through: 'کے ذریعے',
+  between: 'کے درمیان',
+  that: 'جو',
+  when: 'جب',
+  who: 'جو',
+  what: 'کیا',
+  where: 'کہاں',
+  why: 'کیوں',
+  how: 'کیسے',
+  a: 'ایک',
+  an: 'ایک',
+  the: '',
+  this: 'یہ',
+  these: 'یہ',
+  those: 'وہ',
+  supporting: 'سہارا دینا',
+  endure: 'قائم رہنا',
+  expand: 'وسعت دیں',
+  expanding: 'وسعت',
+  serve: 'خدمت کرنا',
+  service: 'خدمت',
+  commerce: 'تجارت',
+  trade: 'تجارت',
+  enterprise: 'کاروبار',
+  entrepreneurship: 'کاروباری صلاحیت',
+  engagement: 'رہنمائی و شرکت',
+  milestones: 'سنگ میل',
+  gatherings: 'اجتماعات',
+  ceremonies: 'تقاریب',
+  archives: 'ریکارڈز',
+  resilience: 'تحفظ',
+  conservation: 'حفاظت',
+  plantation: 'شجرکاری',
+  agrarian: 'زرعی',
+  solidarity: 'یکجہتی',
+  governance: 'انتظام',
+  accountable: 'جوابدہ',
+  transparent: 'شفاف',
+  transparency: 'شفافیت',
+  hall: 'ہال',
+  complex: 'کمپلیکس',
+  summit: 'سمٹ',
+  exhibition: 'نمائش',
 };
 
 // ── General Vocabulary (Urdu -> English) ────────────────────────────
@@ -2025,6 +2117,18 @@ export const COMMON_PHRASES_URDU_TO_ENG: [RegExp, string][] = [
   [/© 2025 آرائیں بنوں۔ تمام حقوق محفوظ ہیں۔/gi, '© 2025 ARAAIN BANNU. All Rights Reserved.'],
   [/تمام حقوق محفوظ ہیں۔/gi, 'All Rights Reserved.'],
 
+  // Specific Gallery and Memories Translations
+  [/تصویر\s+تصویری\s+گیلری/gi, 'Photo Gallery'],
+  [/تصویری\s+گیلری/gi, 'Photo Gallery'],
+  [/فوٹو\s+گیلری/gi, 'Photo Gallery'],
+  [/کمیونٹی\s+کی\s+یادگار\s+جھلکیاں/gi, 'Community Photo Gallery'],
+  [/Memories\s+سے\s+آرائیں\s+بنوں\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل\.?/gi, 'Memories of Araain Bannu events, gatherings, and milestones.'],
+  [/آرائیں\s+بنوں\s+کی\s+یادگار\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل(?:\s*کی\s*جھلکیاں)?\.?/gi, 'Memories of Araain Bannu events, gatherings, and milestones.'],
+  [/بنوں اور جنوبی اضلاع کے لیے خصوصی تعلیمی و فلاحی پیکج کا باقاعدہ آغاز کر دیا گیا ہے۔?/gi, 'Special educational and welfare package has been officially inaugurated for Bannu and Southern districts.'],
+  [/کونسل\s+کی\s+اہم\s+اپڈیٹس?/gi, 'Council Updates'],
+  [/اہم\s+اپڈیٹ/gi, 'Council Update'],
+  [/لائیو\s+نوٹس/gi, 'Live Notice'],
+
   // Corrupted strings cleanup -> English
   [/وےلcومے ٹو ارائیں بنوں/gi, 'Welcome to ARAAIN BANNU'],
   [/ےمپووےرینگ ور نےxٹ گےنےراٹیون, پروڈ وف ور ہےریٹاگے/gi, 'Empowering Our Next Generation, Proud Of Our Heritage'],
@@ -2138,11 +2242,21 @@ export const COMMON_PHRASES_ENG_TO_URDU: [RegExp, string][] = [
   [/Empowering Our Next Generation, Proud Of Our Heritage/gi, 'نئی نسل کو بااختیار بنانا، اپنے ورثے پر فخر'],
   [/Uniting the Arain Community Worldwide — Strength, Unity, Progress\. Join a legacy of community development, education, and welfare\./gi, 'دنیا بھر میں آرائیں برادری کا اتحاد — طاقت، یکجہتی، ترقی۔ برادری کی فلاح، تعلیم اور ترقی کے ایک عظیم مشن کا حصہ بنیں۔'],
   [/Uniting the Arain Community Worldwide — Strength, Unity, Progress/gi, 'دنیا بھر میں آرائیں برادری کا اتحاد — طاقت، یکجہتی، ترقی'],
+  // Specific user translation request:
+  [/Strategically Build Your Business/gi, 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں'],
+  [/Build Your Business Strategically/gi, 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں'],
+  [/Build your business/gi, 'اپنا کاروبار بنائیں'],
+  [/Your business/gi, 'آپ کا کاروبار'],
+  [/Strategically/gi, 'حکمت عملی کے ساتھ'],
+  [/Strategic Initiatives/gi, 'اسٹریٹجک منصوبے'],
   [/Dedicated to the socio-economic advancement of the Arain community worldwide\./gi, 'دنیا بھر میں آرائیں برادری کی سماجی و معاشی ترقی کے لیے کوشاں۔'],
   [/Dedicated to the socio-economic advancement of the Arain community worldwide/gi, 'دنیا بھر میں آرائیں برادری کی سماجی و معاشی ترقی کے لیے کوشاں۔'],
   [/The ARAAIN BANNU represents thousands of families across Pakistan and the diaspora, driven by a shared commitment to education, welfare, and sustainable development\./gi, 'آرائیں بنوں پاکستان اور بیرون ملک بسنے والے ہزاروں خاندانوں کی نمائندگی کرتی ہے، جو تعلیم، فلاح اور پائیدار ترقی کے مشترکہ عزم سے جڑے ہوئے ہیں۔'],
+  [/Through strategic initiatives, scholarship programs, community centers, and youth engagement, we build bridges between tradition and modern opportunity\./gi, 'اسٹریٹجک منصوبوں، تعلیمی وظائف، کمیونٹی سینٹرز اور نوجوانوں کی رہنمائی کے ذریعے ہم روایات اور جدید مواقع کے درمیان مضبوط پل تعمیر کر رہے ہیں۔'],
   [/Through strategic initiatives, educational scholarships, community centers, and youth mentorship, we build bridges between our rich traditions and modern opportunities\./gi, 'اسٹریٹجک منصوبوں، تعلیمی وظائف، کمیونٹی سینٹرز اور نوجوانوں کی رہنمائی کے ذریعے ہم روایات اور جدید مواقع کے درمیان مضبوط پل تعمیر کر رہے ہیں۔'],
+  [/Our regional chapter in Bannu works actively at the grassroots level, providing relief, career mentorship, and community cohesion for families across Southern Khyber Pakhtunkhwa\./gi, 'بنوں میں ہماری علاقائی شاخ نچلی سطح پر فعال ہے، جو جنوبی خیبر پختونخوا کے خاندانوں کے لیے امداد، کیریئر رہنمائی اور باہمی اتحاد فراہم کرتی ہے۔'],
   [/Our regional chapter in Bannu serves as a grassroots pillar, providing localized support, career counseling, and community cohesion for families across Southern KPK\./gi, 'بنوں میں ہماری علاقائی شاخ نچلی سطح پر فعال ہے، جو جنوبی خیبر پختونخوا کے خاندانوں کے لیے امداد، کیریئر رہنمائی اور باہمی اتحاد فراہم کرتی ہے۔'],
+  [/Our unity is our greatest strength\. When we empower our youth and support our families, we build a foundation that endures for generations\./gi, 'ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔'],
   [/Our unity is our greatest strength\. When we invest in our youth and stand by our families, we build a foundation that endures for generations\./gi, 'ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔'],
   [/Core Programs & Initiatives/gi, 'اہم منصوبے اور فلاحی پروگرامز'],
   [/Core Programs & Welfare/gi, 'اہم منصوبے اور فلاحی پروگرامز'],
@@ -2164,6 +2278,18 @@ export const COMMON_PHRASES_ENG_TO_URDU: [RegExp, string][] = [
   [/© 2025 ARAAIN BANNU\. All Rights Reserved\./gi, '© 2025 آرائیں بنوں۔ تمام حقوق محفوظ ہیں۔'],
   [/All Rights Reserved\./gi, 'تمام حقوق محفوظ ہیں۔'],
   [/All Rights Reserved/gi, 'تمام حقوق محفوظ ہیں۔'],
+
+  // Specific Photo Gallery and Memories Phrases
+  [/Photo Gallery/gi, 'تصویری گیلری'],
+  [/Photo gallery/gi, 'تصویری گیلری'],
+  [/Image Gallery/gi, 'تصویری گیلری'],
+  [/Image gallery/gi, 'تصویری گیلری'],
+  [/Memories of Araain Bannu events, gatherings,? and milestones\.?/gi, 'آرائیں بنوں کی یادگار تقریبات، اجتماعات اور سنگ میل کی جھلکیاں'],
+  [/Memories of Araain Bannu/gi, 'آرائیں بنوں کی یادگاریں'],
+  [/Council Updates/gi, 'کونسل کی اہم اپڈیٹس'],
+  [/Council Update/gi, 'کونسل کی اہم اپڈیٹ'],
+  [/Live Notice/gi, 'اہم اپڈیٹ'],
+  [/Special educational and welfare package has been officially inaugurated for Bannu and Southern districts\.?/gi, 'بنوں اور جنوبی اضلاع کے لیے خصوصی تعلیمی و فلاحی پیکج کا باقاعدہ آغاز کر دیا گیا ہے۔'],
 
   // Standard phrases
   [/Araain Bannu Welfare Association KPK/gi, 'انجمنِ ارائیں بنوں (خیبر پختونخوا)'],
@@ -2209,7 +2335,9 @@ export function isCorruptedTransliteration(text?: string): boolean {
     'اcروسس', 'ڈیاسپورا', 'ڈریوےن', 'cوممیٹمےنٹ', 'ےڈوcاٹیون', 'سوسٹائینابلے',
     'ڈےوےلوپ', 'وےلفارے', 'سوپپورٹ ور میسسیون', 'ور لےاڈےرشیپ', 'وپcومینگ',
     'فوٹو گاللےری', 'مےمبےرشیپ رےگیسٹراٹیون', 'مونڈے – ساٹورڈے', 'الل ریغٹس',
-    'پروڈ وف ور', 'رےگیونال ورگانیساٹیون', 'پریسیدےنت', 'سےcرےتاری', 'ترےاسورےر'
+    'پروڈ وف ور', 'رےگیونال ورگانیساٹیون', 'پریسیدےنت', 'سےcرےتاری', 'ترےاسورےر',
+    'سٹرائے گیکا للی', 'سٹراٹےگیکاللی', 'بویلڈ', 'یور تاجر', 'ور اتحاد یس',
+    'تھروغ', 'ےنگاگےمےنٹ', 'وہےن وے', 'وورکس اکٹیوےلی', 'لےوےل', 'پروویڈنگ'
   ];
 
   return corruptedTokens.some(tok => text.includes(tok));
@@ -2223,6 +2351,27 @@ export function cleanCorruptedUrdu(text?: string): string {
   let cleaned = text;
 
   const replacements: [RegExp, string][] = [
+    [/سٹرائے\s*گیکا\s*للی\s*بویلڈ\s*یور\s*تاجر/gi, 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں'],
+    [/بویلڈ\s*یور\s*تاجر\s*سٹرائے\s*گیکا\s*للی/gi, 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں'],
+    [/بویلڈ\s*یور\s*تاجر\s*سٹراٹےگیکاللی/gi, 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں'],
+    [/سٹرائے\s*گیکا\s*للی/gi, 'حکمت عملی کے ساتھ'],
+    [/سٹراٹےگیکاللی/gi, 'حکمت عملی کے ساتھ'],
+    [/بویلڈ\s*یور\s*تاجر/gi, 'اپنا کاروبار بنائیں'],
+    [/بویلڈ\s*یور\s*کاروبار/gi, 'اپنا کاروبار بنائیں'],
+    [/بویلڈ/gi, 'تعمیر کریں'],
+    [/یور\s*تاجر/gi, 'آپ کا کاروبار'],
+    [/ور\s*اتحاد\s*یس\s*ور\s*عظیم\s*ترین\s*طاقت[\s\S]*?فور\s*نسلیں\.?/gi, 'ہمارا اتحاد ہی ہماری سب سے بڑی طاقت ہے۔ جب ہم اپنے نوجوانوں کو بااختیار بناتے ہیں اور خاندانوں کو سہارا دیتے ہیں تو نسلوں کے لیے مضبوط بنیاد بنتی ہے۔'],
+    [/تھے\s*آرائیں\s*بنوں\s*نمائندگی\s*کرتی\s*ہے[\s\S]*?اوورسیز\s*برادری/gi, 'آرائیں بنوں پاکستان اور بیرون ملک بسنے والے ہزاروں خاندانوں کی نمائندگی کرتی ہے، جو تعلیم، فلاح اور پائیدار ترقی کے مشترکہ عزم سے جڑے ہوئے ہیں۔'],
+    [/تھروغ\s*حکمت\s*عملی\s*منصوبے[\s\S]*?جدید\s*موقع\.?/gi, 'اسٹریٹجک منصوبوں، تعلیمی وظائف، کمیونٹی سینٹرز اور نوجوانوں کی رہنمائی کے ذریعے ہم روایات اور جدید مواقع کے درمیان مضبوط پل تعمیر کر رہے ہیں۔'],
+    [/ور\s*علاقائی\s*شاخ\s*ین\s*بنوں[\s\S]*?جنوبی\s*خیبر\s*پختونخوا\.?/gi, 'بنوں میں ہماری علاقائی شاخ نچلی سطح پر فعال ہے، جو جنوبی خیبر پختونخوا کے خاندانوں کے لیے امداد، کیریئر رہنمائی اور باہمی اتحاد فراہم کرتی ہے۔'],
+    [/وہےن\s*وے/gi, 'جب ہم'],
+    [/ور\s*اتحاد/gi, 'ہمارا اتحاد'],
+    [/تھروغ/gi, 'کے ذریعے'],
+    [/بےٹوین/gi, 'کے درمیان'],
+    [/وورکس\s*اکٹیوےلی/gi, 'فعال ہے'],
+    [/لےوےل/gi, 'سطح'],
+    [/پروویڈنگ/gi, 'فراہم کرتی ہے'],
+    [/ےنگاگےمےنٹ/gi, 'رہنمائی'],
     [/بنوں رےگیونال ورگانیساٹیون/gi, 'بنوں علاقائی تنظیم'],
     [/وےلcومے ٹو ارائیں بنوں/gi, 'آرائیں بنوں میں خوش آمدید'],
     [/ےمپووےرینگ ور نےxٹ گےنےراٹیون, پروڈ وف ور ہےریٹاگے/gi, 'نئی نسل کو بااختیار بنانا، اپنے ورثے پر فخر'],
@@ -2259,16 +2408,39 @@ export function cleanCorruptedUrdu(text?: string): string {
     [/وےلفارے/gi, 'فلاح'],
     [/سوسٹائینابلے/gi, 'پائیدار'],
     [/ڈےوےلوپ/gi, 'ترقی'],
+
+    // Redundant words and mixed English in Urdu sentences
+    [/تصویر\s+تصویری\s+گیلری/gi, 'تصویری گیلری'],
+    [/تصویری\s+تصویری\s+گیلری/gi, 'تصویری گیلری'],
+    [/فوٹو\s+تصویری\s+گیلری/gi, 'تصویری گیلری'],
+    [/تصویر\s+گیلری/gi, 'تصویری گیلری'],
+    [/(?:تصویری\s+گیلری\s+)?Memories\s+سے\s+آرائیں\s+بنوں\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل(?:\s*کی\s*جھلکیاں)?\.?/gi, 'آرائیں بنوں کی یادگار تقریبات، اجتماعات اور سنگ میل کی جھلکیاں۔'],
+    [/Memories\s+سے\s+آرائیں\s+بنوں/gi, 'آرائیں بنوں کی یادگاریں'],
+    [/\bMemories\b/gi, 'یادگار لمحات'],
+    [/\bMemory\b/gi, 'یادگار'],
+    [/\bMilestones\b/gi, 'سنگ میل'],
+    [/\bGatherings\b/gi, 'اجتماعات'],
+    [/\bEvents\b/gi, 'تقریبات'],
+    [/\bCouncil\s+Updates\b/gi, 'کونسل کی اہم اپڈیٹس'],
+    [/\bCouncil\s+Update\b/gi, 'کونسل کی اہم اپڈیٹ'],
+    [/\bCouncil\b/gi, 'کونسل'],
+    [/\bUpdates\b/gi, 'اپڈیٹس'],
+    [/\bUpdate\b/gi, 'اپڈیٹ'],
+    [/\bNotice\b/gi, 'نوٹس'],
+    [/\bBreaking\b/gi, 'اہم'],
+    [/\bLive\s+Notice\b/gi, 'اہم اپڈیٹ'],
+    [/\bSouthern\s+Districts\b/gi, 'جنوبی اضلاع'],
+    [/\bSouthern\b/gi, 'جنوبی'],
+    [/\bDistricts\b/gi, 'اضلاع'],
   ];
 
   for (const [pattern, rep] of replacements) {
     cleaned = cleaned.replace(pattern, rep);
   }
 
-  // Strip any orphan Latin characters inside Urdu text
-  cleaned = cleaned.replace(/[\u0600-\u06FF]\s*[a-zA-Z]+\s*[\u0600-\u06FF]/g, (match) => {
-    return match.replace(/[a-zA-Z]/g, '');
-  });
+  // Strip repeated redundant words
+  cleaned = cleaned.replace(/تصویر\s+تصویری\s+گیلری/g, 'تصویری گیلری');
+  cleaned = cleaned.replace(/تصویری\s+تصویری\s+گیلری/g, 'تصویری گیلری');
 
   return cleaned.trim();
 }
@@ -2287,13 +2459,17 @@ export function isEnglishText(text?: string): boolean {
   return (engMatches ? engMatches.length : 0) > (text.length * 0.4);
 }
 
-// ── Phonetic Transliteration: English -> Urdu ───────────────────────
+// ── English -> Urdu Word Translation (No phonetic scrambling) ───────
 
 export function phoneticWordToUrdu(word: string): string {
   const clean = word.toLowerCase().trim();
   if (!clean) return '';
 
-  // 1. First check if it is a recognized vocabulary word
+  // 1. Check Azure translation cache
+  const cached = getCachedTranslation(clean, 'ur', 'en');
+  if (cached && isUrduText(cached)) return cached;
+
+  // 2. Recognized vocabulary dictionaries
   if (GENERAL_VOCAB_ENG_TO_URDU[clean]) return GENERAL_VOCAB_ENG_TO_URDU[clean];
   if (NAMES_DICT[clean]) return NAMES_DICT[clean];
   if (ADDRESS_DICT[clean]) return ADDRESS_DICT[clean];
@@ -2328,63 +2504,19 @@ export function phoneticWordToUrdu(word: string): string {
   if (clean === 'y') return 'وائی';
   if (clean === 'z') return 'زیڈ';
 
-  return clean
-    .replace(/^al-?/g, 'ال')
-    .replace(/tion/g, 'شن')
-    .replace(/sion/g, 'شن')
-    .replace(/ing$/g, 'نگ')
-    .replace(/ed$/g, 'ڈ')
-    .replace(/kh/g, 'خ')
-    .replace(/gh/g, 'غ')
-    .replace(/sh/g, 'ش')
-    .replace(/ch/g, 'چ')
-    .replace(/th/g, 'تھ')
-    .replace(/ph/g, 'ف')
-    .replace(/bh/g, 'بھ')
-    .replace(/dh/g, 'دھ')
-    .replace(/jh/g, 'جھ')
-    .replace(/rh/g, 'ڑھ')
-    .replace(/ck/g, 'ک')
-    .replace(/ee/g, 'ی')
-    .replace(/oo/g, 'و')
-    .replace(/ou/g, 'و')
-    .replace(/ai/g, 'ائی')
-    .replace(/ay/g, 'ے')
-    .replace(/aa/g, 'ا')
-    .replace(/c(?=[eiy])/g, 'س')
-    .replace(/c/g, 'ک')
-    .replace(/x/g, 'کس')
-    .replace(/q/g, 'ق')
-    .replace(/k/g, 'ک')
-    .replace(/g/g, 'گ')
-    .replace(/j/g, 'ج')
-    .replace(/z/g, 'ز')
-    .replace(/s/g, 'س')
-    .replace(/t/g, 'ٹ')
-    .replace(/d/g, 'ڈ')
-    .replace(/r/g, 'ر')
-    .replace(/l/g, 'ل')
-    .replace(/m/g, 'م')
-    .replace(/n/g, 'ن')
-    .replace(/b/g, 'ب')
-    .replace(/p/g, 'پ')
-    .replace(/f/g, 'ف')
-    .replace(/v/g, 'و')
-    .replace(/w/g, 'و')
-    .replace(/y/g, 'ی')
-    .replace(/h/g, 'ہ')
-    .replace(/a/g, 'ا')
-    .replace(/e/g, 'ے')
-    .replace(/i/g, 'ی')
-    .replace(/o/g, 'و')
-    .replace(/u/g, 'و');
+  // Do NOT scramble letters phonetically — preserve clean word
+  return word;
 }
 
-// ── Phonetic Transliteration: Urdu -> English ───────────────────────
+// ── Urdu -> English Word Translation (No phonetic scrambling) ───────
 
 export function urduWordToEnglish(urduWord: string): string {
   const clean = urduWord.trim();
   if (!clean) return '';
+
+  // 1. Check Azure translation cache
+  const cached = getCachedTranslation(clean, 'en', 'ur');
+  if (cached && !isUrduText(cached)) return cached;
 
   // Direct word check in dictionaries first
   if (NAMES_URDU_TO_ENG[clean]) return NAMES_URDU_TO_ENG[clean];
@@ -2422,82 +2554,26 @@ export function urduWordToEnglish(urduWord: string): string {
   if (clean === 'سافٹ ویئر') return 'Software';
   if (clean === 'ڈویلپر') return 'Developer';
 
-  // Character-level phonetic conversion
-  let eng = clean
-    .replace(/الله/g, 'Allah')
-    .replace(/محمد/g, 'Muhammad')
-    .replace(/احمد/g, 'Ahmad')
-    .replace(/علی/g, 'Ali')
-    .replace(/حسن/g, 'Hassan')
-    .replace(/حسین/g, 'Hussain')
-    .replace(/خان/g, 'Khan')
-    .replace(/شاہ/g, 'Shah')
-    .replace(/میر/g, 'Meer')
-    .replace(/طاہر/g, 'Tahir')
-    .replace(/اقبال/g, 'Iqbal')
-    .replace(/بنوں/g, 'Bannu')
-    .replace(/قصاباں/g, 'Qasaban')
-    .replace(/روڈ/g, 'Road')
-    .replace(/گلی/g, 'Street')
-    .replace(/محلہ/g, 'Mohallah')
-    .replace(/کھ/g, 'kh')
-    .replace(/گھ/g, 'gh')
-    .replace(/چھ/g, 'chh')
-    .replace(/جھ/g, 'jh')
-    .replace(/تھ/g, 'th')
-    .replace(/ٹھ/g, 'th')
-    .replace(/دھ/g, 'dh')
-    .replace(/ڈھ/g, 'dh')
-    .replace(/بھ/g, 'bh')
-    .replace(/پھ/g, 'ph')
-    .replace(/ڑھ/g, 'rh')
-    .replace(/آ/g, 'Aa')
-    .replace(/ا/g, 'a')
-    .replace(/ب/g, 'b')
-    .replace(/پ/g, 'p')
-    .replace(/ت/g, 't')
-    .replace(/ٹ/g, 't')
-    .replace(/ث/g, 's')
-    .replace(/ج/g, 'j')
-    .replace(/چ/g, 'ch')
-    .replace(/ح/g, 'h')
-    .replace(/خ/g, 'kh')
-    .replace(/د/g, 'd')
-    .replace(/ڈ/g, 'd')
-    .replace(/ذ/g, 'z')
-    .replace(/ر/g, 'r')
-    .replace(/ڑ/g, 'r')
-    .replace(/ز/g, 'z')
-    .replace(/ژ/g, 'zh')
-    .replace(/س/g, 's')
-    .replace(/ش/g, 'sh')
-    .replace(/ص/g, 's')
-    .replace(/ض/g, 'z')
-    .replace(/ط/g, 't')
-    .replace(/ظ/g, 'z')
-    .replace(/ع/g, 'a')
-    .replace(/غ/g, 'gh')
-    .replace(/ف/g, 'f')
-    .replace(/ق/g, 'q')
-    .replace(/ک/g, 'k')
-    .replace(/گ/g, 'g')
-    .replace(/ل/g, 'l')
-    .replace(/م/g, 'm')
-    .replace(/ن/g, 'n')
-    .replace(/ں/g, 'n')
-    .replace(/و/g, 'o')
-    .replace(/ہ/g, 'h')
-    .replace(/ھ/g, 'h')
-    .replace(/ء/g, '')
-    .replace(/ی/g, 'i')
-    .replace(/ے/g, 'e');
+  // Common sacred / geographic names
+  if (clean === 'الله') return 'Allah';
+  if (clean === 'محمد') return 'Muhammad';
+  if (clean === 'احمد') return 'Ahmad';
+  if (clean === 'علی') return 'Ali';
+  if (clean === 'حسن') return 'Hassan';
+  if (clean === 'حسین') return 'Hussain';
+  if (clean === 'خان') return 'Khan';
+  if (clean === 'شاہ') return 'Shah';
+  if (clean === 'میر') return 'Meer';
+  if (clean === 'طاہر') return 'Tahir';
+  if (clean === 'اقبال') return 'Iqbal';
+  if (clean === 'بنوں') return 'Bannu';
+  if (clean === 'قصاباں') return 'Qasaban';
+  if (clean === 'روڈ') return 'Road';
+  if (clean === 'گلی') return 'Street';
+  if (clean === 'محلہ') return 'Mohallah';
 
-  // Format: clean consecutive vowels & capitalize
-  eng = eng.replace(/aa+/g, 'a').replace(/ii+/g, 'ee').replace(/oo+/g, 'oo');
-  if (eng.length > 0) {
-    eng = eng.charAt(0).toUpperCase() + eng.slice(1);
-  }
-  return eng;
+  // Do NOT scramble letters phonetically — preserve clean word
+  return urduWord;
 }
 
 // ── Translation: Names ──────────────────────────────────────────────
@@ -2506,6 +2582,9 @@ export function translateNameToUrdu(name: string): string {
   if (!name || typeof name !== 'string') return '';
   const trimmed = name.trim();
   if (isUrduText(trimmed)) return trimmed;
+
+  const cached = getCachedTranslation(trimmed, 'ur', 'en');
+  if (cached && isUrduText(cached)) return cached;
 
   const tokens = trimmed.split(/[\s,]+/);
   const urduTokens = tokens.map(tok => {
@@ -2519,10 +2598,25 @@ export function translateNameToUrdu(name: string): string {
   return urduTokens.filter(Boolean).join(' ');
 }
 
+export async function translateNameToUrduAsync(name: string): Promise<string> {
+  if (!name || typeof name !== 'string') return '';
+  const trimmed = name.trim();
+  if (isUrduText(trimmed)) return trimmed;
+
+  const azureResult = await translateViaAzure(trimmed, 'ur', 'en');
+  if (azureResult && isUrduText(azureResult)) {
+    return azureResult;
+  }
+  return translateNameToUrdu(trimmed);
+}
+
 export function translateNameToEnglish(name: string): string {
   if (!name || typeof name !== 'string') return '';
   const trimmed = name.trim();
   if (!isUrduText(trimmed)) return trimmed; // Already English
+
+  const cached = getCachedTranslation(trimmed, 'en', 'ur');
+  if (cached && !isUrduText(cached)) return cached;
 
   const tokens = trimmed.split(/[\s,]+/);
   const engTokens = tokens.map(tok => {
@@ -2534,12 +2628,27 @@ export function translateNameToEnglish(name: string): string {
   return engTokens.filter(Boolean).join(' ');
 }
 
+export async function translateNameToEnglishAsync(name: string): Promise<string> {
+  if (!name || typeof name !== 'string') return '';
+  const trimmed = name.trim();
+  if (!isUrduText(trimmed)) return trimmed;
+
+  const azureResult = await translateViaAzure(trimmed, 'en', 'ur');
+  if (azureResult && !isUrduText(azureResult)) {
+    return azureResult;
+  }
+  return translateNameToEnglish(trimmed);
+}
+
 // ── Translation: Address ────────────────────────────────────────────
 
 export function translateAddressToUrdu(address: string): string {
   if (!address || typeof address !== 'string') return '';
   const trimmed = address.trim();
   if (isUrduText(trimmed)) return trimmed;
+
+  const cached = getCachedTranslation(trimmed, 'ur', 'en');
+  if (cached && isUrduText(cached)) return cached;
 
   const parts = trimmed.split(/,\s*/);
   const translatedParts = parts.map(part => {
@@ -2558,10 +2667,25 @@ export function translateAddressToUrdu(address: string): string {
   return translatedParts.filter(Boolean).join('، ');
 }
 
+export async function translateAddressToUrduAsync(address: string): Promise<string> {
+  if (!address || typeof address !== 'string') return '';
+  const trimmed = address.trim();
+  if (isUrduText(trimmed)) return trimmed;
+
+  const azureResult = await translateViaAzure(trimmed, 'ur', 'en');
+  if (azureResult && isUrduText(azureResult)) {
+    return azureResult;
+  }
+  return translateAddressToUrdu(trimmed);
+}
+
 export function translateAddressToEnglish(address: string): string {
   if (!address || typeof address !== 'string') return '';
   const trimmed = address.trim();
   if (!isUrduText(trimmed)) return trimmed; // Already English
+
+  const cached = getCachedTranslation(trimmed, 'en', 'ur');
+  if (cached && !isUrduText(cached)) return cached;
 
   const parts = trimmed.split(/[\s،,]+/);
   const engParts = parts.map(tok => {
@@ -2572,6 +2696,18 @@ export function translateAddressToEnglish(address: string): string {
   });
 
   return engParts.filter(Boolean).join(' ');
+}
+
+export async function translateAddressToEnglishAsync(address: string): Promise<string> {
+  if (!address || typeof address !== 'string') return '';
+  const trimmed = address.trim();
+  if (!isUrduText(trimmed)) return trimmed;
+
+  const azureResult = await translateViaAzure(trimmed, 'en', 'ur');
+  if (azureResult && !isUrduText(azureResult)) {
+    return azureResult;
+  }
+  return translateAddressToEnglish(trimmed);
 }
 
 // ── Translation: Occupation ─────────────────────────────────────────
@@ -2802,6 +2938,17 @@ export function translateUrduToEnglish(text?: string): string {
 
   if (!isUrduText(trimmed)) return trimmed; // Already English
 
+  // 1. Check Azure translation cache
+  const azureCached = getCachedTranslation(trimmed, 'en', 'ur');
+  if (azureCached && !isUrduText(azureCached)) {
+    return azureCached;
+  }
+
+  // Pre-fetch in background if Azure Translator is available
+  if (trimmed.length > 1) {
+    translateViaAzure(trimmed, 'en', 'ur').catch(() => {});
+  }
+
   // Check direct compound title resolution first
   const compoundMatch = translateCompoundTitleToEnglish(trimmed);
   if (compoundMatch) return compoundMatch;
@@ -2838,7 +2985,7 @@ export function translateUrduToEnglish(text?: string): string {
     .replace(/؟/g, '?')
     .replace(/٪/g, '%');
 
-  // 4. Tokenize remaining words and transliterate any remaining Urdu tokens
+  // 4. Tokenize remaining words and replace from vocabulary (never output Roman Urdu)
   const tokens = translated.split(/(\s+|[,.:;!?"'()\[\]]+)/);
   const converted = tokens.map(tok => {
     if (!isUrduText(tok)) return tok; // Punctuation, English word, or digits
@@ -2851,10 +2998,21 @@ export function translateUrduToEnglish(text?: string): string {
     if (NAMES_URDU_TO_ENG[cleanTok]) return NAMES_URDU_TO_ENG[cleanTok];
     if (ADDRESS_URDU_TO_ENG[cleanTok]) return ADDRESS_URDU_TO_ENG[cleanTok];
     if (MONTHS_URDU_TO_ENG[cleanTok]) return MONTHS_URDU_TO_ENG[cleanTok];
-    return urduWordToEnglish(cleanTok);
+    const fromLib = translateUrduToEnglishWithLibrary(cleanTok);
+    if (fromLib && !isUrduText(fromLib)) return fromLib;
+    return tok;
   });
 
-  return converted.join('').trim();
+  let result = converted.join('').trim();
+  result = result
+    .replace(/تصویر\s+تصویری\s+گیلری/g, 'Photo Gallery')
+    .replace(/تصویری\s+گیلری/g, 'Photo Gallery')
+    .replace(/فوٹو\s+گیلری/g, 'Photo Gallery')
+    .replace(/Memories\s+سے\s+آرائیں\s+بنوں\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل\.?/gi, 'Memories of Araain Bannu events, gatherings, and milestones.')
+    .replace(/آرائیں\s+بنوں\s+کی\s+یادگار\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل(?:\s*کی\s*جھلکیاں)?\.?/gi, 'Memories of Araain Bannu events, gatherings, and milestones.')
+    .replace(/کونسل\s+کی\s+اہم\s+اپڈیٹس?/gi, 'Council Updates');
+
+  return result;
 }
 
 // ── General Text Translation: English -> Urdu ───────────────────────
@@ -2866,14 +3024,35 @@ export function translateEnglishToUrdu(text?: string): string {
 
   // Clean any corrupted transliterations
   if (isCorruptedTransliteration(trimmed)) {
-    return cleanCorruptedUrdu(trimmed);
+    trimmed = cleanCorruptedUrdu(trimmed);
   }
 
   if (isUrduText(trimmed)) return trimmed; // Already Urdu
 
+  // 1. Check Azure translation cache
+  const azureCached = getCachedTranslation(trimmed, 'ur', 'en');
+  if (azureCached && isUrduText(azureCached)) {
+    return azureCached;
+  }
+
+  // Pre-fetch in background if Azure Translator is available
+  if (trimmed.length > 1) {
+    translateViaAzure(trimmed, 'ur', 'en').catch(() => {});
+  }
+
   // Check direct compound title resolution first
   const compoundMatch = translateCompoundTitleToUrdu(trimmed);
   if (compoundMatch) return compoundMatch;
+
+  // Direct check for "Build your business strategically" variations
+  const lowerCheck = trimmed.toLowerCase();
+  if (
+    lowerCheck.includes('build your business strategically') ||
+    lowerCheck.includes('strategically build your business') ||
+    lowerCheck.includes('build business strategically')
+  ) {
+    return 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں';
+  }
 
   // Leverage the comprehensive bilingual dictionary library
   const libResult = translateEnglishToUrduWithLibrary(trimmed);
@@ -2889,7 +3068,6 @@ export function translateEnglishToUrdu(text?: string): string {
   }
 
   // 2. Direct dictionary multi-word checks (Leadership & Occupations)
-  const lowerText = translated.toLowerCase();
   for (const [eng, urd] of Object.entries(LEADERSHIP_ROLES_ENG_TO_URDU)) {
     const reg = new RegExp(`\\b${eng.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
     if (reg.test(translated)) {
@@ -2897,7 +3075,7 @@ export function translateEnglishToUrdu(text?: string): string {
     }
   }
 
-  // 3. Tokenize and replace known terms
+  // 3. Tokenize and replace known terms (NEVER use phonetic transliteration on sentences)
   const tokens = translated.split(/(\s+|[,.:;!?"'()\[\]]+)/);
   const converted = tokens.map(tok => {
     if (/\d/.test(tok) || /[@:/]/.test(tok)) return tok; // Numbers, emails, URLs stay English
@@ -2909,11 +3087,89 @@ export function translateEnglishToUrdu(text?: string): string {
     if (ADDRESS_DICT[cleanTok]) return ADDRESS_DICT[cleanTok];
     if (OCCUPATIONS_DICT[cleanTok]) return OCCUPATIONS_DICT[cleanTok];
     if (MONTHS_ENG_TO_URDU[cleanTok]) return MONTHS_ENG_TO_URDU[cleanTok];
-    return phoneticWordToUrdu(cleanTok);
+    const fromLib = translateEnglishToUrduWithLibrary(cleanTok);
+    if (fromLib && isUrduText(fromLib)) return fromLib;
+    // Keep English token rather than mangling it with phonetic transliteration
+    return tok;
   });
 
-  return converted.join('').trim();
+  let result = converted.join('').trim();
+  result = cleanCorruptedUrdu(result);
+  result = result
+    .replace(/تصویر\s+تصویری\s+گیلری/g, 'تصویری گیلری')
+    .replace(/تصویری\s+تصویری\s+گیلری/g, 'تصویری گیلری')
+    .replace(/فوٹو\s+تصویری\s+گیلری/g, 'تصویری گیلری')
+    .replace(/Memories\s+سے\s+آرائیں\s+بنوں\s+تقریبات[،,]\s*اجتماعات[،,]\s*اور\s*سنگ\s*میل\.?/gi, 'آرائیں بنوں کی یادگار تقریبات، اجتماعات اور سنگ میل کی جھلکیاں۔')
+    .replace(/Memories\s+سے\s+آرائیں\s+بنوں/gi, 'آرائیں بنوں کی یادگاریں');
+  return result;
 }
+
+// ── Real-Time Asynchronous Translation with Microsoft Azure ─────────
+
+/**
+ * Asynchronously translates English text to high-quality Urdu using Microsoft Azure Translator.
+ */
+export async function translateEnglishToUrduAsync(text?: string): Promise<string> {
+  if (!text || typeof text !== 'string') return '';
+  let trimmed = text.trim();
+  if (!trimmed) return '';
+
+  if (isCorruptedTransliteration(trimmed)) {
+    trimmed = cleanCorruptedUrdu(trimmed);
+  }
+  if (isUrduText(trimmed)) return trimmed;
+
+  // Direct check for "Build your business strategically" variations
+  const lowerCheck = trimmed.toLowerCase();
+  if (
+    lowerCheck.includes('build your business strategically') ||
+    lowerCheck.includes('strategically build your business') ||
+    lowerCheck.includes('build business strategically')
+  ) {
+    return 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں';
+  }
+
+  // 1. Attempt translation via Azure Translator API
+  const azureResult = await translateViaAzure(trimmed, 'ur', 'en');
+  if (azureResult && isUrduText(azureResult)) {
+    return azureResult;
+  }
+
+  // 2. Fallback to dictionary translation
+  return translateEnglishToUrdu(trimmed);
+}
+
+/**
+ * Asynchronously translates Urdu text to high-quality English using Microsoft Azure Translator.
+ */
+export async function translateUrduToEnglishAsync(text?: string): Promise<string> {
+  if (!text || typeof text !== 'string') return '';
+  let trimmed = text.trim();
+  if (!trimmed) return '';
+
+  if (isCorruptedTransliteration(trimmed)) {
+    trimmed = cleanCorruptedUrdu(trimmed);
+  }
+  if (!isUrduText(trimmed)) return trimmed; // Already English
+
+  // 1. Attempt translation via Azure Translator API
+  const azureResult = await translateViaAzure(trimmed, 'en', 'ur');
+  if (azureResult && !isUrduText(azureResult)) {
+    return azureResult;
+  }
+
+  // 2. Fallback to dictionary translation
+  return translateUrduToEnglish(trimmed);
+}
+
+/**
+ * Translates arbitrary text to the requested target language ('ur' or 'en')
+ */
+export async function translateTextAsync(text: string, to: 'ur' | 'en'): Promise<string> {
+  if (!text || !text.trim()) return text;
+  return to === 'ur' ? translateEnglishToUrduAsync(text) : translateUrduToEnglishAsync(text);
+}
+
 
 // ── Registration Bi-directional Processing Helper ───────────────────
 

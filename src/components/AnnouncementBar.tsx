@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useData } from '../context/DataContext';
 import { Sparkles, ArrowRight, X, Megaphone, CheckCircle2 } from 'lucide-react';
-import { isUrduText, translateEnglishToUrdu, translateUrduToEnglish } from '../utils/urduTransliterator';
+import { isUrduText, translateEnglishToUrdu, translateUrduToEnglish, translateTextAsync } from '../utils/urduTransliterator';
 
 interface AnnouncementBarProps {
   onOpenMembership: () => void;
@@ -18,6 +18,36 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
   const { isUrdu, t } = useLanguage();
   const { settings } = useData();
   const [isDismissed, setIsDismissed] = useState(false);
+  const [asyncBadge, setAsyncBadge] = useState<string>('');
+  const [asyncMessage, setAsyncMessage] = useState<string>('');
+
+  useEffect(() => {
+    let active = true;
+    const targetLang = isUrdu ? 'ur' : 'en';
+
+    const rawBadge = isUrdu 
+      ? (settings.announcementBadgeUr || settings.announcementBadge)
+      : (settings.announcementBadge || settings.announcementBadgeUr);
+
+    const rawMessage = isUrdu
+      ? (settings.announcementTextUr || settings.announcementText)
+      : (settings.announcementText || settings.announcementTextUr);
+
+    if (rawBadge) {
+      translateTextAsync(rawBadge, targetLang).then((res) => {
+        if (active && res) setAsyncBadge(res);
+      }).catch(() => {});
+    }
+    if (rawMessage) {
+      translateTextAsync(rawMessage, targetLang).then((res) => {
+        if (active && res) setAsyncMessage(res);
+      }).catch(() => {});
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [isUrdu, settings.announcementBadge, settings.announcementBadgeUr, settings.announcementText, settings.announcementTextUr]);
 
   if (!settings.announcementEnabled || isDismissed) {
     return null;
@@ -25,7 +55,9 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
 
   // Pure language isolation: Urdu only in Urdu mode, English only in English mode
   let badgeText = '';
-  if (isUrdu) {
+  if (asyncBadge) {
+    badgeText = asyncBadge;
+  } else if (isUrdu) {
     if (settings.announcementBadgeUr && isUrduText(settings.announcementBadgeUr)) {
       badgeText = settings.announcementBadgeUr;
     } else if (settings.announcementBadge && isUrduText(settings.announcementBadge)) {
@@ -48,7 +80,9 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
   }
 
   let messageText = '';
-  if (isUrdu) {
+  if (asyncMessage) {
+    messageText = asyncMessage;
+  } else if (isUrdu) {
     if (settings.announcementTextUr && isUrduText(settings.announcementTextUr)) {
       messageText = settings.announcementTextUr;
     } else if (settings.announcementText && isUrduText(settings.announcementText)) {
@@ -56,7 +90,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
     } else if (settings.announcementText) {
       messageText = translateEnglishToUrdu(settings.announcementText);
     } else {
-      messageText = 'آرائیں بنوں کی ممبرشپ مہم 2025 جاری ہے۔ اپنا کارڈ بنوائیں۔';
+      messageText = 'آرائیں بنوں کی ممبرشپ مہم جاری ہے۔ اپنا کارڈ بنوائیں۔';
     }
   } else {
     if (settings.announcementText && !isUrduText(settings.announcementText)) {
@@ -68,7 +102,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
     } else if (settings.announcementText || settings.announcementTextUr) {
       messageText = translateUrduToEnglish(settings.announcementText || settings.announcementTextUr || '');
     } else {
-      messageText = 'Araain Bannu Membership Drive 2025 is live. Register now.';
+      messageText = 'Araain Bannu Membership Drive is live. Register now.';
     }
   }
   

@@ -97,7 +97,7 @@ export const Hero: React.FC<HeroProps> = ({
   return (
     <section 
       id="hero"
-      className="relative min-h-[84vh] sm:min-h-[90vh] flex items-center justify-center pt-28 sm:pt-36 md:pt-40 pb-16 sm:pb-20 bg-[#16232F] text-white overflow-hidden group select-none"
+      className="relative min-h-[85vh] sm:min-h-[90vh] flex items-center justify-center pt-24 xs:pt-28 sm:pt-36 md:pt-40 pb-20 sm:pb-20 bg-[#16232F] text-white overflow-hidden group select-none touch-pan-y"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -137,69 +137,70 @@ export const Hero: React.FC<HeroProps> = ({
       <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
         
         {/* Top Heritage Badge */}
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#AD7A28]/25 border border-[#AD7A28]/50 text-[#F5CA7B] text-[11px] sm:text-xs md:text-sm font-semibold mb-3 sm:mb-5 shadow-sm backdrop-blur-md max-w-[92%] text-center">
+        <div className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-[#AD7A28]/25 border border-[#AD7A28]/50 text-[#F5CA7B] text-[11px] sm:text-xs md:text-sm font-semibold mb-2.5 sm:mb-4 shadow-sm backdrop-blur-md max-w-full text-center">
           <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-300" />
-          <span className="truncate">{tSetting('heroBadge', settings)}</span>
+          <span className="leading-tight">{tSetting('heroBadge', settings)}</span>
         </div>
 
         {/* Main Title (Header) - Mobile Optimized Typography & Urdu Support */}
-        <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-2.5 sm:mb-4 tracking-tight rtl:tracking-normal leading-tight sm:leading-[1.15] rtl:leading-tight sm:rtl:leading-[1.35] drop-shadow-sm max-w-4xl mx-auto">
+        <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-2 sm:mb-3.5 tracking-tight rtl:tracking-normal leading-tight sm:leading-[1.15] rtl:leading-[1.3] sm:rtl:leading-[1.35] drop-shadow-sm max-w-4xl mx-auto px-1">
           <span className="bg-gradient-to-r from-white via-slate-100 to-amber-100 bg-clip-text text-transparent inline-block pb-1 sm:pb-2">
             {tSetting('heroTitle', settings)}
           </span>
         </h1>
 
         {/* Subtitle (Sub-header) */}
-        <p className="text-sm xs:text-base sm:text-xl lg:text-2xl font-semibold text-amber-200/90 mb-2.5 sm:mb-4 max-w-2xl sm:max-w-3xl mx-auto leading-snug sm:leading-normal rtl:leading-relaxed drop-shadow-sm">
+        <p className="text-sm xs:text-base sm:text-xl lg:text-2xl font-semibold text-amber-200/90 mb-2 sm:mb-3 max-w-2xl sm:max-w-3xl mx-auto leading-snug sm:leading-normal rtl:leading-relaxed drop-shadow-sm px-2">
           {tSetting('heroSub', settings)}
         </p>
 
         {/* Detailed Tagline */}
-        <p className="text-xs sm:text-sm md:text-base text-slate-200/90 mb-6 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto leading-relaxed rtl:leading-relaxed font-normal drop-shadow-sm">
+        <p className="text-xs sm:text-sm md:text-base text-slate-200/90 mb-5 sm:mb-8 max-w-xl sm:max-w-2xl mx-auto leading-relaxed rtl:leading-relaxed font-normal drop-shadow-sm px-2">
           {tSetting('heroTagline', settings)}
         </p>
 
         {/* Call to Action Buttons - Touch-Friendly Mobile Layout */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3.5 mb-6 sm:mb-10 w-full max-w-md sm:max-w-2xl mx-auto px-2">
-          
-          <button
-            id="hero-btn-membership"
-            onClick={onOpenMembership}
-            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-bold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation"
-          >
-            <UserPlus className="w-4 h-4 shrink-0" />
-            <span>{t('btnBecomeMember', 'Become a Member')}</span>
-          </button>
+        <div className="w-full max-w-md sm:max-w-2xl mx-auto mb-5 sm:mb-8 px-2">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-2.5 sm:gap-3.5">
+            <button
+              id="hero-btn-membership"
+              onClick={onOpenMembership}
+              className="w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-bold text-xs xs:text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation whitespace-nowrap"
+            >
+              <UserPlus className="w-4 h-4 shrink-0" />
+              <span>{t('btnBecomeMember', 'Become a Member')}</span>
+            </button>
 
-          <button
-            id="hero-btn-donate"
-            onClick={onOpenDonation}
-            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm touch-manipulation"
-          >
-            <Heart className="w-4 h-4 text-amber-300 fill-current shrink-0" />
-            <span>{t('navDonate', 'Donate & Support')}</span>
-          </button>
+            <button
+              id="hero-btn-donate"
+              onClick={onOpenDonation}
+              className="w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-bold text-xs xs:text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm touch-manipulation whitespace-nowrap"
+            >
+              <Heart className="w-4 h-4 text-amber-300 fill-current shrink-0" />
+              <span>{t('navDonate', 'Donate & Support')}</span>
+            </button>
 
-          <button
-            id="hero-btn-events"
-            onClick={() => onNavigateSection('events')}
-            className="w-full sm:w-auto min-h-[48px] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-slate-200 hover:text-white font-semibold text-sm sm:text-base bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/15 touch-manipulation"
-          >
-            <Calendar className="w-4 h-4 text-amber-300 shrink-0" />
-            <span>{t('btnEvents', 'Upcoming Events')}</span>
-          </button>
+            <button
+              id="hero-btn-events"
+              onClick={() => onNavigateSection('events')}
+              className="xs:col-span-2 sm:col-span-1 w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-slate-200 hover:text-white font-semibold text-xs xs:text-sm sm:text-base bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/15 touch-manipulation whitespace-nowrap"
+            >
+              <Calendar className="w-4 h-4 text-amber-300 shrink-0" />
+              <span>{t('btnEvents', 'Upcoming Events')}</span>
+            </button>
+          </div>
         </div>
 
-        {/* Custom Website Live Notice Ribbon */}
+        {/* Custom Website Live Notice Ribbon / Council Updates */}
         {settings.customNoticeHeadline && (
-          <div className="mb-6 sm:mb-8 w-full max-w-2xl mx-auto p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/10 border border-[#AD7A28]/40 backdrop-blur-md text-amber-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm shadow-md animate-fadeIn text-left rtl:text-right">
+          <div className="mb-5 sm:mb-8 w-full max-w-2xl mx-auto p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white/10 border border-[#AD7A28]/40 backdrop-blur-md text-amber-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 text-xs sm:text-sm shadow-md animate-fadeIn text-left rtl:text-right">
             <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#AD7A28] text-white text-[10px] sm:text-[11px] font-bold shrink-0">
                 <Megaphone className="w-3 h-3" />
-                <span>{isUrdu ? 'اہم اپڈیٹ' : 'Live Notice'}</span>
+                <span>{isUrdu ? 'کونسل کی اہم اپڈیٹ' : 'Council Update'}</span>
               </span>
               <span className="font-medium text-slate-100 text-xs sm:text-sm line-clamp-1">
-                {settings.customNoticeHeadline}
+                {tSetting('customNoticeHeadline', settings)}
               </span>
             </div>
             {settings.lastWebsiteUpdate && (
@@ -212,9 +213,9 @@ export const Hero: React.FC<HeroProps> = ({
         )}
 
         {/* Highlight Stats Row - 3 Compact Mobile Cards */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-3xl mx-auto pt-5 sm:pt-7 border-t border-white/10">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 w-full max-w-3xl mx-auto pt-4 sm:pt-7 border-t border-white/10">
           <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
-            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
+            <div className="text-base xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statMembers', settings)}
             </div>
             <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">
@@ -223,7 +224,7 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
-            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
+            <div className="text-base xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statPrograms', settings)}
             </div>
             <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">
@@ -232,7 +233,7 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           <div className="p-2 sm:p-3.5 md:p-4 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center justify-center text-center">
-            <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
+            <div className="text-base xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl font-black text-[#F5CA7B] tracking-tight leading-tight">
               {tSetting('statCities', settings)}
             </div>
             <div className="text-[10px] sm:text-xs md:text-sm text-slate-300 mt-0.5 sm:mt-1 font-medium leading-tight line-clamp-2">

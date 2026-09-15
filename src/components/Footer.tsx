@@ -55,10 +55,10 @@ export const Footer: React.FC<FooterProps> = ({
   const localizedPages = getPages(pages);
 
   return (
-    <footer id="main-footer" className="bg-[#111A24] text-white pt-16 pb-12 border-t border-white/10">
+    <footer id="main-footer" className="bg-[#111A24] text-white pt-14 pb-14 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
           
           {/* Col 1: Brand & Bio */}
           <div className="space-y-4">
@@ -88,7 +88,7 @@ export const Footer: React.FC<FooterProps> = ({
               {tSetting('footerDesc', settings) || tSetting('siteTagline', settings)}
             </p>
 
-            {/* Social Channels */}
+            {/* Social Channels & Rights */}
             <div className="flex items-center gap-2 pt-2">
               {settings.socialFacebook && (
                 <a
@@ -140,6 +140,16 @@ export const Footer: React.FC<FooterProps> = ({
                   </svg>
                 </a>
               )}
+            </div>
+
+            <div className="pt-2 text-[11px] text-slate-500 flex flex-col gap-1">
+              <div 
+                onClick={handleCopyrightTap}
+                className="cursor-default select-none hover:text-slate-400 transition-colors"
+              >
+                {tSetting('footerCopy', settings)}
+              </div>
+              <span>{isUrdu ? 'تمام حقوق محفوظ ہیں' : 'All rights reserved'}</span>
             </div>
           </div>
 
@@ -267,21 +277,6 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-        </div>
-
-        {/* Bottom Bar — No visible admin link for ordinary visitors */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div 
-            onClick={handleCopyrightTap}
-            className="cursor-default select-none"
-            title=""
-          >
-            {tSetting('footerCopy', settings)}
-          </div>
-
-          <div className="flex items-center gap-4 text-slate-500 text-[11px]">
-            <span>{isUrdu ? 'تمام حقوق محفوظ ہیں' : 'All rights reserved'}</span>
-          </div>
         </div>
 
       </div>

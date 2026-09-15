@@ -46,10 +46,15 @@ export function parseQrPayload(data: string): ExtractedMemberData {
   for (const line of lines) {
     // Card ID match
     if (!result.cardId) {
-      if (/^Card ID:\s*(.+)$/i.test(line)) {
-        result.cardId = line.replace(/^Card ID:\s*/i, '').trim().toUpperCase();
-      } else if (/^AB-26-[A-Z0-9]{4,10}$/i.test(line)) {
+      if (/^(?:Card\s*ID|Card\s*No|Card\s*#|Member\s*ID|کارڈ\s*نمبر|رکنیت\s*نمبر)[:\-#\s]*(.+)$/i.test(line)) {
+        result.cardId = line.replace(/^(?:Card\s*ID|Card\s*No|Card\s*#|Member\s*ID|کارڈ\s*نمبر|رکنیت\s*نمبر)[:\-#\s]*/i, '').trim().toUpperCase();
+      } else if (/^[A-Z]{2,6}-\d{2}-[A-Z0-9]{4,10}$/i.test(line)) {
         result.cardId = line.toUpperCase();
+      } else {
+        const embeddedId = line.match(/\b([A-Z]{2,6}-\d{2}-[A-Z0-9]{4,10})\b/i);
+        if (embeddedId) {
+          result.cardId = embeddedId[1].toUpperCase();
+        }
       }
     }
 

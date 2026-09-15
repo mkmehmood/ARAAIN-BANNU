@@ -178,7 +178,12 @@ export function isAuthorizedAdminEmail(email: string | null | undefined): boolea
  */
 export function sanitizeCardId(cardId: unknown): string {
   if (typeof cardId !== 'string') return '';
-  const cleaned = cardId.trim().toUpperCase();
+  let cleaned = cardId.trim().toUpperCase().replace(/\s*-\s*/g, '-').replace(/\s+/g, '-');
+  const urlMatch = cleaned.match(/[?&]VERIFY=([A-Z0-9_-]{3,32})/i);
+  if (urlMatch) {
+    cleaned = urlMatch[1].toUpperCase();
+  }
+  cleaned = cleaned.replace(/^(?:CARD|ID|CARDID|MEMBERID|MEMBERSHIP)[:\-#\s]*/i, '');
   // Format: e.g. AB-26-123456 or alphanumeric with hyphens up to 32 chars
   if (/^[A-Z0-9_-]{3,32}$/.test(cleaned)) {
     return cleaned;

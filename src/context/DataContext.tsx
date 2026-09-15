@@ -33,6 +33,8 @@ import {
   updateDonationStatusInCloud,
   deleteDonationFromCloud,
   assignCardIdInCloud,
+  registerVerifiedCard,
+  PublicVerifiedCard,
   submitContactMessageInCloud,
   subscribeToContactMessages,
   deleteContactMessageFromCloud,
@@ -329,10 +331,34 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getOrCreateMemberCardId = async (reg: Registration): Promise<string> => {
-    if (reg.cardId) return reg.cardId;
-    if (!reg._id) return 'AB-25-000000';
-    const cardId = await assignCardIdInCloud(reg._id, settings.siteName, reg);
-    setRegistrations(prev => prev.map(r => r._id === reg._id ? { ...r, cardId } : r));
+    let cardId = reg.cardId;
+    if (!cardId) {
+      if (reg._id) {
+        cardId = await assignCardIdInCloud(reg._id, settings.siteName, reg);
+      } else {
+        const prefix = settings.siteName
+          ? settings.siteName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 4) || 'AB'
+          : 'AB';
+        const yy = String(new Date().getFullYear() % 100).padStart(2, '0');
+        const randomSerial = String(Math.floor(100000 + Math.random() * 900000));
+        cardId = `${prefix}-${yy}-${randomSerial}`;
+      }
+      setRegistrations(prev => prev.map(r => (r._id === reg._id || (r.cnic && r.cnic === reg.cnic)) ? { ...r, cardId } : r));
+    }
+
+    // Always register in both local and cloud verifiedCards registry
+    const verifiedEntry: PublicVerifiedCard = {
+      cardId,
+      fullNameEn: reg.fullNameEn || reg.fullName || '',
+      fullNameUr: reg.fullNameUr || reg.fullName || '',
+      membershipTypeEn: reg.membershipTypeEn || reg.membershipType || 'Official Member',
+      membershipTypeUr: reg.membershipTypeUr || reg.membershipType || 'باضابطہ رکن',
+      status: reg.status || 'verified',
+      issuedAt: new Date().toLocaleDateString('en-GB'),
+      councilName: settings.siteName || 'ARAAIN ASSOCIATION BANNU',
+    };
+    await registerVerifiedCard(verifiedEntry);
+
     return cardId;
   };
 

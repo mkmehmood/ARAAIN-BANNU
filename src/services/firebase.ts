@@ -394,6 +394,45 @@ export interface PublicVerifiedCard {
   councilName?: string;
 }
 
+const LOCAL_VERIFIED_CARDS_KEY = 'araain_verified_cards_registry_v1';
+
+export function saveVerifiedCardLocally(entry: PublicVerifiedCard): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  try {
+    const raw = localStorage.getItem(LOCAL_VERIFIED_CARDS_KEY);
+    const registry: Record<string, PublicVerifiedCard> = raw ? JSON.parse(raw) : {};
+    registry[entry.cardId] = entry;
+    localStorage.setItem(LOCAL_VERIFIED_CARDS_KEY, JSON.stringify(registry));
+  } catch (e) {
+    // Ignore storage errors
+  }
+}
+
+export function getVerifiedCardLocally(cardId: string): PublicVerifiedCard | null {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+  try {
+    const raw = localStorage.getItem(LOCAL_VERIFIED_CARDS_KEY);
+    if (!raw) return null;
+    const registry: Record<string, PublicVerifiedCard> = JSON.parse(raw);
+    return registry[cardId] || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function registerVerifiedCard(cardData: PublicVerifiedCard): Promise<void> {
+  if (!cardData || !cardData.cardId) return;
+  // 1. Immediately persist to local registry
+  saveVerifiedCardLocally(cardData);
+
+  // 2. Attempt to publish to Firestore verifiedCards collection
+  try {
+    await setDoc(doc(db, 'verifiedCards', cardData.cardId), cardData, { merge: true });
+  } catch (err: any) {
+    console.warn('[Firebase] Could not publish card to cloud verifiedCards:', err?.message);
+  }
+}
+
 export async function assignCardIdInCloud(
   regId: string, 
   orgName: string, 
@@ -406,43 +445,114 @@ export async function assignCardIdInCloud(
   const randomSerial = String(Math.floor(100000 + Math.random() * 900000));
   const cardId = `${prefix}-${yy}-${randomSerial}`;
 
-  try {
-    await updateDoc(doc(db, 'registrations', regId), { cardId });
+  const verifiedEntry: PublicVerifiedCard = {
+    cardId,
+    fullNameEn: sanitizeText(registrationData?.fullNameEn || registrationData?.fullName || '', 150),
+    fullNameUr: sanitizeText(registrationData?.fullNameUr || registrationData?.fullName || '', 150),
+    membershipTypeEn: sanitizeText(registrationData?.membershipTypeEn || registrationData?.membershipType || 'Member', 60),
+    membershipTypeUr: sanitizeText(registrationData?.membershipTypeUr || registrationData?.membershipType || 'ممبر', 60),
+    status: 'verified',
+    issuedAt: new Date().toLocaleDateString('en-GB'),
+    councilName: orgName || 'ARAAIN ASSOCIATION BANNU',
+  };
 
-    // Publish privacy-safe public verification entry (contains NO sensitive PII)
-    const verifiedEntry: PublicVerifiedCard = {
-      cardId,
-      fullNameEn: sanitizeText(registrationData?.fullNameEn || registrationData?.fullName || '', 150),
-      fullNameUr: sanitizeText(registrationData?.fullNameUr || registrationData?.fullName || '', 150),
-      membershipTypeEn: sanitizeText(registrationData?.membershipTypeEn || registrationData?.membershipType || 'Member', 60),
-      membershipTypeUr: sanitizeText(registrationData?.membershipTypeUr || registrationData?.membershipType || 'ممبر', 60),
-      status: 'verified',
-      issuedAt: new Date().toLocaleDateString('en-GB'),
-      councilName: orgName || 'ARAAIN ASSOCIATION BANNU',
-    };
-    await setDoc(doc(db, 'verifiedCards', cardId), verifiedEntry, { merge: true });
-  } catch (err) {
-    console.warn('[Firebase] Could not update cardId in cloud:', err);
+  // 1. Save locally first to guarantee zero-latency verification
+  saveVerifiedCardLocally(verifiedEntry);
+
+  // 2. Update registration document if ID exists
+  if (regId) {
+    try {
+      await updateDoc(doc(db, 'registrations', regId), { cardId });
+    } catch (err: any) {
+      console.warn('[Firebase] Could not update registration document in cloud:', err?.message);
+    }
   }
+
+  // 3. Update public verifiedCards in cloud
+  try {
+    await setDoc(doc(db, 'verifiedCards', cardId), verifiedEntry, { merge: true });
+  } catch (err: any) {
+    console.warn('[Firebase] Could not write verifiedCard in cloud:', err?.message);
+  }
+
   return cardId;
 }
 
 /**
- * Privacy-preserving public membership verification lookup
- * Only fetches from verifiedCards collection; never accesses member PII (no CNIC/phone/address)
+ * Privacy-preserving public membership verification lookup.
+ * Searches across:
+ * 1. Cloud Firestore verifiedCards
+ * 2. Local verified cards registry
+ * 3. Supplied or stored registrations matching Card ID or CNIC
  */
-export async function lookupVerifiedCard(rawCardId: string): Promise<PublicVerifiedCard | null> {
+export async function lookupVerifiedCard(
+  rawCardId: string,
+  fallbackRegistrations?: Registration[]
+): Promise<PublicVerifiedCard | null> {
   const cardId = sanitizeCardId(rawCardId);
   if (!cardId) return null;
 
+  // 1. Check Cloud Firestore verifiedCards collection
   try {
     const snap = await getDoc(doc(db, 'verifiedCards', cardId));
     if (snap.exists()) {
-      return snap.data() as PublicVerifiedCard;
+      const data = snap.data() as PublicVerifiedCard;
+      saveVerifiedCardLocally(data);
+      return data;
     }
   } catch (err: any) {
-    console.warn('[Firebase] lookupVerifiedCard error:', err.message);
+    console.warn('[Firebase] lookupVerifiedCard cloud query notice:', err?.message);
   }
+
+  // 2. Check Local Registry Cache
+  const localRecord = getVerifiedCardLocally(cardId);
+  if (localRecord) {
+    return localRecord;
+  }
+
+  // 3. Search in provided fallback registrations or local storage registrations
+  let candidateRegistrations: Registration[] = [];
+  if (fallbackRegistrations && fallbackRegistrations.length > 0) {
+    candidateRegistrations = fallbackRegistrations;
+  } else if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const rawStored = localStorage.getItem('araain_local_registrations_v2') || localStorage.getItem('araain_registrations');
+      if (rawStored) {
+        candidateRegistrations = JSON.parse(rawStored);
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  const cleanQuery = cardId.toUpperCase();
+  const digitsQuery = cardId.replace(/\D/g, '');
+
+  const matchedReg = candidateRegistrations.find((r) => {
+    if (r.cardId && sanitizeCardId(r.cardId) === cleanQuery) return true;
+    if (r._id && r._id.toUpperCase() === cleanQuery) return true;
+    if (digitsQuery.length >= 7 && r.cnic && r.cnic.replace(/\D/g, '') === digitsQuery) return true;
+    return false;
+  });
+
+  if (matchedReg) {
+    const assignedId = matchedReg.cardId || cardId;
+    const constructed: PublicVerifiedCard = {
+      cardId: assignedId,
+      fullNameEn: sanitizeText(matchedReg.fullNameEn || matchedReg.fullName || '', 150),
+      fullNameUr: sanitizeText(matchedReg.fullNameUr || matchedReg.fullName || '', 150),
+      membershipTypeEn: sanitizeText(matchedReg.membershipTypeEn || matchedReg.membershipType || 'Official Member', 60),
+      membershipTypeUr: sanitizeText(matchedReg.membershipTypeUr || matchedReg.membershipType || 'باضابطہ رکن', 60),
+      status: matchedReg.status || 'verified',
+      issuedAt: new Date().toLocaleDateString('en-GB'),
+      councilName: 'ARAAIN ASSOCIATION BANNU',
+    };
+    saveVerifiedCardLocally(constructed);
+    // Asynchronously try to register to cloud
+    setDoc(doc(db, 'verifiedCards', assignedId), constructed, { merge: true }).catch(() => {});
+    return constructed;
+  }
+
   return null;
 }
 

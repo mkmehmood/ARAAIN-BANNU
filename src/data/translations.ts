@@ -706,6 +706,9 @@ export const LOCALIZED_SETTINGS: Record<Language, SiteSettings> = {
     intBank: "میزان بینک لمیٹڈ، بنوں",
     intSwift: "",
     intIBAN: "",
+    announcementBadge: "اہم اعلان",
+    announcementText: "آرائیں بنوں کی باضابطہ ممبرشپ مہم جاری ہے۔ ابھی اندراج کروائیں اور اپنا ڈیجیٹل رکنیت کارڈ حاصل کریں۔",
+    customNoticeHeadline: "بنوں اور جنوبی اضلاع کے لیے خصوصی تعلیمی و فلاحی پیکج کا باقاعدہ آغاز کر دیا گیا ہے۔",
   }
 };
 
@@ -744,15 +747,157 @@ export const LOCALIZED_LEADERS: Record<Language, Leader[]> = {
 // ── Complete Bilingual Events (Defaults empty, sourced strictly from Firestore) ──────
 
 export const LOCALIZED_EVENTS: Record<Language, EventItem[]> = {
-  en: [],
-  ur: []
+  en: [
+    {
+      id: 1,
+      day: '15',
+      month: 'OCT',
+      title: 'Strategically Build Your Business',
+      place: 'Community Hall, Bannu',
+      time_str: '10:00 AM - 01:00 PM',
+      tag: 'Business'
+    },
+    {
+      id: 2,
+      day: '22',
+      month: 'NOV',
+      title: 'ARAAIN BANNU Annual Gathering 2025',
+      place: 'Main Hall, Bannu',
+      time_str: '11:00 AM - 04:00 PM',
+      tag: 'Community'
+    },
+    {
+      id: 3,
+      day: '10',
+      month: 'DEC',
+      title: 'Youth Leadership Summit 2025',
+      place: 'Bannu Sports Complex',
+      time_str: '02:00 PM - 06:00 PM',
+      tag: 'Youth'
+    }
+  ],
+  ur: [
+    {
+      id: 1,
+      day: '15',
+      month: 'اکتوبر',
+      title: 'اپنے کاروبار کو حکمت عملی کے ساتھ استوار کریں',
+      place: 'کمیونٹی ہال، بنوں',
+      time_str: 'صبح 10:00 تا دوپہر 01:00',
+      tag: 'کاروبار'
+    },
+    {
+      id: 2,
+      day: '22',
+      month: 'نومبر',
+      title: 'آرائیں بنوں سالانہ اجتماع 2025',
+      place: 'مین ہال، بنوں',
+      time_str: 'صبح 11:00 تا شام 04:00',
+      tag: 'برادری'
+    },
+    {
+      id: 3,
+      day: '10',
+      month: 'دسمبر',
+      title: 'یوتھ لیڈرشپ سمٹ 2025',
+      place: 'بنوں اسپورٹس کمپلیکس',
+      time_str: 'دوپہر 02:00 تا شام 06:00',
+      tag: 'نوجوان'
+    }
+  ]
 };
 
 // ── Complete Bilingual Dynamic Pages (Defaults empty, sourced strictly from Firestore) ───
 
 export const LOCALIZED_PAGES: Record<Language, PageItem[]> = {
-  en: [],
-  ur: []
+  en: [
+    {
+      id: 'page_blog',
+      slug: 'blog',
+      title: 'ARAAIN BANNU Blog & News',
+      label: 'Our Blog',
+      body: 'Welcome to the ARAAIN BANNU Blog. Stay updated with the latest news, stories, and announcements from the ARAAIN BANNU community. Here you will find updates on welfare drives, educational milestones, executive council decisions, and upcoming events across Bannu and beyond.'
+    },
+    {
+      id: 'page_history',
+      slug: 'history',
+      title: 'History of the Arain Community & Council',
+      label: 'Our History',
+      body: 'The ARAAIN BANNU was founded with a vision to unite Arains globally. From humble beginnings, ARAAIN BANNU has grown into a vibrant organization dedicated to the socio-economic advancement of our people, rooted in shared history, agricultural excellence, and community solidarity.'
+    },
+    {
+      id: 'page_docs',
+      slug: 'docs',
+      title: 'Official Documents & Bylaws',
+      label: 'Documentation',
+      body: 'Official documents, policies, and guidelines of the ARAAIN BANNU. All resources are available for members and the public to ensure absolute transparency, democratic governance, and accountable administration.'
+    },
+    {
+      id: 'page_green',
+      slug: 'green',
+      title: 'Environmental & Green Initiatives',
+      label: 'Environmental',
+      body: 'ARAAIN BANNU is deeply committed to environmental sustainability and climate resilience in Southern KPK. Drawing inspiration from our agrarian heritage, we lead tree plantation campaigns, promote clean water conservation, and educate youth on ecological responsibility.'
+    },
+    {
+      id: 'page_gallery',
+      slug: 'gallery',
+      title: 'Bannu Community Gallery',
+      label: 'Town Gallery',
+      body: 'Explore photographic archives from ARAAIN BANNU community gatherings, medical camps, Eid gift distributions, and student award ceremonies across Southern Khyber Pakhtunkhwa.'
+    },
+    {
+      id: 'page_departments',
+      slug: 'departments',
+      title: 'Functional Departments & Wings',
+      label: 'Department',
+      body: 'ARAAIN BANNU operates through several specialized departments, each led by experienced professionals: Education & Scholarships, Health & Medical Relief, Youth Leadership & Sports, and Community Welfare & Matrimonial Services.'
+    }
+  ],
+  ur: [
+    {
+      id: 'page_blog',
+      slug: 'blog',
+      title: 'آرائیں بنوں بلاگ اور خبریں',
+      label: 'ہمارا بلاگ',
+      body: 'آرائیں بنوں کے آفیشل بلاگ میں خوش آمدید۔ برادری کی تازہ ترین خبروں، فلاحی سرگرمیوں اور اعلانات سے باخبر رہیں۔ یہاں آپ کو بنوں اور دیگر علاقوں میں فلاحی مہمات، تعلیمی کامیابیوں، انتظامی فیصلوں اور آئندہ تقریبات سے متعلق معلومات حاصل ہوں گی۔'
+    },
+    {
+      id: 'page_history',
+      slug: 'history',
+      title: 'آرائیں برادری اور تنظیم کی تاریخ',
+      label: 'ہماری تاریخ',
+      body: 'آرائیں بنوں کی بنیاد دنیا بھر میں آرائیں برادری کو باہم متحد کرنے کے وژن کے تحت رکھی گئی۔ ایک باوقار آغاز سے اب یہ ایک فعال تنظیم بن چکی ہے جو باہمی تاریخ، زرعی مہارت اور سماجی یکجہتی کے تحت ہمارے افراد کی فلاح و بہبود کے لیے وقف ہے۔'
+    },
+    {
+      id: 'page_docs',
+      slug: 'docs',
+      title: 'سرکاری دستاویزات اور آئین',
+      label: 'دستاویزات',
+      body: 'آرائیں بنوں کے سرکاری دستاویزات، آئین، قواعد و ضوابط اور انتظامی رہنما اصول۔ مکمل شفافیت، جمہوری طریقہ کار اور جوابدہ نظام کو یقینی بنانے کے لیے تمام مواد اراکین اور عوام کے لیے دستیاب ہے۔'
+    },
+    {
+      id: 'page_green',
+      slug: 'green',
+      title: 'ماحولیاتی اور شجرکاری مہمات',
+      label: 'ماحولیات',
+      body: 'آرائیں بنوں جنوبی خیبر پختونخوا میں ماحولیاتی پائیداری اور تحفظ ماحول کے لیے پرعزم ہے۔ اپنے زرعی ورثے سے رہنمائی لیتے ہوئے ہم شجرکاری مہمات، صاف پانی کی حفاظت اور نوجوانوں میں ماحولیاتی شعور بیدار کرنے کے لیے کوشاں ہیں۔'
+    },
+    {
+      id: 'page_gallery',
+      slug: 'gallery',
+      title: 'بنوں کمیونٹی تصویری گیلری',
+      label: 'شہری گیلری',
+      body: 'جنوبی خیبر پختونخوا میں آرائیں بنوں کے اجتماعات، مفت طبی کیمپس، عید کے تحائف کی تقسیم اور طلبہ کے اعزاز میں منعقدہ تقاریب کے تصویری ریکارڈز اور یادگار جھلکیاں دیکھیں۔'
+    },
+    {
+      id: 'page_departments',
+      slug: 'departments',
+      title: 'شعبہ جات اور انتظامی ونگز',
+      label: 'شعبہ جات',
+      body: 'آرائیں بنوں کئی مخصوص شعبہ جات کے ذریعے کام کرتی ہے جن کی سربراہی تجربہ کار اراکین کرتے ہیں: تعلیمی و اسکالرشپ شعبہ، صحت و طبی امداد، یوتھ لیڈرشپ و اسپورٹس، اور سماجی بہبود و رشتہ ناطہ سروس۔'
+    }
+  ]
 };
 
 // ── Smart Script Detection Helpers ──────────────────────────────
@@ -1176,8 +1321,8 @@ export function getLocalizedContacts(lang: Language, customContacts?: ContactDet
 export function getLocalizedEvents(lang: Language, customEvents: EventItem[]): EventItem[] {
   const sourceList = customEvents && customEvents.length > 0 ? customEvents : LOCALIZED_EVENTS[lang];
   return sourceList.map((item, idx) => {
-    const catalogUr = LOCALIZED_EVENTS.ur.find(e => e.id === item.id);
-    const catalogEn = LOCALIZED_EVENTS.en.find(e => e.id === item.id);
+    const catalogUr = LOCALIZED_EVENTS.ur.find(e => String(e.id) === String(item.id) || e.title.toLowerCase().trim() === item.title.toLowerCase().trim());
+    const catalogEn = LOCALIZED_EVENTS.en.find(e => String(e.id) === String(item.id) || e.title.toLowerCase().trim() === item.title.toLowerCase().trim());
 
     let title = item.title || '';
     let place = item.place || '';
@@ -1204,14 +1349,20 @@ export function getLocalizedEvents(lang: Language, customEvents: EventItem[]): E
     }
 
     if (lang === 'ur') {
-      if (!isUrduText(title)) {
-        title = catalogUr ? catalogUr.title : translateEnglishToUrdu(title);
-      }
-      if (!isUrduText(place)) {
-        place = catalogUr ? catalogUr.place : translateAddressToUrdu(place);
-      }
-      if (tag && !isUrduText(tag)) {
-        tag = catalogUr ? catalogUr.tag : translateEnglishToUrdu(tag);
+      if (catalogUr) {
+        title = catalogUr.title;
+        place = catalogUr.place;
+        tag = catalogUr.tag || tag;
+      } else {
+        if (!isUrduText(title)) {
+          title = translateEnglishToUrdu(title);
+        }
+        if (!isUrduText(place)) {
+          place = translateAddressToUrdu(place);
+        }
+        if (tag && !isUrduText(tag)) {
+          tag = translateEnglishToUrdu(tag);
+        }
       }
       return {
         ...item,
@@ -1223,14 +1374,20 @@ export function getLocalizedEvents(lang: Language, customEvents: EventItem[]): E
         id: item.id ?? idx + 1,
       };
     } else {
-      if (isUrduText(title)) {
-        title = catalogEn ? catalogEn.title : translateUrduToEnglish(title);
-      }
-      if (isUrduText(place)) {
-        place = catalogEn ? catalogEn.place : translateAddressToEnglish(place);
-      }
-      if (tag && isUrduText(tag)) {
-        tag = catalogEn ? catalogEn.tag : translateUrduToEnglish(tag);
+      if (catalogEn) {
+        title = catalogEn.title;
+        place = catalogEn.place;
+        tag = catalogEn.tag || tag;
+      } else {
+        if (isUrduText(title)) {
+          title = translateUrduToEnglish(title);
+        }
+        if (isUrduText(place)) {
+          place = translateAddressToEnglish(place);
+        }
+        if (tag && isUrduText(tag)) {
+          tag = translateUrduToEnglish(tag);
+        }
       }
       return {
         ...item,
@@ -1251,8 +1408,8 @@ export function getLocalizedEvents(lang: Language, customEvents: EventItem[]): E
 export function getLocalizedPages(lang: Language, customPages: PageItem[]): PageItem[] {
   const sourceList = customPages && customPages.length > 0 ? customPages : LOCALIZED_PAGES[lang];
   return sourceList.map((item, idx) => {
-    const catalogUr = LOCALIZED_PAGES.ur.find(p => p.slug === item.slug || p.id === item.id);
-    const catalogEn = LOCALIZED_PAGES.en.find(p => p.slug === item.slug || p.id === item.id);
+    const catalogUr = LOCALIZED_PAGES.ur.find(p => p.slug === item.slug || p.id === item.id || p.title.toLowerCase().trim() === item.title.toLowerCase().trim());
+    const catalogEn = LOCALIZED_PAGES.en.find(p => p.slug === item.slug || p.id === item.id || p.title.toLowerCase().trim() === item.title.toLowerCase().trim());
 
     let title = item.title || '';
     let body = item.body || '';
@@ -1279,14 +1436,20 @@ export function getLocalizedPages(lang: Language, customPages: PageItem[]): Page
     }
 
     if (lang === 'ur') {
-      if (!isUrduText(title)) {
-        title = catalogUr ? catalogUr.title : translateEnglishToUrdu(title);
-      }
-      if (!isUrduText(body)) {
-        body = catalogUr ? catalogUr.body : translateEnglishToUrdu(body);
-      }
-      if (!isUrduText(label)) {
-        label = catalogUr ? catalogUr.label : translateEnglishToUrdu(label);
+      if (catalogUr) {
+        title = catalogUr.title;
+        body = catalogUr.body;
+        label = catalogUr.label || label;
+      } else {
+        if (!isUrduText(title)) {
+          title = translateEnglishToUrdu(title);
+        }
+        if (!isUrduText(body)) {
+          body = translateEnglishToUrdu(body);
+        }
+        if (!isUrduText(label)) {
+          label = translateEnglishToUrdu(label);
+        }
       }
       return {
         ...item,
@@ -1296,14 +1459,20 @@ export function getLocalizedPages(lang: Language, customPages: PageItem[]): Page
         id: item.id ?? idx + 1,
       };
     } else {
-      if (isUrduText(title)) {
-        title = catalogEn ? catalogEn.title : translateUrduToEnglish(title);
-      }
-      if (isUrduText(body)) {
-        body = catalogEn ? catalogEn.body : translateUrduToEnglish(body);
-      }
-      if (isUrduText(label)) {
-        label = catalogEn ? catalogEn.label : translateUrduToEnglish(label);
+      if (catalogEn) {
+        title = catalogEn.title;
+        body = catalogEn.body;
+        label = catalogEn.label || label;
+      } else {
+        if (isUrduText(title)) {
+          title = translateUrduToEnglish(title);
+        }
+        if (isUrduText(body)) {
+          body = translateUrduToEnglish(body);
+        }
+        if (isUrduText(label)) {
+          label = translateUrduToEnglish(label);
+        }
       }
       return {
         ...item,
@@ -1341,12 +1510,15 @@ export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]
       }
 
       if (lang === 'ur') {
-        if (caption && !isUrduText(caption)) {
+        if (item.captionUr && isUrduText(item.captionUr)) {
+          caption = item.captionUr;
+        } else if (caption && !isUrduText(caption)) {
           caption = translateEnglishToUrdu(caption);
         }
         return {
           ...item,
           caption: caption || '',
+          captionUr: item.captionUr || caption || '',
           id: item.id ?? idx + 1,
         };
       } else {
@@ -1356,6 +1528,7 @@ export function getLocalizedGallery(lang: Language, customGallery: GalleryItem[]
         return {
           ...item,
           caption: caption || '',
+          captionUr: item.captionUr || '',
           id: item.id ?? idx + 1,
         };
       }
