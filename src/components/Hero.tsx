@@ -161,11 +161,11 @@ export const Hero: React.FC<HeroProps> = ({
 
         {/* Call to Action Buttons - Touch-Friendly Mobile Layout */}
         <div className="w-full max-w-md sm:max-w-2xl mx-auto mb-5 sm:mb-8 px-2">
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-2.5 sm:gap-3.5">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:flex-row sm:items-center sm:justify-center gap-3">
             <button
               id="hero-btn-membership"
               onClick={onOpenMembership}
-              className="w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-bold text-xs xs:text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation whitespace-nowrap"
+              className="w-full sm:w-auto h-12 inline-flex items-center justify-center gap-2 px-6 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-bold text-sm sm:text-base shadow-lg shadow-amber-950/40 transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation whitespace-nowrap"
             >
               <UserPlus className="w-4 h-4 shrink-0" />
               <span>{t('btnBecomeMember', 'Become a Member')}</span>
@@ -174,7 +174,7 @@ export const Hero: React.FC<HeroProps> = ({
             <button
               id="hero-btn-donate"
               onClick={onOpenDonation}
-              className="w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white/15 hover:bg-white/20 text-white font-bold text-xs xs:text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm touch-manipulation whitespace-nowrap"
+              className="w-full sm:w-auto h-12 inline-flex items-center justify-center gap-2 px-6 rounded-xl bg-white/15 hover:bg-white/20 text-white font-bold text-sm sm:text-base border border-white/25 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer shadow-sm touch-manipulation whitespace-nowrap"
             >
               <Heart className="w-4 h-4 text-amber-300 fill-current shrink-0" />
               <span>{t('navDonate', 'Donate & Support')}</span>
@@ -183,7 +183,7 @@ export const Hero: React.FC<HeroProps> = ({
             <button
               id="hero-btn-events"
               onClick={() => onNavigateSection('events')}
-              className="xs:col-span-2 sm:col-span-1 w-full sm:w-auto min-h-[46px] sm:min-h-[48px] inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-slate-200 hover:text-white font-semibold text-xs xs:text-sm sm:text-base bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/15 touch-manipulation whitespace-nowrap"
+              className="xs:col-span-2 sm:col-span-1 w-full sm:w-auto h-12 inline-flex items-center justify-center gap-2 px-6 rounded-xl text-slate-200 hover:text-white font-bold text-sm sm:text-base bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-colors cursor-pointer border border-white/15 touch-manipulation whitespace-nowrap"
             >
               <Calendar className="w-4 h-4 text-amber-300 shrink-0" />
               <span>{t('btnEvents', 'Upcoming Events')}</span>

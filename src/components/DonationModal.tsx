@@ -162,7 +162,8 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
 
           <button
             onClick={resetAndClose}
-            className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
@@ -170,23 +171,23 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
 
         {/* View Selection Tabs */}
         {!submittedRefId && (
-          <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-3 gap-2">
+          <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-50/80 p-1.5 gap-1.5 shrink-0">
             <button
               onClick={() => setActiveTab('details')}
-              className={`pb-3 px-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+              className={`h-10 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'details'
-                  ? 'border-[#AD7A28] text-[#AD7A28]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-[#AD7A28] shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
               {t('tabTransferDetails', '1. Transfer Details')}
             </button>
             <button
               onClick={() => setActiveTab('confirm')}
-              className={`pb-3 px-4 text-xs sm:text-sm font-bold transition-all border-b-2 cursor-pointer ${
+              className={`h-10 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'confirm'
-                  ? 'border-[#AD7A28] text-[#AD7A28]'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? 'bg-white text-[#AD7A28] shadow-sm border border-slate-200'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
               {t('tabConfirmPaymentStep', '2. Confirm Payment & Receipt')}
@@ -223,7 +224,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
 
               <button
                 onClick={resetAndClose}
-                className="px-8 py-3 rounded-xl bg-[#16232F] hover:bg-[#203244] text-white font-semibold text-sm transition-colors cursor-pointer"
+                className="app-btn-primary h-11 px-8 rounded-xl"
               >
                 {t('closeModal', 'Close')}
               </button>
@@ -243,10 +244,10 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                       key={amt}
                       type="button"
                       onClick={() => { setSelectedAmount(amt); setCustomAmount(''); }}
-                      className={`py-2 rounded-xl text-xs sm:text-sm font-bold border transition-colors cursor-pointer ${
+                      className={`h-11 rounded-xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         selectedAmount === amt && !customAmount
-                          ? 'bg-[#AD7A28] text-white border-[#AD7A28]'
-                          : 'bg-white text-slate-700 border-slate-200 hover:border-[#AD7A28]/40'
+                          ? 'bg-[#AD7A28] text-white border-[#AD7A28] shadow-sm'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-[#AD7A28]/40 hover:bg-slate-50'
                       }`}
                     >
                       {isUrdu ? `${parseInt(amt).toLocaleString()} روپے` : `PKR ${parseInt(amt).toLocaleString()}`}
@@ -259,43 +260,43 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                   placeholder={t('phEnterCustomAmt', 'Or enter custom amount in PKR...')}
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
+                  className="app-input w-full"
                 />
               </div>
 
               {/* Payment Methods Sub-tabs */}
               <div>
-                <div className="flex gap-2 p-1 rounded-xl bg-slate-100 mb-4">
+                <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-slate-100 mb-4">
                   <button
                     type="button"
                     onClick={() => setDetailsSubTab('bank')}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                      detailsSubTab === 'bank' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600'
+                    className={`h-9 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      detailsSubTab === 'bank' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Building2 className="w-3.5 h-3.5" />
+                    <Building2 className="w-3.5 h-3.5 text-[#AD7A28]" />
                     <span>{t('meezanBankTab', 'Meezan Bank')}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDetailsSubTab('mobile')}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                      detailsSubTab === 'mobile' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600'
+                    className={`h-9 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      detailsSubTab === 'mobile' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>{t('mobileWalletsTab', 'Easypaisa / JazzCash')}</span>
+                    <Smartphone className="w-3.5 h-3.5 text-[#AD7A28]" />
+                    <span className="truncate">{t('mobileWalletsTab', 'Wallets')}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setDetailsSubTab('int')}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                      detailsSubTab === 'int' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600'
+                    className={`h-9 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      detailsSubTab === 'int' ? 'bg-white text-[#16232F] shadow-sm' : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Globe2 className="w-3.5 h-3.5" />
+                    <Globe2 className="w-3.5 h-3.5 text-[#AD7A28]" />
                     <span>{t('swiftWireTab', 'SWIFT Wire')}</span>
                   </button>
                 </div>
@@ -418,7 +419,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
               <button
                 type="button"
                 onClick={() => setActiveTab('confirm')}
-                className="w-full py-3.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white font-semibold text-sm sm:text-base shadow-md transition-colors cursor-pointer"
+                className="app-btn-primary w-full h-12 rounded-xl text-sm sm:text-base font-bold shadow-md"
               >
                 {t('fundsSentSubmitProof', 'I Have Sent Funds — Submit Proof')}
               </button>
@@ -447,7 +448,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-[#F8F4E8] border border-[#AD7A28]/20 flex items-center justify-between text-xs sm:text-sm">
+              <div className="p-3.5 rounded-xl bg-[#F8F4E8] border border-[#AD7A28]/20 flex items-center justify-between text-xs sm:text-sm">
                 <span className="text-slate-600">{t('recordedAmount', 'Recorded Amount')}:</span>
                 <span className="font-bold text-[#AD7A28] text-base">
                   {isUrdu ? `${(currentAmountDisplay || '2,500')} روپے` : `PKR ${currentAmountDisplay || '2,500'}`}
@@ -465,7 +466,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                     value={donorName}
                     onChange={(e) => setDonorName(e.target.value)}
                     placeholder={t('phDonorName', 'e.g. Asad Chaudhary')}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
+                    className="app-input w-full"
                   />
                 </div>
 
@@ -479,7 +480,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={t('phDonorPhone', '+92 300 0000000')}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
+                    className="app-input w-full"
                   />
                 </div>
               </div>
@@ -492,7 +493,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                   <select
                     value={method}
                     onChange={(e) => setMethod(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm bg-white"
+                    className="app-input w-full bg-white"
                   >
                     <option value="Bank Transfer (Meezan Bank)">{t('optMeezanBank', 'Bank Transfer (Meezan Bank)')}</option>
                     <option value="Easypaisa">{t('optEasypaisa', 'Easypaisa')}</option>
@@ -510,7 +511,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                     value={txId}
                     onChange={(e) => setTxId(e.target.value)}
                     placeholder={t('phTxnRef', 'e.g. TXN-98765432')}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm font-mono"
+                    className="app-input w-full font-mono uppercase"
                   />
                 </div>
               </div>
@@ -524,7 +525,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder={t('phDonationNote', 'e.g. Education scholarship fund, Bannu medical camp')}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm"
+                  className="app-input w-full"
                 />
               </div>
 
@@ -540,7 +541,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                       <img
                         src={photoData}
                         alt="Receipt"
-                        className="w-20 h-20 rounded-lg object-cover border-2 border-[#AD7A28]"
+                        className="w-20 h-20 rounded-xl object-cover border-2 border-[#AD7A28]"
                       />
                       <button
                         type="button"
@@ -551,7 +552,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                       </button>
                     </div>
                   ) : (
-                    <div className="w-20 h-20 rounded-lg bg-slate-200 border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400">
+                    <div className="w-20 h-20 rounded-xl bg-slate-200 border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400">
                       <FileCheck className="w-8 h-8" />
                     </div>
                   )}
@@ -568,7 +569,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isCompressing}
-                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+                      className="app-btn-secondary h-10 px-4 rounded-xl text-xs font-semibold inline-flex items-center gap-2"
                     >
                       <Upload className="w-3.5 h-3.5 text-[#AD7A28]" />
                       <span>{photoData ? t('changeScreenshot', 'Change Screenshot') : t('uploadScreenshot', 'Upload Screenshot')}</span>
@@ -583,7 +584,7 @@ export const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose })
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#AD7A28] to-[#8C601A] hover:from-[#C89238] hover:to-[#9F6E20] text-white font-semibold text-sm sm:text-base shadow-lg transition-all duration-150 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+                className="app-btn-primary w-full h-12 rounded-xl text-sm sm:text-base font-bold shadow-lg"
               >
                 {isSubmitting ? t('btnSubmitting', 'Submitting...') : t('btnSubmitDonation', 'Submit Confirmation')}
               </button>

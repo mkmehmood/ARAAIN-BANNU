@@ -51,15 +51,15 @@ export const AboutSection: React.FC = () => {
 
             {/* Core Values Bullet List */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
                 <CheckCircle2 className="w-4 h-4 text-[#AD7A28] shrink-0" />
                 <span>{t('valueTransparent')}</span>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
                 <CheckCircle2 className="w-4 h-4 text-[#AD7A28] shrink-0" />
                 <span>{t('valueScholarships')}</span>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
+              <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-600/20 text-[#16232F] font-semibold text-xs sm:text-sm">
                 <CheckCircle2 className="w-4 h-4 text-[#AD7A28] shrink-0" />
                 <span>{t('valueBrotherhood')}</span>
               </div>

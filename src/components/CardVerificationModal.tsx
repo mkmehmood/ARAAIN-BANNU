@@ -22,11 +22,13 @@ import {
   Copy,
   Check,
   Camera,
+  CameraOff,
   Upload,
   RefreshCw,
   Eye,
   UserCheck,
-  ExternalLink
+  ExternalLink,
+  FileUp
 } from 'lucide-react';
 
 interface CardVerificationModalProps {
@@ -53,6 +55,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
   // QR Camera & Scan State
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedMemberData | null>(null);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [showRawPayload, setShowRawPayload] = useState(false);
@@ -142,18 +145,22 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('CAMERA_UNSUPPORTED');
+        setCameraError('CAMERA_UNSUPPORTED');
+        setCameraActive(false);
+        return;
       }
 
-      // Check permissions status where available
+      // Proactively check permission if supported
       if (navigator.permissions && navigator.permissions.query) {
         try {
           const perm = await navigator.permissions.query({ name: 'camera' as PermissionName });
           if (perm.state === 'denied') {
-            throw new Error('CAMERA_DENIED');
+            setCameraError('CAMERA_DENIED');
+            setCameraActive(false);
+            return;
           }
-        } catch (e: any) {
-          if (e?.message === 'CAMERA_DENIED') throw e;
+        } catch {
+          // Permissions query query not available in iframe sandbox; proceed directly
         }
       }
 
@@ -169,7 +176,12 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
             height: { ideal: 720 },
           },
         });
-      } catch (e) {
+      } catch (e: any) {
+        if (e?.name === 'NotAllowedError' || e?.name === 'PermissionDeniedError' || e?.name === 'SecurityError') {
+          setCameraError('CAMERA_DENIED');
+          setCameraActive(false);
+          return;
+        }
         // Fallback to generic video constraint
         stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -185,20 +197,11 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
         requestScanFrame();
       }
     } catch (err: any) {
-      console.warn('Camera start error:', err);
       setCameraActive(false);
-      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || err?.message === 'CAMERA_DENIED') {
-        setCameraError(
-          isUrdu
-            ? 'کیمرہ کھولنے کی اجازت درکار ہے۔ براہ کرم براؤزر کے ایڈریس بار میں کیمرہ/لاک آئیکن پر کلک کر کے اجازت دیں، یا نیچے کارڈ کی تصویر اپ لوڈ کریں۔'
-            : 'Camera permission is required. Please grant camera access in your browser address bar permissions, or upload a photo of the card below.'
-        );
+      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError' || err?.message === 'CAMERA_DENIED' || err?.name === 'SecurityError') {
+        setCameraError('CAMERA_DENIED');
       } else {
-        setCameraError(
-          isUrdu
-            ? 'کیمرہ تک رسائی ممکن نہیں ہوئی۔ براہ کرم نیچے دی گئی آپشن سے کارڈ کی تصویر یا کیو آر کوڈ اپ لوڈ کریں۔'
-            : 'Unable to start camera. Please allow camera permissions or upload an image of the QR code below.'
-        );
+        setCameraError('CAMERA_UNSUPPORTED');
       }
     }
   };
@@ -279,10 +282,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     }
   };
 
-  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processImageFile = async (file: File) => {
     setLoading(true);
     setCameraError(null);
     setScanSuccess(false);
@@ -308,6 +308,22 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
     } finally {
       setLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processImageFile(file);
+    }
+  };
+
+  const handleDropFile = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processImageFile(file);
     }
   };
 
@@ -349,28 +365,28 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
               stopCamera();
               onClose();
             }}
-            className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-slate-200 bg-slate-50/80 p-1.5 gap-1.5 shrink-0">
+        {/* Tab Navigation - Fixed Heights & Consistent Radius */}
+        <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-50/80 p-1.5 gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() => {
               stopCamera();
               setActiveTab('id');
             }}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`h-10 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'id'
                 ? 'bg-white text-[#16232F] shadow-sm border border-slate-200'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <Search className="w-3.5 h-3.5" />
+            <Search className="w-4 h-4 text-[#AD7A28]" />
             <span>{isUrdu ? 'کارڈ نمبر سے تلاش' : 'Search by Card ID'}</span>
           </button>
 
@@ -380,13 +396,13 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
               setActiveTab('scan');
               startCamera();
             }}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`h-10 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'scan'
                 ? 'bg-[#AD7A28] text-white shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" />
+            <Camera className="w-4 h-4" />
             <span>{isUrdu ? 'کیو آر کوڈ اسکین کریں' : 'Scan Card QR Code'}</span>
           </button>
         </div>
@@ -396,29 +412,34 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
           {/* TAB 1: SEARCH BY CARD ID */}
           {activeTab === 'id' && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <form onSubmit={handleSearchSubmit} className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 rtl:right-3 rtl:left-auto top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 rtl:right-3.5 rtl:left-auto top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value.toUpperCase())}
-                    placeholder={isUrdu ? "کارڈ نمبر یا شناختی کارڈ (AB-26-XXXXXX)" : "Card ID or CNIC (e.g. AB-26-XXXXXX)"}
-                    className="w-full pl-9 rtl:pr-9 rtl:pl-3.5 pr-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#AD7A28] text-sm uppercase tracking-wider font-mono"
+                    placeholder={isUrdu ? "کارڈ نمبر یا شناختی کارڈ (مثلاً AB-26-XXXXXX)" : "Card ID or CNIC (e.g. AB-26-XXXXXX)"}
+                    className="app-input w-full pl-10 rtl:pr-10 rtl:pl-4 pr-4 uppercase tracking-wider font-mono text-sm"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-5 py-2.5 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white font-semibold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                  className="app-btn-primary h-11 px-5 rounded-xl shrink-0"
                 >
-                  {loading ? (isUrdu ? 'تلاش جاری...' : 'Checking...') : (isUrdu ? 'تصدیق کریں' : 'Verify')}
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                  <span>{loading ? (isUrdu ? 'تلاش جاری...' : 'Checking...') : (isUrdu ? 'تصدیق کریں' : 'Verify')}</span>
                 </button>
               </form>
 
               <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-slate-500 px-1">
-                <span>{isUrdu ? 'کارڈ پر درج کارڈ آئی ڈی یا قومی شناختی کارڈ نمبر درج کریں' : 'Accepts printed Card ID or registered CNIC number'}</span>
+                <span>{isUrdu ? 'کارڈ پر درج کارڈ آئی ڈی یا رجسٹرڈ قومی شناختی کارڈ درج کریں' : 'Accepts printed Card ID or registered CNIC number'}</span>
                 {registrations && registrations.length > 0 && registrations.find(r => r.cardId) && (
                   <button
                     type="button"
@@ -441,9 +462,16 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
           {/* TAB 2: LIVE QR SCANNER & IMAGE UPLOADER */}
           {activeTab === 'scan' && (
-            <div className="space-y-3">
-              {/* Camera Scanner Box */}
-              <div className="relative rounded-2xl overflow-hidden bg-slate-950 aspect-4/3 sm:aspect-16/9 flex items-center justify-center border-2 border-slate-800 shadow-inner">
+            <div className="space-y-4">
+              {/* Camera Scanner Box with Drag & Drop */}
+              <div 
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDropFile}
+                className={`relative rounded-2xl overflow-hidden bg-slate-950 aspect-4/3 sm:aspect-16/9 min-h-[240px] flex items-center justify-center border-2 transition-all duration-200 shadow-inner ${
+                  isDragging ? 'border-[#AD7A28] ring-4 ring-[#AD7A28]/30 bg-slate-900' : 'border-slate-800'
+                }`}
+              >
                 {cameraActive ? (
                   <>
                     <video
@@ -455,7 +483,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
                     {/* Scanner Framing Overlay */}
                     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                      <div className="w-52 h-52 sm:w-60 sm:h-60 border-2 border-dashed border-[#F5CA7B] rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] flex items-center justify-center">
+                      <div className="w-52 h-52 sm:w-60 sm:h-60 border-2 border-dashed border-[#F5CA7B] rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] flex items-center justify-center">
                         <div className="absolute -top-1 -left-1 w-5 h-5 border-t-3 border-l-3 border-[#AD7A28] rounded-tl-lg" />
                         <div className="absolute -top-1 -right-1 w-5 h-5 border-t-3 border-r-3 border-[#AD7A28] rounded-tr-lg" />
                         <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-3 border-l-3 border-[#AD7A28] rounded-bl-lg" />
@@ -467,45 +495,114 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
                     </div>
 
                     <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-auto">
-                      <span className="text-[11px] text-white/90 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
+                      <span className="text-[11px] text-white/90 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10 font-medium">
                         {isUrdu ? 'کارڈ پر موجود کیو آر کوڈ فریم میں لائیں' : 'Align card QR inside frame'}
                       </span>
                       <button
                         type="button"
                         onClick={stopCamera}
-                        className="text-[11px] text-white/80 hover:text-white bg-black/70 px-2.5 py-1 rounded-full cursor-pointer hover:bg-black"
+                        className="h-8 px-3 rounded-full text-xs font-medium text-white/90 bg-black/70 hover:bg-black border border-white/20 cursor-pointer transition-colors"
                       >
                         {isUrdu ? 'کیمرہ بند کریں' : 'Stop Camera'}
                       </button>
                     </div>
                   </>
+                ) : cameraError === 'CAMERA_DENIED' ? (
+                  /* FRIENDLY GRACEFUL FALLBACK WHEN CAMERA IS DENIED / SANDBOXED */
+                  <div className="text-center p-6 space-y-3.5 max-w-md mx-auto">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-[#F5CA7B] border border-amber-500/30 flex items-center justify-center mx-auto">
+                      <CameraOff className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-1">
+                        <span>{isUrdu ? 'کیمرہ اجازت محدود ہے' : 'Camera Access Restricted'}</span>
+                      </div>
+                      <p className="text-slate-300 text-xs leading-relaxed mt-1">
+                        {isUrdu 
+                          ? 'براؤزر یا سیکیورٹی سیٹنگز میں لائیو کیمرہ کی رسائی غیر فعال ہے۔ آپ کارڈ کی تصویر اپ لوڈ کر سکتے ہیں یا کارڈ نمبر سے تلاش کر سکتے ہیں۔'
+                          : 'Live camera is blocked by browser permissions or sandbox. You can upload a photo of the card or look up by Card ID.'}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">
+                      <label
+                        htmlFor="qr-image-upload"
+                        className="app-btn-primary w-full sm:w-auto h-11 px-5 rounded-xl cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>{isUrdu ? 'کارڈ تصویر اپ لوڈ کریں' : 'Upload Card Photo'}</span>
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          stopCamera();
+                          setActiveTab('id');
+                        }}
+                        className="app-btn-secondary w-full sm:w-auto h-11 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/20"
+                      >
+                        <Search className="w-4 h-4 text-amber-300" />
+                        <span>{isUrdu ? 'کارڈ نمبر درج کریں' : 'Enter Card ID'}</span>
+                      </button>
+                    </div>
+
+                    <div className="text-[11px] text-slate-400 pt-1">
+                      <button
+                        type="button"
+                        onClick={startCamera}
+                        className="text-amber-300/80 hover:text-amber-200 hover:underline cursor-pointer inline-flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>{isUrdu ? 'کیمرہ دوبارہ آزمائیں' : 'Retry camera permissions'}</span>
+                      </button>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="text-center p-6 space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-white/10 text-[#F5CA7B] flex items-center justify-center mx-auto border border-white/10">
-                      <Camera className="w-7 h-7" />
+                  /* Standard Initial Scanner Screen */
+                  <div className="text-center p-6 space-y-3.5 max-w-sm mx-auto">
+                    <div className="w-12 h-12 rounded-2xl bg-white/10 text-[#F5CA7B] flex items-center justify-center mx-auto border border-white/10">
+                      <Camera className="w-6 h-6" />
                     </div>
-                    <div className="text-slate-300 text-xs max-w-xs mx-auto">
-                      {cameraError || (isUrdu 
-                        ? 'اپنے موبائل یا لیپ ٹاپ کیمرے سے کارڈ کا کیو آر کوڈ اسکین کریں۔' 
-                        : 'Use live camera to accurately scan & extract membership card QR code.')}
+                    <div>
+                      <h4 className="text-sm font-bold text-white mb-1">
+                        {isUrdu ? 'لائیو کیو آر اسکینر' : 'Live QR Code Scanner'}
+                      </h4>
+                      <p className="text-slate-300 text-xs leading-relaxed">
+                        {isUrdu 
+                          ? 'کارڈ پر موجود کیو آر کوڈ اسکین کرنے کے لیے کیمرہ کھولیں یا تصویر ڈریگ کر کے یہاں چھوڑیں۔' 
+                          : 'Point camera at the membership card QR, or drag & drop a card photo here.'}
+                      </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={startCamera}
-                      className="px-4 py-2 rounded-xl bg-[#AD7A28] hover:bg-[#8C601A] text-white text-xs font-bold cursor-pointer inline-flex items-center gap-2 shadow-lg"
-                    >
-                      <Camera className="w-3.5 h-3.5" />
-                      <span>{isUrdu ? 'کیمرہ شروع کریں' : 'Start Camera Scanner'}</span>
-                    </button>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={startCamera}
+                        className="app-btn-primary w-full sm:w-auto h-11 px-5 rounded-xl shadow-lg"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>{isUrdu ? 'کیمرہ شروع کریں' : 'Start Camera'}</span>
+                      </button>
+
+                      <label
+                        htmlFor="qr-image-upload"
+                        className="app-btn-secondary w-full sm:w-auto h-11 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/20 cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4 text-amber-300" />
+                        <span>{isUrdu ? 'تصویر منتخب کریں' : 'Upload Image'}</span>
+                      </label>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Upload QR Image Fallback */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-xs text-slate-600 flex items-center gap-2">
-                  <Upload className="w-4 h-4 text-[#AD7A28]" />
-                  <span>{isUrdu ? 'یا کارڈ یا کیو آر کوڈ کی تصویر اپ لوڈ کریں:' : 'Or upload image/photo of the card or QR:'}</span>
+              {/* Upload Card Image Fallback Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <div className="text-xs text-slate-700 flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-[#AD7A28]/10 text-[#AD7A28] flex items-center justify-center shrink-0">
+                    <FileUp className="w-4 h-4" />
+                  </div>
+                  <span>{isUrdu ? 'کارڈ یا کیو آر کوڈ کی تصویر اپ لوڈ کریں:' : 'Upload card image or screenshot file:'}</span>
                 </div>
                 <div>
                   <input
@@ -518,10 +615,10 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
                   />
                   <label
                     htmlFor="qr-image-upload"
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5"
+                    className="app-btn-secondary h-9 px-4 rounded-lg text-xs font-semibold cursor-pointer inline-flex items-center gap-1.5"
                   >
-                    <Upload className="w-3 h-3" />
-                    <span>{isUrdu ? 'تصویر منتخب کریں' : 'Browse Photo'}</span>
+                    <Upload className="w-3.5 h-3.5 text-[#AD7A28]" />
+                    <span>{isUrdu ? 'فائل منتخب کریں' : 'Browse File'}</span>
                   </label>
                 </div>
               </div>
@@ -530,7 +627,7 @@ export const CardVerificationModal: React.FC<CardVerificationModalProps> = ({
 
           {/* Error Message */}
           {errorText && (
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2.5">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
               <span>{errorText}</span>
             </div>

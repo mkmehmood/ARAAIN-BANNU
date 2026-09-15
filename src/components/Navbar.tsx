@@ -145,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-donate"
               onClick={onOpenDonation}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-semibold shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#AD7A28] hover:bg-[#96681E] text-white text-xs sm:text-sm font-semibold shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
             >
               <Heart className="w-3.5 h-3.5 fill-current text-amber-200" />
               <span>{t('navDonate', 'Donate')}</span>
@@ -155,7 +155,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-nav-membership"
               onClick={onOpenMembership}
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+              className="hidden md:inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span>{t('navApply', 'Join Us')}</span>
@@ -164,7 +164,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* 1-Tap Language Toggle (Visible on Mobile & Tablet) */}
             <button
               onClick={() => setLanguage(lang === 'ur' ? 'en' : 'ur')}
-              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 text-amber-200 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5 min-h-[38px]"
+              className="h-10 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 text-amber-200 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5"
               title={lang === 'ur' ? 'Switch to English' : 'اردو میں تبدیل کریں'}
             >
               <Globe className="w-3.5 h-3.5 text-amber-300" />
@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-open-sidebar"
               onClick={onOpenSidebar}
-              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 hover:border-[#AD7A28] text-amber-200 hover:text-white transition-all duration-200 shadow-sm cursor-pointer group"
+              className="hidden lg:flex items-center gap-2 h-10 px-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-[#AD7A28]/40 hover:border-[#AD7A28] text-amber-200 hover:text-white transition-all duration-200 shadow-sm cursor-pointer group"
               title={isUrdu ? 'مینو اور ترتیبات' : 'Menu & Settings'}
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-amber-300/80" />
@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="btn-mobile-sidebar-toggle"
               onClick={onOpenSidebar}
-              className="lg:hidden min-w-[44px] min-h-[44px] p-2.5 rounded-xl text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-xs"
+              className="lg:hidden w-10 h-10 rounded-xl text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-xs"
               aria-label="Toggle Sidebar Menu"
             >
               <Menu className="w-5 h-5 text-amber-300" />

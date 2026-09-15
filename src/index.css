@@ -108,6 +108,115 @@
 }
 
 
+/* Standard App-Wide Dimension Tokens & UI Components */
+.app-input {
+  height: 2.75rem; /* 44px */
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  border-radius: 0.75rem; /* 12px / rounded-xl */
+  border: 1px solid #cbd5e1; /* border-slate-300 */
+  background-color: #ffffff;
+  font-size: 0.875rem; /* text-sm */
+  color: #1e293b;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+.app-input:focus {
+  outline: none;
+  border-color: #AD7A28;
+  box-shadow: 0 0 0 3px rgba(173, 122, 40, 0.18);
+}
+.app-input::placeholder {
+  color: #94a3b8;
+}
+
+.app-textarea {
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 0.875rem;
+  color: #1e293b;
+  min-height: 7rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+.app-textarea:focus {
+  outline: none;
+  border-color: #AD7A28;
+  box-shadow: 0 0 0 3px rgba(173, 122, 40, 0.18);
+}
+
+.app-btn-primary {
+  height: 2.75rem; /* 44px */
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  border-radius: 0.75rem;
+  background-color: #AD7A28;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+}
+.app-btn-primary:hover {
+  background-color: #96681E;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.app-btn-primary:active {
+  transform: scale(0.99);
+}
+.app-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-btn-secondary {
+  height: 2.75rem; /* 44px */
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+}
+.app-btn-secondary:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+}
+.app-btn-secondary:active {
+  transform: scale(0.99);
+}
+
+.app-card-standard {
+  border-radius: 1rem; /* 16px */
+  border: 1px solid rgba(22, 35, 47, 0.08);
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease-in-out;
+}
+.app-card-standard:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  border-color: rgba(173, 122, 40, 0.4);
+}
+
 .font-sans {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
